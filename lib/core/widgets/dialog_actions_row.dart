@@ -13,7 +13,7 @@ class DialogActionsRow extends StatelessWidget {
   });
 
   final VoidCallback onCancel;
-  final VoidCallback onConfirm;
+  final VoidCallback? onConfirm;
   final String cancelText;
   final String confirmText;
   final Color? confirmColor;

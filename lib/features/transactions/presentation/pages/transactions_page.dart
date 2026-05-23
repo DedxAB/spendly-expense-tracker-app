@@ -72,81 +72,140 @@ class TransactionsPage extends ConsumerWidget {
                   child: Text('No transactions found'),
                 );
               }
+
+              double upiExpense = 0, upiIncome = 0;
+              double cardExpense = 0, cardIncome = 0;
+              double cashExpense = 0, cashIncome = 0;
+              for (final tx in items) {
+                final amt = tx.amount;
+                if (tx.paymentMode == PaymentMode.upi) {
+                  if (tx.type == TransactionType.expense) {
+                    upiExpense += amt;
+                  } else {
+                    upiIncome += amt;
+                  }
+                } else if (tx.paymentMode == PaymentMode.card) {
+                  if (tx.type == TransactionType.expense) {
+                    cardExpense += amt;
+                  } else {
+                    cardIncome += amt;
+                  }
+                } else if (tx.paymentMode == PaymentMode.cash) {
+                  if (tx.type == TransactionType.expense) {
+                    cashExpense += amt;
+                  } else {
+                    cashIncome += amt;
+                  }
+                }
+              }
+
               final grouped = _groupByDate(items);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: grouped.entries
-                    .map((entry) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 26),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              entry.key,
-                              style: AppTypography.sectionTitle(context),
-                            ),
-                            const SizedBox(height: 12),
-                            const Divider(color: AppColors.borderDark),
-                            ...entry.value.map(
-                              (tx) => Dismissible(
-                                key: ValueKey(tx.id),
-                                confirmDismiss: (direction) async {
-                                  if (direction ==
-                                      DismissDirection.startToEnd) {
-                                    await showAddExpenseSheet(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _AccountBreakupCard(
+                          name: 'UPI',
+                          expense: upiExpense,
+                          income: upiIncome,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _AccountBreakupCard(
+                          name: 'Card',
+                          expense: cardExpense,
+                          income: cardIncome,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _AccountBreakupCard(
+                          name: 'Cash',
+                          expense: cashExpense,
+                          income: cashIncome,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  const Divider(color: AppColors.borderDark),
+                  ...grouped.entries
+                      .map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 26),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                entry.key,
+                                style: AppTypography.sectionTitle(context),
+                              ),
+                              const SizedBox(height: 12),
+                              const Divider(color: AppColors.borderDark),
+                              ...entry.value.map(
+                                (tx) => Dismissible(
+                                  key: ValueKey(tx.id),
+                                  confirmDismiss: (direction) async {
+                                    if (direction ==
+                                        DismissDirection.startToEnd) {
+                                      await showAddExpenseSheet(
+                                        context,
+                                        existing: tx,
+                                      );
+                                      return false;
+                                    }
+                                    return showAppDeleteConfirmDialog(
                                       context,
-                                      existing: tx,
+                                      title: 'Delete transaction?',
+                                      message:
+                                          'This transaction will be removed.',
                                     );
-                                    return false;
-                                  }
-                                  return showAppDeleteConfirmDialog(
-                                    context,
-                                    title: 'Delete transaction?',
-                                    message:
-                                        'This transaction will be removed.',
-                                  );
-                                },
-                                onDismissed: (_) {
-                                  ref
-                                      .read(transactionActionsProvider)
-                                      .softDelete(tx.id);
-                                },
-                                background: Container(
-                                  alignment: Alignment.centerLeft,
-                                  color: const Color(0xFF1A1A1A),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
+                                  },
+                                  onDismissed: (_) {
+                                    ref
+                                        .read(transactionActionsProvider)
+                                        .softDelete(tx.id);
+                                  },
+                                  background: Container(
+                                    alignment: Alignment.centerLeft,
+                                    color: const Color(0xFF1A1A1A),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: const Icon(AppIcons.edit),
                                   ),
-                                  child: const Icon(AppIcons.edit),
-                                ),
-                                secondaryBackground: Container(
-                                  alignment: Alignment.centerRight,
-                                  color: const Color(0xFF1A1A1A),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
+                                  secondaryBackground: Container(
+                                    alignment: Alignment.centerRight,
+                                    color: const Color(0xFF1A1A1A),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: const Icon(AppIcons.trash),
                                   ),
-                                  child: const Icon(AppIcons.trash),
-                                ),
-                                child: _HistoryRow(
-                                  title:
-                                      categoryById[tx.categoryId] ??
-                                      tx.categoryId,
-                                  subtitle: _subtitle(tx),
-                                  amount: tx.amount,
-                                  income: tx.type == TransactionType.income,
-                                  icon: _iconFor(
-                                    categoryById[tx.categoryId] ??
+                                  child: _HistoryRow(
+                                    title:
+                                        categoryById[tx.categoryId] ??
                                         tx.categoryId,
+                                    subtitle: tx.note?.trim() ?? '',
+                                    paymentModeLabel: tx.paymentMode.label,
+                                    amount: tx.amount,
+                                    income: tx.type == TransactionType.income,
+                                    icon: _iconFor(
+                                      categoryById[tx.categoryId] ??
+                                          tx.categoryId,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    })
-                    .toList(growable: false),
+                            ],
+                          ),
+                        );
+                      })
+                      .toList(growable: false),
+                ],
               );
             },
             loading: () => const Padding(
@@ -179,33 +238,8 @@ class TransactionsPage extends ConsumerWidget {
     return map;
   }
 
-  static String _subtitle(TransactionEntity tx) {
-    return tx.note?.trim().isNotEmpty == true
-        ? tx.note!.trim()
-        : tx.paymentMode.label;
-  }
-
   static IconData _iconFor(String text) {
-    final t = text.toLowerCase();
-    if (t.contains('food') || t.contains('dining')) {
-      return AppIcons.food;
-    }
-    if (t.contains('uber') || t.contains('transport')) {
-      return AppIcons.car;
-    }
-    if (t.contains('shop') || t.contains('store')) {
-      return AppIcons.bag;
-    }
-    if (t.contains('health') || t.contains('gym')) {
-      return AppIcons.gym;
-    }
-    if (t.contains('travel') || t.contains('air')) {
-      return AppIcons.flight;
-    }
-    if (t.contains('transfer') || t.contains('salary')) {
-      return AppIcons.money;
-    }
-    return AppIcons.receipt;
+    return AppIcons.getIconForCategory(text);
   }
 
   Future<void> _openFilters(
@@ -317,6 +351,7 @@ class _HistoryRow extends StatelessWidget {
   const _HistoryRow({
     required this.title,
     required this.subtitle,
+    required this.paymentModeLabel,
     required this.amount,
     required this.income,
     required this.icon,
@@ -324,6 +359,7 @@ class _HistoryRow extends StatelessWidget {
 
   final String title;
   final String subtitle;
+  final String paymentModeLabel;
   final double amount;
   final bool income;
   final IconData icon;
@@ -351,9 +387,41 @@ class _HistoryRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppTypography.rowTitle(context)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(title, style: AppTypography.rowTitle(context)),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFF333333)),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        paymentModeLabel.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFA3A3A3),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.xxs),
-                Text(subtitle, style: Theme.of(context).textTheme.labelMedium),
+                Text(
+                  subtitle.isNotEmpty ? subtitle : 'No note',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: subtitle.isNotEmpty
+                        ? const Color(0xFFB5B5B5)
+                        : const Color(0xFF6B6B6B),
+                  ),
+                ),
               ],
             ),
           ),
@@ -363,6 +431,62 @@ class _HistoryRow extends StatelessWidget {
               context,
               fontSize: 16,
             ).copyWith(color: income ? const Color(0xFF5DF393) : Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccountBreakupCard extends StatelessWidget {
+  const _AccountBreakupCard({
+    required this.name,
+    required this.expense,
+    required this.income,
+  });
+
+  final String name;
+  final double expense;
+  final double income;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B0B0B),
+        border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            name.toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '-${Formatters.currency(expense)}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFFFB3A8),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '+${Formatters.currency(income)}',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF8AF0A0),
+            ),
           ),
         ],
       ),

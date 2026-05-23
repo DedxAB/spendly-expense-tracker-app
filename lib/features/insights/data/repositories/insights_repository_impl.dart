@@ -57,6 +57,19 @@ class InsightsRepositoryImpl implements InsightsRepository {
       rows,
     ) {
       final totals = <DateTime, double>{};
+      if (yearly) {
+        // Seed all 12 months of the year
+        for (int m = 1; m <= 12; m++) {
+          totals[DateTime(period.year, m, 1)] = 0.0;
+        }
+      } else {
+        // Seed all days of the selected month
+        final daysInMonth = DateTime(period.year, period.month + 1, 0).day;
+        for (int d = 1; d <= daysInMonth; d++) {
+          totals[DateTime(period.year, period.month, d)] = 0.0;
+        }
+      }
+
       for (final row in rows) {
         if (row.type != TransactionType.expense.value) continue;
         final date = DateTime.fromMillisecondsSinceEpoch(row.date);
@@ -64,7 +77,10 @@ class InsightsRepositoryImpl implements InsightsRepository {
         final bucket = yearly
             ? DateTime(date.year, date.month, 1)
             : DateTime(date.year, date.month, date.day);
-        totals[bucket] = (totals[bucket] ?? 0) + row.amount;
+        
+        if (totals.containsKey(bucket)) {
+          totals[bucket] = totals[bucket]! + row.amount;
+        }
       }
 
       final points =

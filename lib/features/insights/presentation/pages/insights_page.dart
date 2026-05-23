@@ -116,7 +116,10 @@ class InsightsPage extends ConsumerWidget {
                 SizedBox(
                   height: 240,
                   child: trend.when(
-                    data: (points) => _TrendChart(points: points),
+                    data: (points) => _TrendChart(
+                      points: points,
+                      isYearly: ref.watch(insightsViewModeProvider) == InsightsViewMode.yearly,
+                    ),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (_, __) =>
@@ -158,9 +161,10 @@ class InsightsPage extends ConsumerWidget {
 }
 
 class _TrendChart extends StatelessWidget {
-  const _TrendChart({required this.points});
+  const _TrendChart({required this.points, required this.isYearly});
 
   final List<InsightPoint> points;
+  final bool isYearly;
 
   @override
   Widget build(BuildContext context) {
@@ -216,13 +220,25 @@ class _TrendChart extends StatelessWidget {
               getTitlesWidget: (value, _) {
                 final i = value.toInt();
                 if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                return Text(
-                  'Week ${i + 1}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFFA6A6A6),
-                  ),
-                );
+                if (isYearly) {
+                  if (i % 2 != 0) return const SizedBox.shrink();
+                  return Text(
+                    DateFormat('MMM').format(points[i].date),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFA6A6A6),
+                    ),
+                  );
+                } else {
+                  if (i % 7 != 0) return const SizedBox.shrink();
+                  return Text(
+                    'W${i ~/ 7 + 1}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFA6A6A6),
+                    ),
+                  );
+                }
               },
             ),
           ),

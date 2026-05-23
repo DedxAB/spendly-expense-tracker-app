@@ -1,4 +1,6 @@
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter/widgets.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 
 class AppIcons {
   const AppIcons._();
@@ -33,4 +35,44 @@ class AppIcons {
   static const history = LucideIcons.history;
   static const analytics = LucideIcons.chartLine;
   static const budget = LucideIcons.wallet;
+  static const health = LucideIcons.heartPulse;
+
+  static IconData getIconForCategory(String categoryName, [TransactionType? type]) {
+    final name = categoryName.toLowerCase();
+    if (name.contains('food') || name.contains('dining') || name.contains('restaurant')) {
+      return AppIcons.food;
+    }
+    if (name.contains('transport') || name.contains('uber') || name.contains('taxi') || name.contains('car') || name.contains('bus')) {
+      return AppIcons.car;
+    }
+    if (name.contains('shopping') || name.contains('shop') || name.contains('store') || name.contains('bag') || name.contains('grocery')) {
+      return AppIcons.bag;
+    }
+    if (name.contains('bill') || name.contains('utility') || name.contains('electric') || name.contains('receipt') || name.contains('util')) {
+      return AppIcons.receipt;
+    }
+    if (name.contains('health') || name.contains('medical') || name.contains('hospital')) {
+      return AppIcons.health;
+    }
+    if (name.contains('gym') || name.contains('workout') || name.contains('fitness') || name.contains('dumbbell')) {
+      return AppIcons.gym;
+    }
+    if (name.contains('travel') || name.contains('flight') || name.contains('air') || name.contains('trip')) {
+      return AppIcons.flight;
+    }
+    if (name.contains('salary') || name.contains('income') || name.contains('transfer') || name.contains('freelance') || name.contains('business') || name.contains('work')) {
+      return AppIcons.money;
+    }
+    if (name.contains('rent') || name.contains('home') || name.contains('house')) {
+      return AppIcons.home;
+    }
+    
+    // Fallbacks
+    if (type == TransactionType.income) {
+      return LucideIcons.arrowDownLeft;
+    } else if (type == TransactionType.expense) {
+      return LucideIcons.arrowUpRight;
+    }
+    return AppIcons.receipt;
+  }
 }

@@ -210,27 +210,7 @@ class HomePage extends ConsumerWidget {
   }
 
   static IconData _iconFor(String text) {
-    final t = text.toLowerCase();
-    if (t.contains('food') ||
-        t.contains('dining') ||
-        t.contains('restaurant')) {
-      return AppIcons.food;
-    }
-    if (t.contains('uber') || t.contains('transport') || t.contains('taxi')) {
-      return AppIcons.car;
-    }
-    if (t.contains('shop') || t.contains('store')) {
-      return AppIcons.bag;
-    }
-    if (t.contains('travel') || t.contains('flight') || t.contains('air')) {
-      return AppIcons.flight;
-    }
-    if (t.contains('salary') ||
-        t.contains('income') ||
-        t.contains('transfer')) {
-      return AppIcons.money;
-    }
-    return AppIcons.receipt;
+    return AppIcons.getIconForCategory(text);
   }
 
   static String _subtitle(dynamic tx) {

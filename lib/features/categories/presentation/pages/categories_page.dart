@@ -15,32 +15,7 @@ class CategoriesPage extends ConsumerWidget {
   const CategoriesPage({super.key});
 
   static IconData _iconForCategory(String name, TransactionType type) {
-    final n = name.toLowerCase();
-    if (n.contains('food') ||
-        n.contains('dining') ||
-        n.contains('restaurant')) {
-      return AppIcons.food;
-    }
-    if (n.contains('grocery')) return Icons.local_grocery_store;
-    if (n.contains('travel') || n.contains('flight')) return AppIcons.flight;
-    if (n.contains('transport') || n.contains('taxi') || n.contains('uber')) {
-      return AppIcons.car;
-    }
-    if (n.contains('shopping') || n.contains('shop')) return AppIcons.bag;
-    if (n.contains('rent') || n.contains('home')) return Icons.home;
-    if (n.contains('bill') || n.contains('utility') || n.contains('electric')) {
-      return AppIcons.receipt;
-    }
-    if (n.contains('health') || n.contains('medical')) {
-      return Icons.local_hospital;
-    }
-    if (n.contains('education') || n.contains('study')) return Icons.school;
-    if (n.contains('entertainment') || n.contains('movie')) return Icons.movie;
-    if (n.contains('gift')) return Icons.card_giftcard;
-    if (n.contains('salary') || n.contains('income')) return AppIcons.money;
-    if (n.contains('freelance') || n.contains('business')) return Icons.work;
-    if (n.contains('investment')) return Icons.trending_up;
-    return type == TransactionType.income ? Icons.south_west : Icons.north_east;
+    return AppIcons.getIconForCategory(name, type);
   }
 
   Future<void> _showCategoryDialog(BuildContext context, WidgetRef ref) async {
