@@ -11,6 +11,7 @@ class SettingsEntity with _$SettingsEntity {
     @Default('INR') String currency,
     @Default(false) bool budgetAlertsEnabled,
     @Default(false) bool dailyReminderEnabled,
+    @Default(false) bool privacyLockEnabled,
     DateTime? lastBudgetAlertAt,
     required DateTime updatedAt,
   }) = _SettingsEntity;

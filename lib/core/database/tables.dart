@@ -81,6 +81,9 @@ class Settings extends Table {
   BoolColumn get dailyReminderEnabled => boolean()
       .named('daily_reminder_enabled')
       .withDefault(const Constant(false))();
+  BoolColumn get privacyLockEnabled => boolean()
+      .named('privacy_lock_enabled')
+      .withDefault(const Constant(false))();
   IntColumn get lastBudgetAlertAt =>
       integer().named('last_budget_alert_at').nullable()();
   IntColumn get updatedAt => integer().named('updated_at')();
@@ -177,4 +180,25 @@ class CategoryBudgets extends Table {
 
   @override
   Set<Column<Object>> get primaryKey => {monthKey, categoryId};
+}
+
+class ActivityEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get kind => text()();
+  TextColumn get title => text()();
+  TextColumn get description => text()();
+  IntColumn get occurredAt => integer().named('occurred_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class AppUsageDays extends Table {
+  TextColumn get dateKey => text().named('date_key')();
+  IntColumn get totalSeconds =>
+      integer().named('total_seconds').withDefault(const Constant(0))();
+  IntColumn get updatedAt => integer().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {dateKey};
 }

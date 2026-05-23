@@ -12,6 +12,8 @@ abstract class SettingsRepository {
 
   Future<void> markBudgetAlertNotified(DateTime at);
 
+  Future<void> setPrivacyLockEnabled(bool enabled);
+
   Future<String> exportJson();
 
   Future<void> importJson(String payload);

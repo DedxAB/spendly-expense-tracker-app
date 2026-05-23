@@ -240,26 +240,7 @@ class BudgetPage extends ConsumerWidget {
   }
 
   static IconData _iconFor(String text) {
-    final t = text.toLowerCase();
-    if (t.contains('house') || t.contains('rent') || t.contains('home')) {
-      return Icons.home;
-    }
-    if (t.contains('food') || t.contains('dining')) {
-      return AppIcons.food;
-    }
-    if (t.contains('transport') || t.contains('uber')) {
-      return AppIcons.car;
-    }
-    if (t.contains('util')) {
-      return Icons.flash_on;
-    }
-    if (t.contains('shop')) {
-      return AppIcons.bag;
-    }
-    if (t.contains('entertain')) {
-      return Icons.local_activity;
-    }
-    return Icons.category;
+    return AppIcons.getIconForCategory(text);
   }
 
   Future<void> _openBudgetEditor(
@@ -299,7 +280,20 @@ class BudgetPage extends ConsumerWidget {
         ),
     };
     if (!context.mounted) return;
-    await showModalBottomSheet<void>(
+
+    StateSetter? sheetSetState;
+    void rebuildSheet() {
+      if (sheetSetState != null) {
+        sheetSetState!(() {});
+      }
+    }
+
+    budgetController.addListener(rebuildSheet);
+    for (final controller in categoryBudgetControllers.values) {
+      controller.addListener(rebuildSheet);
+    }
+
+    final sheetFuture = showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: false,
@@ -314,99 +308,138 @@ class BudgetPage extends ConsumerWidget {
               AppSpacing.sm,
               MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.sm,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 64,
-                    height: 4,
-                    color: const Color(0xFF6A6A6A),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.smPlus),
-                Text('Edit Budget', style: AppTypography.sectionTitle(context)),
-                const SizedBox(height: AppSpacing.xs),
-                TextField(
-                  controller: budgetController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Monthly Budget',
-                    hintText: 'e.g. 25000',
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.smPlus),
-                Text(
-                  'Category Budgets',
-                  style: AppTypography.cardTitle(context),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                ...expenseCategories.map((c) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: TextField(
-                      controller: categoryBudgetControllers[c.id],
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                sheetSetState = setState;
+
+                final monthlyBudgetValue = Money.tryParse(budgetController.text.trim()) ?? 0.0;
+                double totalCategoryBudget = 0.0;
+                for (final c in expenseCategories) {
+                  final val = Money.tryParse(categoryBudgetControllers[c.id]!.text.trim()) ?? 0.0;
+                  totalCategoryBudget += val;
+                }
+
+                final isOverAllocated = totalCategoryBudget > monthlyBudgetValue;
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 64,
+                        height: 4,
+                        color: const Color(0xFF6A6A6A),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.smPlus),
+                    Text('Edit Budget', style: AppTypography.sectionTitle(context)),
+                    const SizedBox(height: AppSpacing.xs),
+                    TextField(
+                      controller: budgetController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: InputDecoration(
-                        labelText: c.name,
-                        hintText: '0',
+                      decoration: const InputDecoration(
+                        labelText: 'Monthly Budget',
+                        hintText: 'e.g. 25000',
                       ),
                     ),
-                  );
-                }),
-                const SizedBox(height: AppSpacing.xs),
-                DialogActionsRow(
-                  cancelText: 'Close',
-                  confirmText: 'Save',
-                  onCancel: () => Navigator.pop(sheetContext),
-                  onConfirm: () async {
-                    final next = Money.tryParse(budgetController.text.trim());
-                    if (next == null || next < 0) return;
-                    await ref.read(settingsRepositoryProvider).setBudget(next);
-                    final db = ref.read(appDatabaseProvider);
-                    for (final c in expenseCategories) {
-                      final parsed = Money.tryParse(
-                        categoryBudgetControllers[c.id]!.text.trim(),
-                      );
-                      final value = parsed == null || parsed < 0
-                          ? 0.0
-                          : Money.normalize(parsed);
-                      await db.upsertCategoryBudget(
-                        CategoryBudgetsCompanion.insert(
-                          monthKey: monthKey,
-                          categoryId: c.id,
-                          budgetAmount: value,
-                          budgetAmountPaise: Value(Money.toPaise(value)),
-                          updatedAt: DateTime.now().millisecondsSinceEpoch,
+                    const SizedBox(height: AppSpacing.smPlus),
+                    Text(
+                      'Category Budgets',
+                      style: AppTypography.cardTitle(context),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    ...expenseCategories.map((c) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: TextField(
+                          controller: categoryBudgetControllers[c.id],
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: c.name,
+                            hintText: '0',
+                          ),
                         ),
                       );
-                    }
-                    if (sheetContext.mounted) Navigator.pop(sheetContext);
-                  },
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      if (!context.mounted) return;
-                      context.push('/categories');
-                    },
-                    child: const Text('Add / Manage Categories'),
-                  ),
-                ),
-              ],
+                    }),
+                    if (isOverAllocated) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Total category budgets (${Formatters.currency(totalCategoryBudget)}) cannot exceed monthly budget (${Formatters.currency(monthlyBudgetValue)}).',
+                        style: const TextStyle(
+                          color: Color(0xFFFFB3A8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xs),
+                    DialogActionsRow(
+                      cancelText: 'Close',
+                      confirmText: 'Save',
+                      onCancel: () => Navigator.pop(sheetContext),
+                      onConfirm: isOverAllocated
+                          ? null
+                          : () async {
+                              final next = Money.tryParse(budgetController.text.trim());
+                              if (next == null || next < 0) return;
+                              await ref.read(settingsRepositoryProvider).setBudget(next);
+                              final db = ref.read(appDatabaseProvider);
+                              for (final c in expenseCategories) {
+                                final parsed = Money.tryParse(
+                                  categoryBudgetControllers[c.id]!.text.trim(),
+                                );
+                                final value = parsed == null || parsed < 0
+                                    ? 0.0
+                                    : Money.normalize(parsed);
+                                await db.upsertCategoryBudget(
+                                  CategoryBudgetsCompanion.insert(
+                                    monthKey: monthKey,
+                                    categoryId: c.id,
+                                    budgetAmount: value,
+                                    budgetAmountPaise: Value(Money.toPaise(value)),
+                                    updatedAt: DateTime.now().millisecondsSinceEpoch,
+                                  ),
+                                );
+                              }
+                              if (sheetContext.mounted) Navigator.pop(sheetContext);
+                            },
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(sheetContext);
+                          if (!context.mounted) return;
+                          context.push('/categories');
+                        },
+                        child: const Text('Add / Manage Categories'),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
       ),
     );
+
+    sheetFuture.whenComplete(() {
+      budgetController.removeListener(rebuildSheet);
+      for (final controller in categoryBudgetControllers.values) {
+        controller.removeListener(rebuildSheet);
+      }
+      budgetController.dispose();
+      for (final controller in categoryBudgetControllers.values) {
+        controller.dispose();
+      }
+    });
   }
 }
 

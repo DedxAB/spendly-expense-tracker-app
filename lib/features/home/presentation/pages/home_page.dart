@@ -24,6 +24,8 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider);
     final todaySpent = ref.watch(todaySpentProvider).valueOrNull ?? 0;
+    final yesterdaySpent = ref.watch(yesterdaySpentProvider).valueOrNull ?? 0;
+    final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
     final recent = ref.watch(recentTransactionsProvider);
     final profile = ref.watch(userProfileProvider).valueOrNull;
     final lendOverview = ref.watch(lendOverviewProvider);
@@ -80,10 +82,10 @@ class HomePage extends ConsumerWidget {
             children: [
               Expanded(
                 child: _StatTile(
-                  title: "TODAY'S\nSPEND",
+                  title: "TODAY'S SPEND",
                   amount: Formatters.currency(todaySpent),
-                  note: '-12% vs\nyesterday',
-                  noteColor: const Color(0xFFFF6B6B),
+                  note: todayComparison.label,
+                  noteColor: todayComparison.color,
                 ),
               ),
               const SizedBox(width: 16),
@@ -210,27 +212,7 @@ class HomePage extends ConsumerWidget {
   }
 
   static IconData _iconFor(String text) {
-    final t = text.toLowerCase();
-    if (t.contains('food') ||
-        t.contains('dining') ||
-        t.contains('restaurant')) {
-      return AppIcons.food;
-    }
-    if (t.contains('uber') || t.contains('transport') || t.contains('taxi')) {
-      return AppIcons.car;
-    }
-    if (t.contains('shop') || t.contains('store')) {
-      return AppIcons.bag;
-    }
-    if (t.contains('travel') || t.contains('flight') || t.contains('air')) {
-      return AppIcons.flight;
-    }
-    if (t.contains('salary') ||
-        t.contains('income') ||
-        t.contains('transfer')) {
-      return AppIcons.money;
-    }
-    return AppIcons.receipt;
+    return AppIcons.getIconForCategory(text);
   }
 
   static String _subtitle(dynamic tx) {
@@ -241,6 +223,49 @@ class HomePage extends ConsumerWidget {
     }
     return Formatters.date(d);
   }
+
+  static _SpendComparison _todayComparison(double today, double yesterday) {
+    if (today <= 0 && yesterday <= 0) {
+      return const _SpendComparison(
+        label: 'No spend today',
+        color: Color(0xFFA3A3A3),
+      );
+    }
+    if (today <= 0) {
+      return const _SpendComparison(
+        label: 'No spend today',
+        color: Color(0xFF57F28F),
+      );
+    }
+    if (yesterday <= 0) {
+      return const _SpendComparison(
+        label: 'No spend yesterday',
+        color: Color(0xFFFF6B6B),
+      );
+    }
+
+    final change = ((today - yesterday) / yesterday) * 100;
+    if (change.abs() < 0.05) {
+      return const _SpendComparison(
+        label: 'Same as yesterday',
+        color: Color(0xFFA3A3A3),
+      );
+    }
+
+    final isHigher = change > 0;
+    return _SpendComparison(
+      label:
+          '${isHigher ? '+' : '-'}${change.abs().toStringAsFixed(0)}% vs yesterday',
+      color: isHigher ? const Color(0xFFFF6B6B) : const Color(0xFF57F28F),
+    );
+  }
+}
+
+class _SpendComparison {
+  const _SpendComparison({required this.label, required this.color});
+
+  final String label;
+  final Color color;
 }
 
 class _StatTile extends StatelessWidget {
@@ -315,12 +340,13 @@ class _TransactionRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF2B2B2B)),
+              color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Icon(icon, size: 23, color: Colors.white),
+            child: Icon(icon, size: 20, color: Colors.white),
           ),
           const SizedBox(width: 16),
           Expanded(

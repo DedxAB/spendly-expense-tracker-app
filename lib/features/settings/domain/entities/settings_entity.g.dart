@@ -13,6 +13,7 @@ _$SettingsEntityImpl _$$SettingsEntityImplFromJson(Map<String, dynamic> json) =>
       currency: json['currency'] as String? ?? 'INR',
       budgetAlertsEnabled: json['budgetAlertsEnabled'] as bool? ?? false,
       dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? false,
+      privacyLockEnabled: json['privacyLockEnabled'] as bool? ?? false,
       lastBudgetAlertAt: json['lastBudgetAlertAt'] == null
           ? null
           : DateTime.parse(json['lastBudgetAlertAt'] as String),
@@ -27,6 +28,7 @@ Map<String, dynamic> _$$SettingsEntityImplToJson(
   'currency': instance.currency,
   'budgetAlertsEnabled': instance.budgetAlertsEnabled,
   'dailyReminderEnabled': instance.dailyReminderEnabled,
+  'privacyLockEnabled': instance.privacyLockEnabled,
   'lastBudgetAlertAt': instance.lastBudgetAlertAt?.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

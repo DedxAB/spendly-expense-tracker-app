@@ -174,27 +174,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   }
 
   static IconData _iconFor(String text) {
-    final t = text.toLowerCase();
-    if (t.contains('food') ||
-        t.contains('dining') ||
-        t.contains('restaurant')) {
-      return AppIcons.food;
-    }
-    if (t.contains('uber') || t.contains('transport') || t.contains('taxi')) {
-      return AppIcons.car;
-    }
-    if (t.contains('shop') || t.contains('store')) {
-      return AppIcons.bag;
-    }
-    if (t.contains('travel') || t.contains('flight') || t.contains('air')) {
-      return AppIcons.flight;
-    }
-    if (t.contains('salary') ||
-        t.contains('income') ||
-        t.contains('transfer')) {
-      return AppIcons.money;
-    }
-    return AppIcons.receipt;
+    return AppIcons.getIconForCategory(text);
   }
 
   static List<DateTime> _buildVisibleDays(DateTime month) {
@@ -405,11 +385,11 @@ class _CalendarTransactionRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadii.md),
               color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(icon, color: Colors.white, size: 20),
           ),

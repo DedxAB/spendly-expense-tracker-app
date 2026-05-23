@@ -39,6 +39,8 @@ Future<File> _resolveDatabaseFile() async {
     LendSettlementEvents,
     MonthlyReflections,
     CategoryBudgets,
+    ActivityEvents,
+    AppUsageDays,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -50,7 +52,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 16;
+  int get schemaVersion => 18;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -124,7 +126,10 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(settings, settings.monthlyBudgetPaise);
         await m.addColumn(lendEntries, lendEntries.amountPaise);
         await m.addColumn(lendEntries, lendEntries.settledAmountPaise);
-        await m.addColumn(lendSettlementEvents, lendSettlementEvents.amountPaise);
+        await m.addColumn(
+          lendSettlementEvents,
+          lendSettlementEvents.amountPaise,
+        );
         await m.addColumn(categoryBudgets, categoryBudgets.budgetAmountPaise);
 
         await customStatement(
@@ -149,6 +154,19 @@ class AppDatabase extends _$AppDatabase {
           'UPDATE category_budgets SET budget_amount_paise = CAST(ROUND(budget_amount * 100.0) AS INTEGER) WHERE budget_amount_paise = 0;',
         );
       }
+      if (from < 17) {
+        final hasPrivacyLock = await _hasColumn(
+          'settings',
+          'privacy_lock_enabled',
+        );
+        if (!hasPrivacyLock) {
+          await m.addColumn(settings, settings.privacyLockEnabled);
+        }
+      }
+      if (from < 18) {
+        await m.createTable(activityEvents);
+        await m.createTable(appUsageDays);
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -169,6 +187,7 @@ class AppDatabase extends _$AppDatabase {
         themeMode: const Value('system'),
         transactionHintsSeen: const Value(false),
         dailyReminderEnabled: const Value(false),
+        privacyLockEnabled: const Value(false),
         lastBudgetAlertAt: const Value(null),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ),
@@ -469,11 +488,9 @@ class AppDatabase extends _$AppDatabase {
     )..where((tbl) => tbl.personId.equals(personId))).write(
       LendEntriesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
     );
-    await (update(
-      lendSettlementEvents,
-    )..where((tbl) => tbl.personId.equals(personId))).write(
-      const LendSettlementEventsCompanion(isDeleted: Value(true)),
-    );
+    await (update(lendSettlementEvents)
+          ..where((tbl) => tbl.personId.equals(personId)))
+        .write(const LendSettlementEventsCompanion(isDeleted: Value(true)));
   }
 
   Stream<List<LendEntry>> watchLendEntries() {
@@ -562,11 +579,8 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> softDeleteLendSettlementEvent(String eventId) async {
-    await (update(
-      lendSettlementEvents,
-    )..where((tbl) => tbl.id.equals(eventId))).write(
-      const LendSettlementEventsCompanion(isDeleted: Value(true)),
-    );
+    await (update(lendSettlementEvents)..where((tbl) => tbl.id.equals(eventId)))
+        .write(const LendSettlementEventsCompanion(isDeleted: Value(true)));
   }
 
   Future<void> setLendEntrySettled(
@@ -618,6 +632,57 @@ class AppDatabase extends _$AppDatabase {
     await into(categoryBudgets).insertOnConflictUpdate(companion);
   }
 
+  Stream<List<ActivityEvent>> watchRecentActivityEvents({int days = 3}) {
+    final cutoff = DateTime.now()
+        .subtract(Duration(days: days))
+        .millisecondsSinceEpoch;
+    final query = select(activityEvents)
+      ..where((tbl) => tbl.occurredAt.isBiggerOrEqualValue(cutoff))
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.occurredAt)])
+      ..limit(100);
+    return query.watch();
+  }
+
+  Future<void> insertActivityEvent(ActivityEventsCompanion companion) async {
+    await into(activityEvents).insert(companion);
+  }
+
+  Stream<List<AppUsageDay>> watchRecentAppUsageDays({int days = 4}) {
+    final now = DateTime.now();
+    final cutoffDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: days - 1));
+    final cutoffKey = _usageDateKey(cutoffDate);
+    final query = select(appUsageDays)
+      ..where((tbl) => tbl.dateKey.isBiggerOrEqualValue(cutoffKey))
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.dateKey)]);
+    return query.watch();
+  }
+
+  Future<void> addScreenTimeSeconds(int seconds) async {
+    if (seconds <= 0) return;
+    final now = DateTime.now();
+    final dateKey = _usageDateKey(now);
+    await customStatement(
+      '''
+      INSERT INTO app_usage_days (date_key, total_seconds, updated_at)
+      VALUES (?, ?, ?)
+      ON CONFLICT(date_key) DO UPDATE SET
+        total_seconds = total_seconds + excluded.total_seconds,
+        updated_at = excluded.updated_at;
+      ''',
+      [dateKey, seconds, now.millisecondsSinceEpoch],
+    );
+  }
+
+  String _usageDateKey(DateTime date) {
+    return '${date.year.toString().padLeft(4, '0')}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
+  }
+
   Future<void> replaceAllData({
     required List<CategoriesCompanion> categoryRows,
     required List<TransactionsCompanion> transactionRows,
@@ -639,6 +704,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(lendPeople).go();
       await delete(monthlyReflections).go();
       await delete(categoryBudgets).go();
+      await delete(activityEvents).go();
+      await delete(appUsageDays).go();
       await delete(settings).go();
       await delete(userProfiles).go();
       if (categoryRows.isNotEmpty) {
@@ -684,6 +751,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(lendPeople).go();
       await delete(monthlyReflections).go();
       await delete(categoryBudgets).go();
+      await delete(activityEvents).go();
+      await delete(appUsageDays).go();
       await delete(settings).go();
       await delete(userProfiles).go();
       await _ensureDefaultSettings();

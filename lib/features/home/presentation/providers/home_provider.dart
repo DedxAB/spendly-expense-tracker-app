@@ -42,3 +42,23 @@ final todaySpentProvider = StreamProvider<double>((ref) {
             .fold<double>(0, (sum, item) => sum + item.amount);
       });
 });
+
+final yesterdaySpentProvider = StreamProvider<double>((ref) {
+  final now = DateTime.now();
+  final yesterday = now.subtract(const Duration(days: 1));
+  final monthStart = DateTime(yesterday.year, yesterday.month, 1);
+
+  return ref
+      .watch(transactionsRepositoryProvider)
+      .watchByMonth(monthStart, type: TransactionType.expense.value)
+      .map((items) {
+        return items
+            .where(
+              (item) =>
+                  item.date.year == yesterday.year &&
+                  item.date.month == yesterday.month &&
+                  item.date.day == yesterday.day,
+            )
+            .fold<double>(0, (sum, item) => sum + item.amount);
+      });
+});
