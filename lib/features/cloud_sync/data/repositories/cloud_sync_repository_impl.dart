@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/cloud_sync/data/services/cloud_sync_exceptions.dart';
 import 'package:spendly/features/cloud_sync/data/services/drive_service.dart';
 import 'package:spendly/features/cloud_sync/data/services/google_auth_service.dart';
@@ -50,6 +51,13 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
         connectedEmail: account.email,
       ),
     );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: 'Connected cloud sync',
+          description: 'Google Drive backup connected for ${account.email}.',
+        );
     return current.copyWith(isConnected: true, connectedEmail: account.email);
   }
 
@@ -65,6 +73,13 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
         connectedEmail: null,
       ),
     );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: 'Disconnected cloud sync',
+          description: 'Google Drive backup was disconnected.',
+        );
 
     return current.copyWith(
       isConnected: false,
@@ -97,6 +112,14 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
         connectedEmail: current.connectedEmail,
       ),
     );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: 'Sync config',
+          description:
+              'Daily cloud backup ${enabled ? 'enabled' : 'disabled'}.',
+        );
     return current.copyWith(automaticDailyBackup: enabled);
   }
 
@@ -143,6 +166,15 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
         connectedEmail: account?.email ?? current.connectedEmail,
       ),
     );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: interactiveIfNeeded ? 'Cloud backup' : 'Auth sync',
+          description: interactiveIfNeeded
+              ? 'Manual Google Drive backup completed securely.'
+              : 'Automatic daily cloud backup completed securely.',
+        );
     return current.copyWith(
       isConnected: true,
       connectedEmail: account?.email ?? current.connectedEmail,
@@ -160,6 +192,13 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
       interactiveIfNeeded: true,
     );
     await _ref.read(settingsRepositoryProvider).importJson(jsonEncode(payload));
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: 'Cloud restore',
+          description: 'Google Drive backup restored into Spendly.',
+        );
   }
 
   @override

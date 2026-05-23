@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/transactions/domain/repositories/transactions_repository.dart';
 
@@ -18,6 +20,14 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     await _ref
         .read(appDatabaseProvider)
         .upsertTransaction(transactionToCompanion(normalized));
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'transaction',
+          title: 'Added transaction',
+          description:
+              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} recorded (${normalized.paymentMode.label})',
+        );
   }
 
   @override
@@ -28,16 +38,38 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
     await _ref
         .read(appDatabaseProvider)
         .upsertTransaction(transactionToCompanion(normalized));
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'transaction',
+          title: 'Updated transaction',
+          description:
+              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} updated (${normalized.paymentMode.label})',
+        );
   }
 
   @override
   Future<void> restore(String transactionId) async {
     await _ref.read(appDatabaseProvider).restoreTransaction(transactionId);
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'transaction',
+          title: 'Restored transaction',
+          description: 'A deleted transaction was restored.',
+        );
   }
 
   @override
   Future<void> softDelete(String transactionId) async {
     await _ref.read(appDatabaseProvider).softDeleteTransaction(transactionId);
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'transaction',
+          title: 'Deleted transaction',
+          description: 'A transaction was moved out of active history.',
+        );
   }
 
   @override

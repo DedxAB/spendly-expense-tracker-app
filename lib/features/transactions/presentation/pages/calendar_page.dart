@@ -385,11 +385,11 @@ class _CalendarTransactionRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadii.md),
               color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(icon, color: Colors.white, size: 20),
           ),

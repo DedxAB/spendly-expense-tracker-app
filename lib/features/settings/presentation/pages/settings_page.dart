@@ -3,16 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
+import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/cloud_sync/presentation/providers/cloud_sync_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
+import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 import 'package:spendly/features/user/data/repositories/user_profile_repository_impl.dart';
 import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
@@ -131,8 +135,10 @@ class SettingsPage extends ConsumerWidget {
 
     final profile = ref.watch(userProfileProvider).valueOrNull;
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
+    final transactions = ref.watch(allTransactionsProvider);
     final budgetAlerts = settings?.budgetAlertsEnabled ?? true;
     final dailyReminder = settings?.dailyReminderEnabled ?? false;
+    final privacyLock = settings?.privacyLockEnabled ?? false;
     final cloudSync = ref.watch(cloudSyncControllerProvider).valueOrNull;
 
     final name = (profile?.name.trim().isNotEmpty ?? false)
@@ -141,6 +147,8 @@ class SettingsPage extends ConsumerWidget {
     final imageUrl = (profile?.imageUrl?.trim().isNotEmpty ?? false)
         ? profile!.imageUrl!.trim()
         : null;
+    final transactionItems = transactions.valueOrNull;
+    final firstTransactionDate = _firstTransactionDate(transactionItems);
 
     return Scaffold(
       backgroundColor: bg,
@@ -167,23 +175,28 @@ class SettingsPage extends ConsumerWidget {
                 backgroundColor: const Color(0xFF323A44),
                 iconColor: const Color(0xFFD9DEE3),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(color: primary, height: 1.1),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            name,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(color: primary, height: 1.1),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        _TransactionCountPill(count: transactionItems?.length),
+                      ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Spendly profile',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: secondary),
-                    ),
+                    _TrackingSincePill(date: firstTransactionDate),
                   ],
                 ),
               ),
@@ -236,13 +249,28 @@ class SettingsPage extends ConsumerWidget {
             iconColor: muted,
             dividerColor: divider,
           ),
+          _ProfileRow(
+            icon: AppIcons.history,
+            title: 'Activity & Screen Time',
+            subtitle: 'Audit logs and app usage',
+            onTap: () => context.push('/activity'),
+            textColor: primary,
+            subtitleColor: muted,
+            iconColor: muted,
+            dividerColor: divider,
+          ),
           const SizedBox(height: 24),
-          const _SectionLabel('DATA & SYSTEM', color: secondary),
+          const _SectionLabel('PRIVACY & LOCKS', color: secondary),
           const Divider(color: divider, height: 26),
+          _PrivacyShieldTile(
+            enabled: privacyLock,
+            onChanged: (value) => _setPrivacyLock(context, ref, value),
+            dividerColor: divider,
+          ),
           _ProfileRow(
             icon: AppIcons.download,
-            title: 'Export Data',
-            subtitle: 'CSV, JSON formats available',
+            title: 'Export JSON',
+            subtitle: 'Create a portable backup file',
             onTap: () => _openExport(context, ref),
             textColor: primary,
             subtitleColor: muted,
@@ -252,7 +280,7 @@ class SettingsPage extends ConsumerWidget {
           _ProfileRow(
             icon: AppIcons.upload,
             title: 'Import Data',
-            subtitle: 'Import from JSON backup',
+            subtitle: 'Restore from a Spendly JSON backup',
             onTap: () => _openImport(context, ref),
             textColor: primary,
             subtitleColor: muted,
@@ -269,7 +297,9 @@ class SettingsPage extends ConsumerWidget {
             iconColor: const Color(0xFFFF8D8D),
             dividerColor: divider,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 24),
+          const _SectionLabel('DATA & SYSTEM', color: secondary),
+          const Divider(color: divider, height: 26),
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
@@ -466,6 +496,75 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
+  static DateTime? _firstTransactionDate(
+    List<TransactionEntity>? transactions,
+  ) {
+    if (transactions == null || transactions.isEmpty) return null;
+
+    DateTime? earliest;
+    for (final tx in transactions) {
+      final date = tx.date;
+      if (earliest == null || date.isBefore(earliest)) {
+        earliest = date;
+      }
+    }
+    return earliest;
+  }
+
+  Future<void> _setPrivacyLock(
+    BuildContext context,
+    WidgetRef ref,
+    bool enabled,
+  ) async {
+    try {
+      if (enabled) {
+        final auth = LocalAuthentication();
+        final isSupported = await auth.isDeviceSupported();
+        final canCheckBiometrics = await auth.canCheckBiometrics;
+        if (!context.mounted) return;
+        if (!isSupported || !canCheckBiometrics) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Biometric unlock is not available on this device.',
+              ),
+            ),
+          );
+          return;
+        }
+
+        final didAuthenticate = await auth.authenticate(
+          localizedReason: 'Verify it is you to enable Privacy Shield.',
+          biometricOnly: true,
+          persistAcrossBackgrounding: true,
+        );
+        if (!context.mounted || !didAuthenticate) return;
+      }
+
+      await ref.read(settingsRepositoryProvider).setPrivacyLockEnabled(enabled);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            enabled ? 'Privacy Shield enabled.' : 'Privacy Shield disabled.',
+          ),
+        ),
+      );
+    } on LocalAuthException {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not verify biometrics. Check device settings.'),
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Privacy Shield update failed.')),
+      );
+    }
+  }
+
   Future<void> _editAccount(BuildContext context, WidgetRef ref) async {
     final profile = ref.read(userProfileProvider).valueOrNull;
     final name = TextEditingController(text: profile?.name ?? '');
@@ -547,6 +646,13 @@ class SettingsPage extends ConsumerWidget {
 
   Future<void> _openExport(BuildContext context, WidgetRef ref) async {
     final payload = await ref.read(settingsRepositoryProvider).exportJson();
+    await ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'privacy',
+          title: 'Exported JSON',
+          description: 'A local JSON backup was generated.',
+        );
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
@@ -691,17 +797,161 @@ class _ProfilePhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 92,
-      height: 92,
+      width: 76,
+      height: 76,
       color: backgroundColor,
       child: imageUrl != null
           ? Image.network(
               imageUrl!,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) =>
-                  Icon(Icons.account_box, size: 52, color: iconColor),
+                  Icon(Icons.account_box, size: 44, color: iconColor),
             )
-          : Icon(Icons.account_box, size: 52, color: iconColor),
+          : Icon(Icons.account_box, size: 44, color: iconColor),
+    );
+  }
+}
+
+class _PrivacyShieldTile extends StatelessWidget {
+  const _PrivacyShieldTile({
+    required this.enabled,
+    required this.onChanged,
+    required this.dividerColor,
+  });
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+  final Color dividerColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: dividerColor)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: enabled
+                  ? const Color(0xFF142119)
+                  : const Color(0xFF171717),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              border: Border.all(
+                color: enabled
+                    ? const Color(0xFF2F6F46)
+                    : const Color(0xFF2A2A2A),
+              ),
+            ),
+            child: Icon(
+              AppIcons.shield,
+              color: enabled
+                  ? const Color(0xFF57F28F)
+                  : const Color(0xFF8F8F8F),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Privacy Shield',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Require biometric verification for app access',
+                  style: TextStyle(color: Color(0xFF8F8F8F), fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: enabled, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransactionCountPill extends StatelessWidget {
+  const _TransactionCountPill({required this.count});
+
+  final int? count;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count == null
+        ? '...'
+        : '${NumberFormat.compact().format(count)} ${count == 1 ? 'txn' : 'txns'}';
+
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFF171717),
+        border: Border.all(color: const Color(0xFF303030)),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(AppIcons.receipt, size: 14, color: Color(0xFFD7D7D7)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFFE7E7E7),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrackingSincePill extends StatelessWidget {
+  const _TrackingSincePill({required this.date});
+
+  final DateTime? date;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = date == null
+        ? 'Start tracking'
+        : 'Tracking since ${DateFormat('MMM yyyy').format(date!)}';
+
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: const Color(0xFF101010),
+        border: Border.all(color: const Color(0xFF292929)),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(AppIcons.history, size: 14, color: Color(0xFFBDBDBD)),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFFD4D4D4),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -758,7 +1008,21 @@ class _ProfileRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: iconColor, size: 24),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor == const Color(0xFFFF8D8D)
+                    ? iconColor
+                    : Colors.white,
+                size: 20,
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

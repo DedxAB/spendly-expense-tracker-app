@@ -132,79 +132,74 @@ class TransactionsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   const Divider(color: AppColors.borderDark),
-                  ...grouped.entries
-                      .map((entry) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 26),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                entry.key,
-                                style: AppTypography.sectionTitle(context),
+                  ...grouped.entries.map((entry) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 26),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: AppTypography.sectionTitle(context),
+                          ),
+                          const SizedBox(height: 12),
+                          const Divider(color: AppColors.borderDark),
+                          ...entry.value.map(
+                            (tx) => Dismissible(
+                              key: ValueKey(tx.id),
+                              confirmDismiss: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  await showAddExpenseSheet(
+                                    context,
+                                    existing: tx,
+                                  );
+                                  return false;
+                                }
+                                return showAppDeleteConfirmDialog(
+                                  context,
+                                  title: 'Delete transaction?',
+                                  message: 'This transaction will be removed.',
+                                );
+                              },
+                              onDismissed: (_) {
+                                ref
+                                    .read(transactionActionsProvider)
+                                    .softDelete(tx.id);
+                              },
+                              background: Container(
+                                alignment: Alignment.centerLeft,
+                                color: const Color(0xFF1A1A1A),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: const Icon(AppIcons.edit),
                               ),
-                              const SizedBox(height: 12),
-                              const Divider(color: AppColors.borderDark),
-                              ...entry.value.map(
-                                (tx) => Dismissible(
-                                  key: ValueKey(tx.id),
-                                  confirmDismiss: (direction) async {
-                                    if (direction ==
-                                        DismissDirection.startToEnd) {
-                                      await showAddExpenseSheet(
-                                        context,
-                                        existing: tx,
-                                      );
-                                      return false;
-                                    }
-                                    return showAppDeleteConfirmDialog(
-                                      context,
-                                      title: 'Delete transaction?',
-                                      message:
-                                          'This transaction will be removed.',
-                                    );
-                                  },
-                                  onDismissed: (_) {
-                                    ref
-                                        .read(transactionActionsProvider)
-                                        .softDelete(tx.id);
-                                  },
-                                  background: Container(
-                                    alignment: Alignment.centerLeft,
-                                    color: const Color(0xFF1A1A1A),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: const Icon(AppIcons.edit),
-                                  ),
-                                  secondaryBackground: Container(
-                                    alignment: Alignment.centerRight,
-                                    color: const Color(0xFF1A1A1A),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: const Icon(AppIcons.trash),
-                                  ),
-                                  child: _HistoryRow(
-                                    title:
-                                        categoryById[tx.categoryId] ??
-                                        tx.categoryId,
-                                    subtitle: tx.note?.trim() ?? '',
-                                    paymentModeLabel: tx.paymentMode.label,
-                                    amount: tx.amount,
-                                    income: tx.type == TransactionType.income,
-                                    icon: _iconFor(
-                                      categoryById[tx.categoryId] ??
-                                          tx.categoryId,
-                                    ),
-                                  ),
+                              secondaryBackground: Container(
+                                alignment: Alignment.centerRight,
+                                color: const Color(0xFF1A1A1A),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: const Icon(AppIcons.trash),
+                              ),
+                              child: _HistoryRow(
+                                title:
+                                    categoryById[tx.categoryId] ??
+                                    tx.categoryId,
+                                subtitle: tx.note?.trim() ?? '',
+                                paymentModeLabel: tx.paymentMode.label,
+                                amount: tx.amount,
+                                income: tx.type == TransactionType.income,
+                                icon: _iconFor(
+                                  categoryById[tx.categoryId] ?? tx.categoryId,
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        );
-                      })
-                      .toList(growable: false),
+                        ],
+                      ),
+                    );
+                  }),
                 ],
               );
             },

@@ -199,11 +199,12 @@ class CategoriesPage extends ConsumerWidget {
                     vertical: 4,
                   ),
                   leading: Container(
-                    width: 38,
-                    height: 38,
+                    width: 44,
+                    height: 44,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      border: Border.all(color: border),
+                      color: const Color(0xFF1A1A1A),
+                      borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
                     child: Icon(icon, color: primary, size: 20),
                   ),

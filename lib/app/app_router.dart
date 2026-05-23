@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
+import 'package:spendly/features/activity/presentation/pages/activity_screen_time_page.dart';
 import 'package:spendly/features/categories/presentation/pages/categories_page.dart';
 import 'package:spendly/features/cloud_sync/data/repositories/cloud_sync_repository_impl.dart';
 import 'package:spendly/features/home/presentation/pages/home_page.dart';
@@ -66,6 +67,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsPage(),
+      ),
+      GoRoute(
+        path: '/activity',
+        builder: (context, state) => const ActivityScreenTimePage(),
       ),
       GoRoute(
         path: '/notifications',

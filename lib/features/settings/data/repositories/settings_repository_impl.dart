@@ -7,6 +7,7 @@ import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_person_entity.dart';
@@ -127,6 +128,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> clearAllData() async {
     await _ref.read(appDatabaseProvider).clearAllAndReseed();
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'privacy',
+          title: 'Erased local data',
+          description: 'Spendly was reset to a clean local state.',
+        );
   }
 
   @override
@@ -296,7 +304,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
                 DateTime.now().millisecondsSinceEpoch,
           ),
         )
-        .where((row) => row.monthKey.value.isNotEmpty && row.categoryId.value.isNotEmpty)
+        .where(
+          (row) =>
+              row.monthKey.value.isNotEmpty && row.categoryId.value.isNotEmpty,
+        )
         .toList(growable: false);
 
     await _ref
@@ -312,6 +323,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
           categoryBudgetRows: categoryBudgetRows,
           settingsRow: settingsToCompanion(settings),
           userProfileRow: userProfileToCompanion(userProfile),
+        );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'privacy',
+          title: 'Imported JSON',
+          description: 'A Spendly JSON backup was imported.',
         );
   }
 
@@ -329,10 +347,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
         themeMode: const Value('dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
+        privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ),
     );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'budget',
+          title: 'Updated budget',
+          description: 'Monthly budget was updated.',
+        );
   }
 
   @override
@@ -353,10 +379,41 @@ class SettingsRepositoryImpl implements SettingsRepository {
         themeMode: const Value('dark'),
         transactionHintsSeen: Value(budgetAlertsEnabled),
         dailyReminderEnabled: Value(dailyReminderEnabled),
+        privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ),
     );
+  }
+
+  @override
+  Future<void> setPrivacyLockEnabled(bool enabled) async {
+    final db = _ref.read(appDatabaseProvider);
+    final current = await db.getSettingsRow();
+    await db.upsertSettings(
+      SettingsCompanion.insert(
+        id: const Value(1),
+        monthlyBudget: Value(current?.monthlyBudget ?? 0),
+        monthlyBudgetPaise: Value(
+          Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
+        ),
+        currency: Value(current?.currency ?? 'INR'),
+        themeMode: const Value('dark'),
+        transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
+        dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
+        privacyLockEnabled: Value(enabled),
+        lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'privacy',
+          title: 'Privacy Shield',
+          description:
+              'Biometric app lock was ${enabled ? 'enabled' : 'disabled'}.',
+        );
   }
 
   @override
@@ -374,6 +431,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         themeMode: const Value('dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
+        privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
         lastBudgetAlertAt: Value(at.millisecondsSinceEpoch),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
+import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/domain/repositories/categories_repository.dart';
 
@@ -14,6 +15,14 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
     await _ref
         .read(appDatabaseProvider)
         .upsertCategory(categoryToCompanion(category));
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'category',
+          title: 'Added category',
+          description:
+              '${category.name} was added as an ${category.type.name} category.',
+        );
   }
 
   @override
@@ -24,6 +33,13 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
   @override
   Future<void> softDelete(String categoryId) async {
     await _ref.read(appDatabaseProvider).softDeleteCategory(categoryId);
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'category',
+          title: 'Deleted category',
+          description: 'A category was removed from active lists.',
+        );
   }
 
   @override
@@ -31,6 +47,13 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
     await _ref
         .read(appDatabaseProvider)
         .upsertCategory(categoryToCompanion(category));
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'category',
+          title: 'Updated category',
+          description: '${category.name} category details were updated.',
+        );
   }
 
   @override

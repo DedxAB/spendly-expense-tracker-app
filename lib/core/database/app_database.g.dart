@@ -2213,6 +2213,20 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _privacyLockEnabledMeta =
+      const VerificationMeta('privacyLockEnabled');
+  @override
+  late final GeneratedColumn<bool> privacyLockEnabled = GeneratedColumn<bool>(
+    'privacy_lock_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("privacy_lock_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _lastBudgetAlertAtMeta = const VerificationMeta(
     'lastBudgetAlertAt',
   );
@@ -2244,6 +2258,7 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     themeMode,
     transactionHintsSeen,
     dailyReminderEnabled,
+    privacyLockEnabled,
     lastBudgetAlertAt,
     updatedAt,
   ];
@@ -2310,6 +2325,15 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         ),
       );
     }
+    if (data.containsKey('privacy_lock_enabled')) {
+      context.handle(
+        _privacyLockEnabledMeta,
+        privacyLockEnabled.isAcceptableOrUnknown(
+          data['privacy_lock_enabled']!,
+          _privacyLockEnabledMeta,
+        ),
+      );
+    }
     if (data.containsKey('last_budget_alert_at')) {
       context.handle(
         _lastBudgetAlertAtMeta,
@@ -2364,6 +2388,10 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.bool,
         data['${effectivePrefix}daily_reminder_enabled'],
       )!,
+      privacyLockEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}privacy_lock_enabled'],
+      )!,
       lastBudgetAlertAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}last_budget_alert_at'],
@@ -2389,6 +2417,7 @@ class Setting extends DataClass implements Insertable<Setting> {
   final String themeMode;
   final bool transactionHintsSeen;
   final bool dailyReminderEnabled;
+  final bool privacyLockEnabled;
   final int? lastBudgetAlertAt;
   final int updatedAt;
   const Setting({
@@ -2399,6 +2428,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     required this.themeMode,
     required this.transactionHintsSeen,
     required this.dailyReminderEnabled,
+    required this.privacyLockEnabled,
     this.lastBudgetAlertAt,
     required this.updatedAt,
   });
@@ -2412,6 +2442,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     map['theme_mode'] = Variable<String>(themeMode);
     map['transaction_hints_seen'] = Variable<bool>(transactionHintsSeen);
     map['daily_reminder_enabled'] = Variable<bool>(dailyReminderEnabled);
+    map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled);
     if (!nullToAbsent || lastBudgetAlertAt != null) {
       map['last_budget_alert_at'] = Variable<int>(lastBudgetAlertAt);
     }
@@ -2428,6 +2459,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       themeMode: Value(themeMode),
       transactionHintsSeen: Value(transactionHintsSeen),
       dailyReminderEnabled: Value(dailyReminderEnabled),
+      privacyLockEnabled: Value(privacyLockEnabled),
       lastBudgetAlertAt: lastBudgetAlertAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastBudgetAlertAt),
@@ -2452,6 +2484,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       dailyReminderEnabled: serializer.fromJson<bool>(
         json['dailyReminderEnabled'],
       ),
+      privacyLockEnabled: serializer.fromJson<bool>(json['privacyLockEnabled']),
       lastBudgetAlertAt: serializer.fromJson<int?>(json['lastBudgetAlertAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -2467,6 +2500,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       'themeMode': serializer.toJson<String>(themeMode),
       'transactionHintsSeen': serializer.toJson<bool>(transactionHintsSeen),
       'dailyReminderEnabled': serializer.toJson<bool>(dailyReminderEnabled),
+      'privacyLockEnabled': serializer.toJson<bool>(privacyLockEnabled),
       'lastBudgetAlertAt': serializer.toJson<int?>(lastBudgetAlertAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
@@ -2480,6 +2514,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     String? themeMode,
     bool? transactionHintsSeen,
     bool? dailyReminderEnabled,
+    bool? privacyLockEnabled,
     Value<int?> lastBudgetAlertAt = const Value.absent(),
     int? updatedAt,
   }) => Setting(
@@ -2490,6 +2525,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     themeMode: themeMode ?? this.themeMode,
     transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
     dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+    privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
     lastBudgetAlertAt: lastBudgetAlertAt.present
         ? lastBudgetAlertAt.value
         : this.lastBudgetAlertAt,
@@ -2512,6 +2548,9 @@ class Setting extends DataClass implements Insertable<Setting> {
       dailyReminderEnabled: data.dailyReminderEnabled.present
           ? data.dailyReminderEnabled.value
           : this.dailyReminderEnabled,
+      privacyLockEnabled: data.privacyLockEnabled.present
+          ? data.privacyLockEnabled.value
+          : this.privacyLockEnabled,
       lastBudgetAlertAt: data.lastBudgetAlertAt.present
           ? data.lastBudgetAlertAt.value
           : this.lastBudgetAlertAt,
@@ -2529,6 +2568,7 @@ class Setting extends DataClass implements Insertable<Setting> {
           ..write('themeMode: $themeMode, ')
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
+          ..write('privacyLockEnabled: $privacyLockEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -2544,6 +2584,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     themeMode,
     transactionHintsSeen,
     dailyReminderEnabled,
+    privacyLockEnabled,
     lastBudgetAlertAt,
     updatedAt,
   );
@@ -2558,6 +2599,7 @@ class Setting extends DataClass implements Insertable<Setting> {
           other.themeMode == this.themeMode &&
           other.transactionHintsSeen == this.transactionHintsSeen &&
           other.dailyReminderEnabled == this.dailyReminderEnabled &&
+          other.privacyLockEnabled == this.privacyLockEnabled &&
           other.lastBudgetAlertAt == this.lastBudgetAlertAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -2570,6 +2612,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<String> themeMode;
   final Value<bool> transactionHintsSeen;
   final Value<bool> dailyReminderEnabled;
+  final Value<bool> privacyLockEnabled;
   final Value<int?> lastBudgetAlertAt;
   final Value<int> updatedAt;
   const SettingsCompanion({
@@ -2580,6 +2623,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.themeMode = const Value.absent(),
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
+    this.privacyLockEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -2591,6 +2635,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.themeMode = const Value.absent(),
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
+    this.privacyLockEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
     required int updatedAt,
   }) : updatedAt = Value(updatedAt);
@@ -2602,6 +2647,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Expression<String>? themeMode,
     Expression<bool>? transactionHintsSeen,
     Expression<bool>? dailyReminderEnabled,
+    Expression<bool>? privacyLockEnabled,
     Expression<int>? lastBudgetAlertAt,
     Expression<int>? updatedAt,
   }) {
@@ -2616,6 +2662,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
         'transaction_hints_seen': transactionHintsSeen,
       if (dailyReminderEnabled != null)
         'daily_reminder_enabled': dailyReminderEnabled,
+      if (privacyLockEnabled != null)
+        'privacy_lock_enabled': privacyLockEnabled,
       if (lastBudgetAlertAt != null) 'last_budget_alert_at': lastBudgetAlertAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -2629,6 +2677,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<String>? themeMode,
     Value<bool>? transactionHintsSeen,
     Value<bool>? dailyReminderEnabled,
+    Value<bool>? privacyLockEnabled,
     Value<int?>? lastBudgetAlertAt,
     Value<int>? updatedAt,
   }) {
@@ -2640,6 +2689,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       themeMode: themeMode ?? this.themeMode,
       transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+      privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
       lastBudgetAlertAt: lastBudgetAlertAt ?? this.lastBudgetAlertAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -2673,6 +2723,9 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
         dailyReminderEnabled.value,
       );
     }
+    if (privacyLockEnabled.present) {
+      map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled.value);
+    }
     if (lastBudgetAlertAt.present) {
       map['last_budget_alert_at'] = Variable<int>(lastBudgetAlertAt.value);
     }
@@ -2692,6 +2745,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
           ..write('themeMode: $themeMode, ')
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
+          ..write('privacyLockEnabled: $privacyLockEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -5529,6 +5583,640 @@ class CategoryBudgetsCompanion extends UpdateCompanion<CategoryBudget> {
   }
 }
 
+class $ActivityEventsTable extends ActivityEvents
+    with TableInfo<$ActivityEventsTable, ActivityEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ActivityEventsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _occurredAtMeta = const VerificationMeta(
+    'occurredAt',
+  );
+  @override
+  late final GeneratedColumn<int> occurredAt = GeneratedColumn<int>(
+    'occurred_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kind,
+    title,
+    description,
+    occurredAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'activity_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ActivityEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+        _occurredAtMeta,
+        occurredAt.isAcceptableOrUnknown(data['occurred_at']!, _occurredAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ActivityEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ActivityEvent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      occurredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}occurred_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ActivityEventsTable createAlias(String alias) {
+    return $ActivityEventsTable(attachedDatabase, alias);
+  }
+}
+
+class ActivityEvent extends DataClass implements Insertable<ActivityEvent> {
+  final String id;
+  final String kind;
+  final String title;
+  final String description;
+  final int occurredAt;
+  const ActivityEvent({
+    required this.id,
+    required this.kind,
+    required this.title,
+    required this.description,
+    required this.occurredAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['kind'] = Variable<String>(kind);
+    map['title'] = Variable<String>(title);
+    map['description'] = Variable<String>(description);
+    map['occurred_at'] = Variable<int>(occurredAt);
+    return map;
+  }
+
+  ActivityEventsCompanion toCompanion(bool nullToAbsent) {
+    return ActivityEventsCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      title: Value(title),
+      description: Value(description),
+      occurredAt: Value(occurredAt),
+    );
+  }
+
+  factory ActivityEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ActivityEvent(
+      id: serializer.fromJson<String>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      title: serializer.fromJson<String>(json['title']),
+      description: serializer.fromJson<String>(json['description']),
+      occurredAt: serializer.fromJson<int>(json['occurredAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'kind': serializer.toJson<String>(kind),
+      'title': serializer.toJson<String>(title),
+      'description': serializer.toJson<String>(description),
+      'occurredAt': serializer.toJson<int>(occurredAt),
+    };
+  }
+
+  ActivityEvent copyWith({
+    String? id,
+    String? kind,
+    String? title,
+    String? description,
+    int? occurredAt,
+  }) => ActivityEvent(
+    id: id ?? this.id,
+    kind: kind ?? this.kind,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    occurredAt: occurredAt ?? this.occurredAt,
+  );
+  ActivityEvent copyWithCompanion(ActivityEventsCompanion data) {
+    return ActivityEvent(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      title: data.title.present ? data.title.value : this.title,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      occurredAt: data.occurredAt.present
+          ? data.occurredAt.value
+          : this.occurredAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ActivityEvent(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('occurredAt: $occurredAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, kind, title, description, occurredAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ActivityEvent &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.title == this.title &&
+          other.description == this.description &&
+          other.occurredAt == this.occurredAt);
+}
+
+class ActivityEventsCompanion extends UpdateCompanion<ActivityEvent> {
+  final Value<String> id;
+  final Value<String> kind;
+  final Value<String> title;
+  final Value<String> description;
+  final Value<int> occurredAt;
+  final Value<int> rowid;
+  const ActivityEventsCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ActivityEventsCompanion.insert({
+    required String id,
+    required String kind,
+    required String title,
+    required String description,
+    required int occurredAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       kind = Value(kind),
+       title = Value(title),
+       description = Value(description),
+       occurredAt = Value(occurredAt);
+  static Insertable<ActivityEvent> custom({
+    Expression<String>? id,
+    Expression<String>? kind,
+    Expression<String>? title,
+    Expression<String>? description,
+    Expression<int>? occurredAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ActivityEventsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? kind,
+    Value<String>? title,
+    Value<String>? description,
+    Value<int>? occurredAt,
+    Value<int>? rowid,
+  }) {
+    return ActivityEventsCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      occurredAt: occurredAt ?? this.occurredAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<int>(occurredAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ActivityEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('title: $title, ')
+          ..write('description: $description, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $AppUsageDaysTable extends AppUsageDays
+    with TableInfo<$AppUsageDaysTable, AppUsageDay> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppUsageDaysTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dateKeyMeta = const VerificationMeta(
+    'dateKey',
+  );
+  @override
+  late final GeneratedColumn<String> dateKey = GeneratedColumn<String>(
+    'date_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _totalSecondsMeta = const VerificationMeta(
+    'totalSeconds',
+  );
+  @override
+  late final GeneratedColumn<int> totalSeconds = GeneratedColumn<int>(
+    'total_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [dateKey, totalSeconds, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_usage_days';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppUsageDay> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('date_key')) {
+      context.handle(
+        _dateKeyMeta,
+        dateKey.isAcceptableOrUnknown(data['date_key']!, _dateKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateKeyMeta);
+    }
+    if (data.containsKey('total_seconds')) {
+      context.handle(
+        _totalSecondsMeta,
+        totalSeconds.isAcceptableOrUnknown(
+          data['total_seconds']!,
+          _totalSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {dateKey};
+  @override
+  AppUsageDay map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppUsageDay(
+      dateKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date_key'],
+      )!,
+      totalSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_seconds'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AppUsageDaysTable createAlias(String alias) {
+    return $AppUsageDaysTable(attachedDatabase, alias);
+  }
+}
+
+class AppUsageDay extends DataClass implements Insertable<AppUsageDay> {
+  final String dateKey;
+  final int totalSeconds;
+  final int updatedAt;
+  const AppUsageDay({
+    required this.dateKey,
+    required this.totalSeconds,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['date_key'] = Variable<String>(dateKey);
+    map['total_seconds'] = Variable<int>(totalSeconds);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  AppUsageDaysCompanion toCompanion(bool nullToAbsent) {
+    return AppUsageDaysCompanion(
+      dateKey: Value(dateKey),
+      totalSeconds: Value(totalSeconds),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory AppUsageDay.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppUsageDay(
+      dateKey: serializer.fromJson<String>(json['dateKey']),
+      totalSeconds: serializer.fromJson<int>(json['totalSeconds']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'dateKey': serializer.toJson<String>(dateKey),
+      'totalSeconds': serializer.toJson<int>(totalSeconds),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  AppUsageDay copyWith({String? dateKey, int? totalSeconds, int? updatedAt}) =>
+      AppUsageDay(
+        dateKey: dateKey ?? this.dateKey,
+        totalSeconds: totalSeconds ?? this.totalSeconds,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  AppUsageDay copyWithCompanion(AppUsageDaysCompanion data) {
+    return AppUsageDay(
+      dateKey: data.dateKey.present ? data.dateKey.value : this.dateKey,
+      totalSeconds: data.totalSeconds.present
+          ? data.totalSeconds.value
+          : this.totalSeconds,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppUsageDay(')
+          ..write('dateKey: $dateKey, ')
+          ..write('totalSeconds: $totalSeconds, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(dateKey, totalSeconds, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppUsageDay &&
+          other.dateKey == this.dateKey &&
+          other.totalSeconds == this.totalSeconds &&
+          other.updatedAt == this.updatedAt);
+}
+
+class AppUsageDaysCompanion extends UpdateCompanion<AppUsageDay> {
+  final Value<String> dateKey;
+  final Value<int> totalSeconds;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const AppUsageDaysCompanion({
+    this.dateKey = const Value.absent(),
+    this.totalSeconds = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppUsageDaysCompanion.insert({
+    required String dateKey,
+    this.totalSeconds = const Value.absent(),
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : dateKey = Value(dateKey),
+       updatedAt = Value(updatedAt);
+  static Insertable<AppUsageDay> custom({
+    Expression<String>? dateKey,
+    Expression<int>? totalSeconds,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (dateKey != null) 'date_key': dateKey,
+      if (totalSeconds != null) 'total_seconds': totalSeconds,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppUsageDaysCompanion copyWith({
+    Value<String>? dateKey,
+    Value<int>? totalSeconds,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return AppUsageDaysCompanion(
+      dateKey: dateKey ?? this.dateKey,
+      totalSeconds: totalSeconds ?? this.totalSeconds,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (dateKey.present) {
+      map['date_key'] = Variable<String>(dateKey.value);
+    }
+    if (totalSeconds.present) {
+      map['total_seconds'] = Variable<int>(totalSeconds.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppUsageDaysCompanion(')
+          ..write('dateKey: $dateKey, ')
+          ..write('totalSeconds: $totalSeconds, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5546,6 +6234,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $CategoryBudgetsTable categoryBudgets = $CategoryBudgetsTable(
     this,
   );
+  late final $ActivityEventsTable activityEvents = $ActivityEventsTable(this);
+  late final $AppUsageDaysTable appUsageDays = $AppUsageDaysTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5561,6 +6251,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     lendSettlementEvents,
     monthlyReflections,
     categoryBudgets,
+    activityEvents,
+    appUsageDays,
   ];
 }
 
@@ -6586,6 +7278,7 @@ typedef $$SettingsTableCreateCompanionBuilder =
       Value<String> themeMode,
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
+      Value<bool> privacyLockEnabled,
       Value<int?> lastBudgetAlertAt,
       required int updatedAt,
     });
@@ -6598,6 +7291,7 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<String> themeMode,
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
+      Value<bool> privacyLockEnabled,
       Value<int?> lastBudgetAlertAt,
       Value<int> updatedAt,
     });
@@ -6643,6 +7337,11 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<bool> get dailyReminderEnabled => $composableBuilder(
     column: $table.dailyReminderEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get privacyLockEnabled => $composableBuilder(
+    column: $table.privacyLockEnabled,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6701,6 +7400,11 @@ class $$SettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get privacyLockEnabled => $composableBuilder(
+    column: $table.privacyLockEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get lastBudgetAlertAt => $composableBuilder(
     column: $table.lastBudgetAlertAt,
     builder: (column) => ColumnOrderings(column),
@@ -6750,6 +7454,11 @@ class $$SettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get privacyLockEnabled => $composableBuilder(
+    column: $table.privacyLockEnabled,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get lastBudgetAlertAt => $composableBuilder(
     column: $table.lastBudgetAlertAt,
     builder: (column) => column,
@@ -6794,6 +7503,7 @@ class $$SettingsTableTableManager
                 Value<String> themeMode = const Value.absent(),
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
+                Value<bool> privacyLockEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
               }) => SettingsCompanion(
@@ -6804,6 +7514,7 @@ class $$SettingsTableTableManager
                 themeMode: themeMode,
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
+                privacyLockEnabled: privacyLockEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
                 updatedAt: updatedAt,
               ),
@@ -6816,6 +7527,7 @@ class $$SettingsTableTableManager
                 Value<String> themeMode = const Value.absent(),
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
+                Value<bool> privacyLockEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
                 required int updatedAt,
               }) => SettingsCompanion.insert(
@@ -6826,6 +7538,7 @@ class $$SettingsTableTableManager
                 themeMode: themeMode,
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
+                privacyLockEnabled: privacyLockEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
                 updatedAt: updatedAt,
               ),
@@ -8340,6 +9053,376 @@ typedef $$CategoryBudgetsTableProcessedTableManager =
       CategoryBudget,
       PrefetchHooks Function()
     >;
+typedef $$ActivityEventsTableCreateCompanionBuilder =
+    ActivityEventsCompanion Function({
+      required String id,
+      required String kind,
+      required String title,
+      required String description,
+      required int occurredAt,
+      Value<int> rowid,
+    });
+typedef $$ActivityEventsTableUpdateCompanionBuilder =
+    ActivityEventsCompanion Function({
+      Value<String> id,
+      Value<String> kind,
+      Value<String> title,
+      Value<String> description,
+      Value<int> occurredAt,
+      Value<int> rowid,
+    });
+
+class $$ActivityEventsTableFilterComposer
+    extends Composer<_$AppDatabase, $ActivityEventsTable> {
+  $$ActivityEventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ActivityEventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ActivityEventsTable> {
+  $$ActivityEventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ActivityEventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ActivityEventsTable> {
+  $$ActivityEventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => column,
+  );
+}
+
+class $$ActivityEventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ActivityEventsTable,
+          ActivityEvent,
+          $$ActivityEventsTableFilterComposer,
+          $$ActivityEventsTableOrderingComposer,
+          $$ActivityEventsTableAnnotationComposer,
+          $$ActivityEventsTableCreateCompanionBuilder,
+          $$ActivityEventsTableUpdateCompanionBuilder,
+          (
+            ActivityEvent,
+            BaseReferences<_$AppDatabase, $ActivityEventsTable, ActivityEvent>,
+          ),
+          ActivityEvent,
+          PrefetchHooks Function()
+        > {
+  $$ActivityEventsTableTableManager(
+    _$AppDatabase db,
+    $ActivityEventsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ActivityEventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ActivityEventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ActivityEventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String> description = const Value.absent(),
+                Value<int> occurredAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ActivityEventsCompanion(
+                id: id,
+                kind: kind,
+                title: title,
+                description: description,
+                occurredAt: occurredAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String kind,
+                required String title,
+                required String description,
+                required int occurredAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ActivityEventsCompanion.insert(
+                id: id,
+                kind: kind,
+                title: title,
+                description: description,
+                occurredAt: occurredAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ActivityEventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ActivityEventsTable,
+      ActivityEvent,
+      $$ActivityEventsTableFilterComposer,
+      $$ActivityEventsTableOrderingComposer,
+      $$ActivityEventsTableAnnotationComposer,
+      $$ActivityEventsTableCreateCompanionBuilder,
+      $$ActivityEventsTableUpdateCompanionBuilder,
+      (
+        ActivityEvent,
+        BaseReferences<_$AppDatabase, $ActivityEventsTable, ActivityEvent>,
+      ),
+      ActivityEvent,
+      PrefetchHooks Function()
+    >;
+typedef $$AppUsageDaysTableCreateCompanionBuilder =
+    AppUsageDaysCompanion Function({
+      required String dateKey,
+      Value<int> totalSeconds,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$AppUsageDaysTableUpdateCompanionBuilder =
+    AppUsageDaysCompanion Function({
+      Value<String> dateKey,
+      Value<int> totalSeconds,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$AppUsageDaysTableFilterComposer
+    extends Composer<_$AppDatabase, $AppUsageDaysTable> {
+  $$AppUsageDaysTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get dateKey => $composableBuilder(
+    column: $table.dateKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalSeconds => $composableBuilder(
+    column: $table.totalSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AppUsageDaysTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppUsageDaysTable> {
+  $$AppUsageDaysTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get dateKey => $composableBuilder(
+    column: $table.dateKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalSeconds => $composableBuilder(
+    column: $table.totalSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AppUsageDaysTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppUsageDaysTable> {
+  $$AppUsageDaysTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get dateKey =>
+      $composableBuilder(column: $table.dateKey, builder: (column) => column);
+
+  GeneratedColumn<int> get totalSeconds => $composableBuilder(
+    column: $table.totalSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$AppUsageDaysTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppUsageDaysTable,
+          AppUsageDay,
+          $$AppUsageDaysTableFilterComposer,
+          $$AppUsageDaysTableOrderingComposer,
+          $$AppUsageDaysTableAnnotationComposer,
+          $$AppUsageDaysTableCreateCompanionBuilder,
+          $$AppUsageDaysTableUpdateCompanionBuilder,
+          (
+            AppUsageDay,
+            BaseReferences<_$AppDatabase, $AppUsageDaysTable, AppUsageDay>,
+          ),
+          AppUsageDay,
+          PrefetchHooks Function()
+        > {
+  $$AppUsageDaysTableTableManager(_$AppDatabase db, $AppUsageDaysTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppUsageDaysTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppUsageDaysTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppUsageDaysTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> dateKey = const Value.absent(),
+                Value<int> totalSeconds = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppUsageDaysCompanion(
+                dateKey: dateKey,
+                totalSeconds: totalSeconds,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String dateKey,
+                Value<int> totalSeconds = const Value.absent(),
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => AppUsageDaysCompanion.insert(
+                dateKey: dateKey,
+                totalSeconds: totalSeconds,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AppUsageDaysTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppUsageDaysTable,
+      AppUsageDay,
+      $$AppUsageDaysTableFilterComposer,
+      $$AppUsageDaysTableOrderingComposer,
+      $$AppUsageDaysTableAnnotationComposer,
+      $$AppUsageDaysTableCreateCompanionBuilder,
+      $$AppUsageDaysTableUpdateCompanionBuilder,
+      (
+        AppUsageDay,
+        BaseReferences<_$AppDatabase, $AppUsageDaysTable, AppUsageDay>,
+      ),
+      AppUsageDay,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -8364,4 +9447,8 @@ class $AppDatabaseManager {
       $$MonthlyReflectionsTableTableManager(_db, _db.monthlyReflections);
   $$CategoryBudgetsTableTableManager get categoryBudgets =>
       $$CategoryBudgetsTableTableManager(_db, _db.categoryBudgets);
+  $$ActivityEventsTableTableManager get activityEvents =>
+      $$ActivityEventsTableTableManager(_db, _db.activityEvents);
+  $$AppUsageDaysTableTableManager get appUsageDays =>
+      $$AppUsageDaysTableTableManager(_db, _db.appUsageDays);
 }
