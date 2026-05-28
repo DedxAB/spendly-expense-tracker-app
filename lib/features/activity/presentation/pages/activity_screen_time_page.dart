@@ -27,9 +27,9 @@ class ActivityScreenTimePage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
           AppSpacing.md,
-          AppSpacing.md,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [
@@ -122,7 +122,7 @@ class _ScreenTimeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0B0B),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: AppColors.borderDark),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),

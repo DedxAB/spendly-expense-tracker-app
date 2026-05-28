@@ -74,9 +74,9 @@ class BudgetPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.mdPlus,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [
@@ -93,7 +93,7 @@ class BudgetPage extends ConsumerWidget {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderDark),
-              color: Colors.black,
+              color: const Color(0xFF0E0E0E),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,14 +312,20 @@ class BudgetPage extends ConsumerWidget {
               builder: (context, setState) {
                 sheetSetState = setState;
 
-                final monthlyBudgetValue = Money.tryParse(budgetController.text.trim()) ?? 0.0;
+                final monthlyBudgetValue =
+                    Money.tryParse(budgetController.text.trim()) ?? 0.0;
                 double totalCategoryBudget = 0.0;
                 for (final c in expenseCategories) {
-                  final val = Money.tryParse(categoryBudgetControllers[c.id]!.text.trim()) ?? 0.0;
+                  final val =
+                      Money.tryParse(
+                        categoryBudgetControllers[c.id]!.text.trim(),
+                      ) ??
+                      0.0;
                   totalCategoryBudget += val;
                 }
 
-                final isOverAllocated = totalCategoryBudget > monthlyBudgetValue;
+                final isOverAllocated =
+                    totalCategoryBudget > monthlyBudgetValue;
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
@@ -333,36 +339,43 @@ class BudgetPage extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.smPlus),
-                    Text('Edit Budget', style: AppTypography.sectionTitle(context)),
-                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Edit Budget',
+                      style: AppTypography.sectionTitle(context),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _ModalFieldLabel('Monthly Budget'),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: budgetController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Monthly Budget',
-                        hintText: 'e.g. 25000',
-                      ),
+                      decoration: const InputDecoration(hintText: 'e.g. 25000'),
                     ),
                     const SizedBox(height: AppSpacing.smPlus),
                     Text(
                       'Category Budgets',
                       style: AppTypography.cardTitle(context),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
+                    const SizedBox(height: AppSpacing.sm),
                     ...expenseCategories.map((c) {
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: TextField(
-                          controller: categoryBudgetControllers[c.id],
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: c.name,
-                            hintText: '0',
-                          ),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _ModalFieldLabel(c.name),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: categoryBudgetControllers[c.id],
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              decoration: const InputDecoration(hintText: '0'),
+                            ),
+                          ],
                         ),
                       );
                     }),
@@ -385,9 +398,13 @@ class BudgetPage extends ConsumerWidget {
                       onConfirm: isOverAllocated
                           ? null
                           : () async {
-                              final next = Money.tryParse(budgetController.text.trim());
+                              final next = Money.tryParse(
+                                budgetController.text.trim(),
+                              );
                               if (next == null || next < 0) return;
-                              await ref.read(settingsRepositoryProvider).setBudget(next);
+                              await ref
+                                  .read(settingsRepositoryProvider)
+                                  .setBudget(next);
                               final db = ref.read(appDatabaseProvider);
                               for (final c in expenseCategories) {
                                 final parsed = Money.tryParse(
@@ -401,12 +418,17 @@ class BudgetPage extends ConsumerWidget {
                                     monthKey: monthKey,
                                     categoryId: c.id,
                                     budgetAmount: value,
-                                    budgetAmountPaise: Value(Money.toPaise(value)),
-                                    updatedAt: DateTime.now().millisecondsSinceEpoch,
+                                    budgetAmountPaise: Value(
+                                      Money.toPaise(value),
+                                    ),
+                                    updatedAt:
+                                        DateTime.now().millisecondsSinceEpoch,
                                   ),
                                 );
                               }
-                              if (sheetContext.mounted) Navigator.pop(sheetContext);
+                              if (sheetContext.mounted) {
+                                Navigator.pop(sheetContext);
+                              }
                             },
                     ),
                     const SizedBox(height: 8),
@@ -443,6 +465,24 @@ class BudgetPage extends ConsumerWidget {
   }
 }
 
+class _ModalFieldLabel extends StatelessWidget {
+  const _ModalFieldLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFB3B3B3),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
 final _categoryBudgetsForMonthProvider =
     StreamProvider.family<List<CategoryBudget>, String>((ref, monthKey) {
       return ref
@@ -473,7 +513,7 @@ class _BudgetCategoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: const Color(0xFF0E0E0E),
         border: Border.all(
           color: overBudget ? const Color(0xFFFFB3A8) : AppColors.borderDark,
         ),

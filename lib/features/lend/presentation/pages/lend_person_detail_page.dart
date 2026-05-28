@@ -50,7 +50,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xFF303030)),
-                  color: const Color(0xFF121212),
+                  color: const Color(0xFF0E0E0E),
                   borderRadius: BorderRadius.zero,
                 ),
                 child: Text(
@@ -84,20 +84,20 @@ class LendPersonDetailPage extends ConsumerWidget {
             colorScheme: const ColorScheme.dark(
               primary: Colors.white,
               onPrimary: Colors.black,
-              surface: Color(0xFF0F0F0F),
+              surface: Color(0xFF0E0E0E),
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
-              backgroundColor: Color(0xFF0F0F0F),
+              backgroundColor: Color(0xFF0E0E0E),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
             datePickerTheme: DatePickerThemeData(
-              backgroundColor: const Color(0xFF0F0F0F),
+              backgroundColor: const Color(0xFF0E0E0E),
               surfaceTintColor: Colors.transparent,
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.zero,
               ),
-              headerBackgroundColor: const Color(0xFF0F0F0F),
+              headerBackgroundColor: const Color(0xFF0E0E0E),
               headerForegroundColor: Colors.white,
               dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) return Colors.white;
@@ -157,7 +157,7 @@ class LendPersonDetailPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           inputDecorationTheme: const InputDecorationTheme(
@@ -177,7 +177,7 @@ class LendPersonDetailPage extends ConsumerWidget {
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
         child: AlertDialog(
@@ -187,23 +187,27 @@ class LendPersonDetailPage extends ConsumerWidget {
             child: StatefulBuilder(
               builder: (context, setState) => Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const _ModalFieldLabel('Amount'),
+                  const SizedBox(height: 6),
                   TextField(
                     controller: amountController,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
                     decoration: InputDecoration(
-                      labelText: 'Amount',
+                      hintText: '0.00',
                       helperText:
                           'Remaining ${Formatters.currency(remainingAmount)}',
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: AppSpacing.sm),
+                  const _ModalFieldLabel('Settlement Date'),
+                  const SizedBox(height: 4),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Settlement Date'),
-                    subtitle: Text(Formatters.date(selectedDate)),
+                    title: Text(Formatters.date(selectedDate)),
                     trailing: const Icon(Icons.calendar_month),
                     onTap: () async {
                       final picked = await _pickSettlementDate(
@@ -256,7 +260,7 @@ class LendPersonDetailPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           inputDecorationTheme: const InputDecorationTheme(
@@ -276,7 +280,7 @@ class LendPersonDetailPage extends ConsumerWidget {
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
           segmentedButtonTheme: SegmentedButtonThemeData(
             style: ButtonStyle(
@@ -308,7 +312,10 @@ class LendPersonDetailPage extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const _ModalFieldLabel('Entry Type'),
+                    const SizedBox(height: 6),
                     SegmentedButton<LendEntryType>(
                       showSelectedIcon: false,
                       segments: const [
@@ -327,28 +334,31 @@ class LendPersonDetailPage extends ConsumerWidget {
                       },
                     ),
                     const SizedBox(height: AppSpacing.sm),
+                    const _ModalFieldLabel('Amount'),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: amountController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       decoration: const InputDecoration(
-                        labelText: 'Amount',
                         prefixText: '\u20B9 ',
+                        hintText: '0.00',
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
+                    const _ModalFieldLabel('Note (optional)'),
+                    const SizedBox(height: 6),
                     TextField(
                       controller: noteController,
-                      decoration: const InputDecoration(
-                        labelText: 'Note (optional)',
-                      ),
+                      decoration: const InputDecoration(hintText: 'Add note'),
                     ),
                     const SizedBox(height: AppSpacing.sm),
+                    const _ModalFieldLabel('Date'),
+                    const SizedBox(height: 4),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Date'),
-                      subtitle: Text(Formatters.date(selectedDate)),
+                      title: Text(Formatters.date(selectedDate)),
                       trailing: const Icon(Icons.calendar_month),
                       onTap: () async {
                         final picked = await showDatePicker(
@@ -365,23 +375,23 @@ class LendPersonDetailPage extends ConsumerWidget {
                                 colorScheme: const ColorScheme.dark(
                                   primary: Colors.white,
                                   onPrimary: Colors.black,
-                                  surface: Color(0xFF0F0F0F),
+                                  surface: Color(0xFF0E0E0E),
                                   onSurface: Colors.white,
                                 ),
                                 dialogTheme: const DialogThemeData(
-                                  backgroundColor: Color(0xFF0F0F0F),
+                                  backgroundColor: Color(0xFF0E0E0E),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.zero,
                                   ),
                                 ),
                                 datePickerTheme: DatePickerThemeData(
-                                  backgroundColor: const Color(0xFF0F0F0F),
+                                  backgroundColor: const Color(0xFF0E0E0E),
                                   surfaceTintColor: Colors.transparent,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.zero,
                                   ),
                                   headerBackgroundColor: const Color(
-                                    0xFF0F0F0F,
+                                    0xFF0E0E0E,
                                   ),
                                   headerForegroundColor: Colors.white,
                                   dayBackgroundColor:
@@ -525,7 +535,12 @@ class LendPersonDetailPage extends ConsumerWidget {
         showProfileAction: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
+          AppSpacing.md,
+          AppSpacing.smPlus,
+          AppSpacing.md,
+        ),
         children: [
           Row(
             children: [
@@ -802,6 +817,24 @@ class LendPersonDetailPage extends ConsumerWidget {
             : () => _showAddEntryDialog(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('Add entry'),
+      ),
+    );
+  }
+}
+
+class _ModalFieldLabel extends StatelessWidget {
+  const _ModalFieldLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFB3B3B3),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

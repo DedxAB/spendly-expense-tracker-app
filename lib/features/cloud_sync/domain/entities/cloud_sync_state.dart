@@ -28,7 +28,9 @@ class CloudSyncState {
           ? null
           : (connectedEmail ?? this.connectedEmail),
       automaticDailyBackup: automaticDailyBackup ?? this.automaticDailyBackup,
-      lastBackupAt: clearLastBackupAt ? null : (lastBackupAt ?? this.lastBackupAt),
+      lastBackupAt: clearLastBackupAt
+          ? null
+          : (lastBackupAt ?? this.lastBackupAt),
       isProcessing: isProcessing ?? this.isProcessing,
     );
   }

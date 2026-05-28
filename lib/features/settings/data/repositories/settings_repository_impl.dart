@@ -125,6 +125,22 @@ class SettingsRepositoryImpl implements SettingsRepository {
     return normalized;
   }
 
+  Map<String, dynamic> _normalizeGoalFundJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    _normalizeDateField(normalized, 'targetDate');
+    _normalizeDateField(normalized, 'createdAt');
+    _normalizeDateField(normalized, 'updatedAt');
+    return normalized;
+  }
+
+  Map<String, dynamic> _normalizeGoalContributionJson(
+    Map<String, dynamic> json,
+  ) {
+    final normalized = Map<String, dynamic>.from(json);
+    _normalizeDateField(normalized, 'createdAt');
+    return normalized;
+  }
+
   @override
   Future<void> clearAllData() async {
     await _ref.read(appDatabaseProvider).clearAllAndReseed();
@@ -149,6 +165,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final lendEntries = await db.getLendEntries();
     final lendSettlementEvents = await db.getLendSettlementEvents();
     final reflections = await db.getMonthlyReflections();
+    final goalFunds = await db.getGoalFunds();
+    final goalContributions = await db.getGoalContributions();
     final now = DateTime.now();
     final monthKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     final categoryBudgets = await db.getCategoryBudgetsForMonth(monthKey);
@@ -190,6 +208,35 @@ class SettingsRepositoryImpl implements SettingsRepository {
               },
             )
             .toList(growable: false),
+        'goalFunds': goalFunds
+            .map(
+              (e) => {
+                'id': e.id,
+                'title': e.title,
+                'category': e.category,
+                'targetAmount': e.targetAmount,
+                'savedAmount': e.savedAmount,
+                'targetDate': e.targetDate,
+                'monthlyContribution': e.monthlyContribution,
+                'recentDelta': e.recentDelta,
+                'monthlyExpense': e.monthlyExpense,
+                'isEmergency': e.isEmergency,
+                'createdAt': e.createdAt,
+                'updatedAt': e.updatedAt,
+              },
+            )
+            .toList(growable: false),
+        'goalContributions': goalContributions
+            .map(
+              (e) => {
+                'id': e.id,
+                'goalId': e.goalId,
+                'amount': e.amount,
+                'note': e.note,
+                'createdAt': e.createdAt,
+              },
+            )
+            .toList(growable: false),
       },
     };
 
@@ -221,6 +268,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     );
     final monthlyReflectionsJson = _asObjectMapList(data['monthlyReflections']);
     final categoryBudgetsJson = _asObjectMapList(data['categoryBudgets']);
+    final goalFundsJson = _asObjectMapList(data['goalFunds']);
+    final goalContributionsJson = _asObjectMapList(data['goalContributions']);
 
     final settings = settingsJson != null
         ? SettingsEntity.fromJson(_normalizeSettingsJson(settingsJson))
@@ -309,6 +358,80 @@ class SettingsRepositoryImpl implements SettingsRepository {
               row.monthKey.value.isNotEmpty && row.categoryId.value.isNotEmpty,
         )
         .toList(growable: false);
+    final goalFundRows = goalFundsJson
+        .map((json) {
+          final normalized = _normalizeGoalFundJson(json);
+          final target = (normalized['targetAmount'] as num?)?.toDouble() ?? 0;
+          final saved = (normalized['savedAmount'] as num?)?.toDouble() ?? 0;
+          final monthly =
+              (normalized['monthlyContribution'] as num?)?.toDouble() ?? 0;
+          final recent = (normalized['recentDelta'] as num?)?.toDouble() ?? 0;
+          final monthlyExpense =
+              (normalized['monthlyExpense'] as num?)?.toDouble() ?? 0;
+          return GoalFundsCompanion.insert(
+            id: (normalized['id'] as String?) ?? '',
+            title: (normalized['title'] as String?) ?? '',
+            category: (normalized['category'] as String?) ?? '',
+            targetAmount: target,
+            targetAmountPaise: Value(Money.toPaise(target)),
+            savedAmount: Value(saved),
+            savedAmountPaise: Value(Money.toPaise(saved)),
+            targetDate:
+                (DateTime.tryParse(
+                          (normalized['targetDate'] ?? '').toString(),
+                        ) ??
+                        DateTime.now())
+                    .millisecondsSinceEpoch,
+            monthlyContribution: Value(monthly),
+            monthlyContributionPaise: Value(Money.toPaise(monthly)),
+            recentDelta: Value(recent),
+            recentDeltaPaise: Value(Money.toPaise(recent)),
+            monthlyExpense: Value(monthlyExpense),
+            monthlyExpensePaise: Value(Money.toPaise(monthlyExpense)),
+            isEmergency: Value((normalized['isEmergency'] as bool?) ?? false),
+            createdAt:
+                (DateTime.tryParse(
+                          (normalized['createdAt'] ?? '').toString(),
+                        ) ??
+                        DateTime.now())
+                    .millisecondsSinceEpoch,
+            updatedAt:
+                (DateTime.tryParse(
+                          (normalized['updatedAt'] ?? '').toString(),
+                        ) ??
+                        DateTime.now())
+                    .millisecondsSinceEpoch,
+            isDeleted: const Value(false),
+          );
+        })
+        .where(
+          (row) =>
+              row.id.value.isNotEmpty &&
+              row.title.value.isNotEmpty &&
+              row.category.value.isNotEmpty,
+        )
+        .toList(growable: false);
+    final goalContributionRows = goalContributionsJson
+        .map((json) {
+          final normalized = _normalizeGoalContributionJson(json);
+          final amount = (normalized['amount'] as num?)?.toDouble() ?? 0;
+          return GoalContributionsCompanion.insert(
+            id: (normalized['id'] as String?) ?? '',
+            goalId: (normalized['goalId'] as String?) ?? '',
+            amount: amount,
+            amountPaise: Value(Money.toPaise(amount)),
+            note: Value(normalized['note'] as String?),
+            createdAt:
+                (DateTime.tryParse(
+                          (normalized['createdAt'] ?? '').toString(),
+                        ) ??
+                        DateTime.now())
+                    .millisecondsSinceEpoch,
+            isDeleted: const Value(false),
+          );
+        })
+        .where((row) => row.id.value.isNotEmpty && row.goalId.value.isNotEmpty)
+        .toList(growable: false);
 
     await _ref
         .read(appDatabaseProvider)
@@ -321,6 +444,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           lendSettlementEventRows: lendSettlementEventRows,
           monthlyReflectionRows: monthlyReflectionRows,
           categoryBudgetRows: categoryBudgetRows,
+          goalFundRows: goalFundRows,
+          goalContributionRows: goalContributionRows,
           settingsRow: settingsToCompanion(settings),
           userProfileRow: userProfileToCompanion(userProfile),
         );

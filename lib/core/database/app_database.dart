@@ -8,6 +8,7 @@ import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/default_categories.dart';
 import 'package:spendly/core/database/tables.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:uuid/uuid.dart';
 
 part 'app_database.g.dart';
 
@@ -41,6 +42,8 @@ Future<File> _resolveDatabaseFile() async {
     CategoryBudgets,
     ActivityEvents,
     AppUsageDays,
+    GoalFunds,
+    GoalContributions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -52,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 18;
+  int get schemaVersion => 19;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -61,6 +64,7 @@ class AppDatabase extends _$AppDatabase {
       await _ensureDefaultSettings();
       await _ensureDefaultUserProfile();
       await seedDefaultCategoriesIfNeeded();
+      await _ensureDefaultGoalFunds();
     },
     onUpgrade: (m, from, to) async {
       if (from < 3) {
@@ -167,12 +171,20 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(activityEvents);
         await m.createTable(appUsageDays);
       }
+      if (from < 19) {
+        await m.createTable(goalFunds);
+        await m.createTable(goalContributions);
+        await _ensureDefaultGoalFunds();
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
         await customStatement(
           'UPDATE lend_entries SET settled_amount = 0 WHERE settled_amount IS NULL;',
         );
+      }
+      if (details.versionNow >= 19) {
+        await _ensureDefaultGoalFunds();
       }
     },
   );
@@ -207,6 +219,114 @@ class AppDatabase extends _$AppDatabase {
         createdAt: now,
         updatedAt: now,
       ),
+    );
+  }
+
+  Future<void> _ensureDefaultGoalFunds() async {
+    final countExpr = goalFunds.id.count();
+    final countRow = await (selectOnly(
+      goalFunds,
+    )..addColumns([countExpr])).getSingle();
+    final count = countRow.read(countExpr) ?? 0;
+    if (count > 0) return;
+
+    final now = DateTime.now();
+    final nowMs = now.millisecondsSinceEpoch;
+    final uuid = const Uuid();
+
+    Future<void> seed({
+      required String id,
+      required String title,
+      required String category,
+      required double target,
+      required double saved,
+      required DateTime targetDate,
+      required double monthlyContribution,
+      required double recentDelta,
+      required bool isEmergency,
+      double monthlyExpense = 0,
+    }) async {
+      await into(goalFunds).insert(
+        GoalFundsCompanion.insert(
+          id: id,
+          title: title,
+          category: category,
+          targetAmount: target,
+          targetAmountPaise: Value(Money.toPaise(target)),
+          savedAmount: Value(saved),
+          savedAmountPaise: Value(Money.toPaise(saved)),
+          targetDate: targetDate.millisecondsSinceEpoch,
+          monthlyContribution: Value(monthlyContribution),
+          monthlyContributionPaise: Value(Money.toPaise(monthlyContribution)),
+          recentDelta: Value(recentDelta),
+          recentDeltaPaise: Value(Money.toPaise(recentDelta)),
+          monthlyExpense: Value(monthlyExpense),
+          monthlyExpensePaise: Value(Money.toPaise(monthlyExpense)),
+          isEmergency: Value(isEmergency),
+          createdAt: nowMs,
+          updatedAt: nowMs,
+          isDeleted: const Value(false),
+        ),
+      );
+      if (saved > 0) {
+        await into(goalContributions).insert(
+          GoalContributionsCompanion.insert(
+            id: uuid.v4(),
+            goalId: id,
+            amount: saved,
+            amountPaise: Value(Money.toPaise(saved)),
+            note: const Value('Initial balance'),
+            createdAt: nowMs,
+            isDeleted: const Value(false),
+          ),
+        );
+      }
+    }
+
+    await seed(
+      id: 'emergency',
+      title: 'Emergency Fund',
+      category: 'Primary Liquidity',
+      target: 2000000,
+      saved: 1440000,
+      targetDate: now.add(const Duration(days: 365)),
+      monthlyContribution: 80000,
+      recentDelta: 0,
+      isEmergency: true,
+      monthlyExpense: 250000,
+    );
+    await seed(
+      id: uuid.v4(),
+      title: 'MacBook Pro',
+      category: 'Tech',
+      target: 199000,
+      saved: 65000,
+      targetDate: now.add(const Duration(days: 180)),
+      monthlyContribution: 17000,
+      recentDelta: 1200,
+      isEmergency: false,
+    );
+    await seed(
+      id: uuid.v4(),
+      title: 'Air Jordan 1s',
+      category: 'Lifestyle',
+      target: 18500,
+      saved: 12000,
+      targetDate: now.add(const Duration(days: 40)),
+      monthlyContribution: 5000,
+      recentDelta: 500,
+      isEmergency: false,
+    );
+    await seed(
+      id: uuid.v4(),
+      title: 'Cybertruck',
+      category: 'Asset',
+      target: 5400000,
+      saved: 2400000,
+      targetDate: now.add(const Duration(days: 420)),
+      monthlyContribution: 125000,
+      recentDelta: 50000,
+      isEmergency: false,
     );
   }
 
@@ -677,6 +797,141 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Stream<GoalFund?> watchEmergencyGoalFund() {
+    final query = (select(goalFunds)
+      ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.isEmergency.equals(true))
+      ..limit(1));
+    return query.watchSingleOrNull();
+  }
+
+  Stream<List<GoalFund>> watchEmergencyGoalFunds() {
+    final query = (select(goalFunds)
+      ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.isEmergency.equals(true))
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.createdAt)]));
+    return query.watch();
+  }
+
+  Stream<List<GoalFund>> watchActiveGoals() {
+    final query = (select(goalFunds)
+      ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.isEmergency.equals(false))
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.targetDate)]));
+    return query.watch();
+  }
+
+  Stream<List<GoalContribution>> watchGoalContributions(String goalId) {
+    final query = (select(goalContributions)
+      ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.goalId.equals(goalId))
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]));
+    return query.watch();
+  }
+
+  Future<List<GoalFund>> getGoalFunds() {
+    final query = select(goalFunds)
+      ..where((tbl) => tbl.isDeleted.equals(false));
+    return query.get();
+  }
+
+  Future<List<GoalContribution>> getGoalContributions() {
+    final query = select(goalContributions)
+      ..where((tbl) => tbl.isDeleted.equals(false));
+    return query.get();
+  }
+
+  Future<void> upsertGoalFund(GoalFundsCompanion companion) async {
+    await into(goalFunds).insertOnConflictUpdate(companion);
+  }
+
+  Future<void> softDeleteGoalFund(String goalId) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    await (update(goalFunds)..where((tbl) => tbl.id.equals(goalId))).write(
+      GoalFundsCompanion(isDeleted: const Value(true), updatedAt: Value(nowMs)),
+    );
+    await (update(goalContributions)..where((tbl) => tbl.goalId.equals(goalId)))
+        .write(const GoalContributionsCompanion(isDeleted: Value(true)));
+  }
+
+  Future<bool> addGoalContribution({
+    required String goalId,
+    required double amount,
+    String? note,
+  }) async {
+    if (amount == 0) return false;
+    final normalized = Money.normalize(amount);
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    var applied = false;
+    await transaction(() async {
+      final goal = await (select(
+        goalFunds,
+      )..where((tbl) => tbl.id.equals(goalId))).getSingleOrNull();
+      if (goal == null) return;
+      final nextSavedRaw = goal.savedAmount + normalized;
+      if (nextSavedRaw < 0) return;
+
+      await into(goalContributions).insert(
+        GoalContributionsCompanion.insert(
+          id: const Uuid().v4(),
+          goalId: goalId,
+          amount: normalized,
+          amountPaise: Value(Money.toPaise(normalized)),
+          note: Value(note),
+          createdAt: nowMs,
+          isDeleted: const Value(false),
+        ),
+      );
+      final nextSaved = Money.normalize(nextSavedRaw);
+      await (update(goalFunds)..where((tbl) => tbl.id.equals(goalId))).write(
+        GoalFundsCompanion(
+          savedAmount: Value(nextSaved),
+          savedAmountPaise: Value(Money.toPaise(nextSaved)),
+          recentDelta: Value(normalized),
+          recentDeltaPaise: Value(Money.toPaise(normalized)),
+          updatedAt: Value(nowMs),
+        ),
+      );
+      applied = true;
+    });
+    return applied;
+  }
+
+  Future<void> softDeleteGoalContribution(String contributionId) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    await transaction(() async {
+      final contribution =
+          await (select(goalContributions)
+                ..where((tbl) => tbl.id.equals(contributionId))
+                ..where((tbl) => tbl.isDeleted.equals(false)))
+              .getSingleOrNull();
+      if (contribution == null) return;
+
+      await (update(goalContributions)
+            ..where((tbl) => tbl.id.equals(contributionId)))
+          .write(const GoalContributionsCompanion(isDeleted: Value(true)));
+
+      final goal = await (select(
+        goalFunds,
+      )..where((tbl) => tbl.id.equals(contribution.goalId))).getSingleOrNull();
+      if (goal == null) return;
+      final nextSaved = Money.normalize(
+        (goal.savedAmount - contribution.amount).clamp(0, double.infinity),
+      );
+      await (update(
+        goalFunds,
+      )..where((tbl) => tbl.id.equals(contribution.goalId))).write(
+        GoalFundsCompanion(
+          savedAmount: Value(nextSaved),
+          savedAmountPaise: Value(Money.toPaise(nextSaved)),
+          recentDelta: Value(0),
+          recentDeltaPaise: Value(0),
+          updatedAt: Value(nowMs),
+        ),
+      );
+    });
+  }
+
   String _usageDateKey(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
@@ -692,6 +947,8 @@ class AppDatabase extends _$AppDatabase {
     required List<LendSettlementEventsCompanion> lendSettlementEventRows,
     required List<MonthlyReflectionsCompanion> monthlyReflectionRows,
     required List<CategoryBudgetsCompanion> categoryBudgetRows,
+    List<GoalFundsCompanion> goalFundRows = const [],
+    List<GoalContributionsCompanion> goalContributionRows = const [],
     required SettingsCompanion settingsRow,
     required UserProfilesCompanion userProfileRow,
   }) async {
@@ -706,6 +963,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(categoryBudgets).go();
       await delete(activityEvents).go();
       await delete(appUsageDays).go();
+      await delete(goalContributions).go();
+      await delete(goalFunds).go();
       await delete(settings).go();
       await delete(userProfiles).go();
       if (categoryRows.isNotEmpty) {
@@ -736,6 +995,14 @@ class AppDatabase extends _$AppDatabase {
       if (categoryBudgetRows.isNotEmpty) {
         await batch((b) => b.insertAll(categoryBudgets, categoryBudgetRows));
       }
+      if (goalFundRows.isNotEmpty) {
+        await batch((b) => b.insertAll(goalFunds, goalFundRows));
+      }
+      if (goalContributionRows.isNotEmpty) {
+        await batch(
+          (b) => b.insertAll(goalContributions, goalContributionRows),
+        );
+      }
       await into(settings).insertOnConflictUpdate(settingsRow);
       await into(userProfiles).insertOnConflictUpdate(userProfileRow);
     });
@@ -753,11 +1020,14 @@ class AppDatabase extends _$AppDatabase {
       await delete(categoryBudgets).go();
       await delete(activityEvents).go();
       await delete(appUsageDays).go();
+      await delete(goalContributions).go();
+      await delete(goalFunds).go();
       await delete(settings).go();
       await delete(userProfiles).go();
       await _ensureDefaultSettings();
       await _ensureDefaultUserProfile();
       await seedDefaultCategoriesIfNeeded();
+      await _ensureDefaultGoalFunds();
     });
   }
 }

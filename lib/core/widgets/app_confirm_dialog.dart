@@ -10,50 +10,53 @@ Future<bool> showAppDeleteConfirmDialog(
 }) async {
   final result = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadii.lg),
-      ),
-      backgroundColor: Theme.of(dialogContext).colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      titlePadding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.xs,
-      ),
-      contentPadding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        0,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        0,
-        AppSpacing.sm,
-        AppSpacing.sm,
-      ),
-      title: Text(title, style: Theme.of(dialogContext).textTheme.titleLarge),
-      content: SizedBox(
-        width: AppModalSizes.dialogContentWidth,
-        child: Text(
-          message,
-          style: Theme.of(
-            dialogContext,
-          ).textTheme.bodyMedium?.copyWith(height: 1.45),
+    useRootNavigator: true,
+    builder: (dialogContext) {
+      final rootNav = Navigator.of(dialogContext, rootNavigator: true);
+      final theme = Theme.of(dialogContext);
+      final titleStyle = theme.textTheme.titleLarge;
+      final messageStyle = theme.textTheme.bodyMedium?.copyWith(height: 1.45);
+      final surfaceColor = theme.colorScheme.surface;
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.lg),
         ),
-      ),
-      actions: [
-        DialogActionsRow(
-          cancelText: 'Cancel',
-          confirmText: confirmText,
-          confirmColor: const Color(0xFFB13232),
-          onCancel: () => Navigator.pop(dialogContext, false),
-          onConfirm: () => Navigator.pop(dialogContext, true),
+        backgroundColor: surfaceColor,
+        surfaceTintColor: Colors.transparent,
+        titlePadding: const EdgeInsets.fromLTRB(
+          AppSpacing.sm,
+          AppSpacing.sm,
+          AppSpacing.sm,
+          AppSpacing.xs,
         ),
-      ],
-    ),
+        contentPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.sm,
+          0,
+          AppSpacing.sm,
+          AppSpacing.sm,
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(
+          AppSpacing.sm,
+          0,
+          AppSpacing.sm,
+          AppSpacing.sm,
+        ),
+        title: Text(title, style: titleStyle),
+        content: SizedBox(
+          width: AppModalSizes.dialogContentWidth,
+          child: Text(message, style: messageStyle),
+        ),
+        actions: [
+          DialogActionsRow(
+            cancelText: 'Cancel',
+            confirmText: confirmText,
+            confirmColor: const Color(0xFFB13232),
+            onCancel: () => rootNav.pop(false),
+            onConfirm: () => rootNav.pop(true),
+          ),
+        ],
+      );
+    },
   );
   return result == true;
 }

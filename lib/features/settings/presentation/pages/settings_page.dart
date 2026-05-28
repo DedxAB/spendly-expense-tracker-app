@@ -127,7 +127,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const bg = Color(0xFF0D0D0D);
+    const bg = Color(0xFF0E0E0E);
     const divider = Color(0xFF2A2A2A);
     const primary = Colors.white;
     const secondary = Color(0xFFBBBBBB);
@@ -165,7 +165,12 @@ class SettingsPage extends ConsumerWidget {
         showProfileAction: false,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
+          AppSpacing.md,
+          AppSpacing.smPlus,
+          AppSpacing.md,
+        ),
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -191,12 +196,17 @@ class SettingsPage extends ConsumerWidget {
                                 ?.copyWith(color: primary, height: 1.1),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        _TransactionCountPill(count: transactionItems?.length),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    _TrackingSincePill(date: firstTransactionDate),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _TransactionCountPill(count: transactionItems?.length),
+                        _TrackingSincePill(date: firstTransactionDate),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -304,7 +314,7 @@ class SettingsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
               border: Border.all(color: divider),
-              color: const Color(0xFF121212),
+              color: const Color(0xFF0E0E0E),
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Column(
@@ -585,59 +595,72 @@ class SettingsPage extends ConsumerWidget {
             AppSpacing.sm,
             MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 64,
-                  height: 4,
-                  color: const Color(0xFF6A6A6A),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 64,
+                    height: 4,
+                    color: const Color(0xFF6A6A6A),
+                  ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.smPlus),
-              Text('Account', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: AppSpacing.smPlus),
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              TextField(
-                controller: image,
-                decoration: const InputDecoration(
-                  labelText: 'Profile photo URL',
+                const SizedBox(height: AppSpacing.smPlus),
+                Text('Account', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                const Text(
+                  'Update your primary profile details.',
+                  style: TextStyle(color: Color(0xFF9B9B9B), fontSize: 12),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              TextField(
-                controller: email,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              TextField(
-                controller: phone,
-                decoration: const InputDecoration(labelText: 'Phone'),
-              ),
-              const SizedBox(height: AppSpacing.smPlus),
-              DialogActionsRow(
-                cancelText: 'Cancel',
-                confirmText: 'Save',
-                onCancel: () => Navigator.pop(context),
-                onConfirm: () async {
-                  await ref
-                      .read(userProfileRepositoryProvider)
-                      .updateProfile(
-                        name: name.text.trim(),
-                        imageUrl: image.text.trim(),
-                        email: email.text.trim(),
-                        phone: phone.text.trim(),
-                      );
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-            ],
+                const SizedBox(height: AppSpacing.smPlus),
+                _SheetLabeledField(
+                  label: 'Name',
+                  hintText: 'Enter your display name',
+                  controller: name,
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _SheetLabeledField(
+                  label: 'Profile Photo URL',
+                  hintText: 'https://...',
+                  controller: image,
+                  keyboardType: TextInputType.url,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _SheetLabeledField(
+                  label: 'Email',
+                  hintText: 'name@example.com',
+                  controller: email,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                _SheetLabeledField(
+                  label: 'Phone',
+                  hintText: '+91...',
+                  controller: phone,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                DialogActionsRow(
+                  cancelText: 'Cancel',
+                  confirmText: 'Save',
+                  onCancel: () => Navigator.pop(context),
+                  onConfirm: () async {
+                    await ref
+                        .read(userProfileRepositoryProvider)
+                        .updateProfile(
+                          name: name.text.trim(),
+                          imageUrl: image.text.trim(),
+                          email: email.text.trim(),
+                          phone: phone.text.trim(),
+                        );
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -661,12 +684,12 @@ class SettingsPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
         child: AlertDialog(
@@ -703,12 +726,12 @@ class SettingsPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
         child: AlertDialog(
@@ -838,7 +861,7 @@ class _PrivacyShieldTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: enabled
                   ? const Color(0xFF142119)
-                  : const Color(0xFF171717),
+                  : const Color(0xFF0E0E0E),
               borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: enabled
@@ -893,7 +916,7 @@ class _TransactionCountPill extends StatelessWidget {
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFF171717),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF303030)),
         borderRadius: BorderRadius.circular(999),
       ),
@@ -932,7 +955,7 @@ class _TrackingSincePill extends StatelessWidget {
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFF101010),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF292929)),
         borderRadius: BorderRadius.circular(999),
       ),
@@ -952,6 +975,47 @@ class _TrackingSincePill extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SheetLabeledField extends StatelessWidget {
+  const _SheetLabeledField({
+    required this.label,
+    required this.controller,
+    this.hintText,
+    this.keyboardType,
+    this.textCapitalization = TextCapitalization.none,
+  });
+
+  final String label;
+  final String? hintText;
+  final TextEditingController controller;
+  final TextInputType? keyboardType;
+  final TextCapitalization textCapitalization;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFB3B3B3),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.2,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          textCapitalization: textCapitalization,
+          decoration: InputDecoration(hintText: hintText),
+        ),
+      ],
     );
   }
 }

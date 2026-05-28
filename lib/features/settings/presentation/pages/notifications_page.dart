@@ -28,9 +28,9 @@ class NotificationsPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.mdPlus,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [

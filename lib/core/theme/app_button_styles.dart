@@ -13,9 +13,9 @@ class AppButtonStyles {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w700,
-      ),
+      textStyle: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
     );
   }
 
@@ -44,9 +44,9 @@ class AppButtonStyles {
   static ButtonStyle ghost(BuildContext context) {
     return TextButton.styleFrom(
       minimumSize: const Size(0, 46),
-      textStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-      ),
+      textStyle: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 }

@@ -179,18 +179,18 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
             colorScheme: const ColorScheme.dark(
               primary: Colors.white,
               onPrimary: Colors.black,
-              surface: Color(0xFF0F0F0F),
+              surface: Color(0xFF0E0E0E),
               onSurface: Colors.white,
             ),
             dialogTheme: const DialogThemeData(
-              backgroundColor: Color(0xFF0F0F0F),
+              backgroundColor: Color(0xFF0E0E0E),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
             datePickerTheme: DatePickerThemeData(
-              backgroundColor: Color(0xFF0F0F0F),
+              backgroundColor: Color(0xFF0E0E0E),
               surfaceTintColor: Colors.transparent,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              headerBackgroundColor: Color(0xFF0F0F0F),
+              headerBackgroundColor: Color(0xFF0E0E0E),
               headerForegroundColor: Colors.white,
               dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.selected)) return Colors.white;
@@ -289,46 +289,40 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 6),
+                  const _SheetLabel('AMOUNT'),
                   const SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        AppConstants.currencySymbol,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  TextField(
+                    controller: _amountController,
+                    autofocus: widget.existing == null,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '0.00',
+                      prefixText: '${AppConstants.currencySymbol} ',
+                      prefixStyle: const TextStyle(
+                        color: Color(0xFFBEBEBE),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: _amountController,
-                          autofocus: widget.existing == null,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            height: 1,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: '0.00',
-                            hintStyle: TextStyle(
-                              color: Color(0xFF6F6F6F),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            border: InputBorder.none,
-                            isCollapsed: true,
-                          ),
-                        ),
+                      hintStyle: const TextStyle(
+                        color: Color(0xFF6F6F6F),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 13,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 14),
                   const Divider(color: Color(0xFF2A2A2A), height: 1),

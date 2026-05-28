@@ -14,14 +14,14 @@ class AppColors {
   static const lightTextPrimary = Color(0xFF111111);
   static const lightTextSecondary = Color(0xFF666666);
 
-  static const darkBackground = Color(0xFF0B0B0B);
-  static const darkSurface = Color(0xFF141414);
-  static const darkSurfaceAlt = Color(0xFF1E1E1E);
+  static const darkBackground = Color(0xFF000000);
+  static const darkSurface = Color(0xFF0E0E0E);
+  static const darkSurfaceAlt = Color(0xFF0E0E0E);
   static const darkTextPrimary = Color(0xFFF2F2F2);
   static const darkTextSecondary = Color(0xFFABABAB);
 
   static const borderLight = Color(0xFFE0E0E0);
-  static const borderDark = Color(0xFF2B2B2B);
+  static const borderDark = Color(0xFF212121);
 }
 
 class AppSpacing {

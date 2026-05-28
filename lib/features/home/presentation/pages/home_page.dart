@@ -15,7 +15,6 @@ import 'package:spendly/features/lend/presentation/providers/lend_provider.dart'
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
-import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -27,15 +26,16 @@ class HomePage extends ConsumerWidget {
     final yesterdaySpent = ref.watch(yesterdaySpentProvider).valueOrNull ?? 0;
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
     final recent = ref.watch(recentTransactionsProvider);
-    final profile = ref.watch(userProfileProvider).valueOrNull;
     final lendOverview = ref.watch(lendOverviewProvider);
     final recurringRules =
         ref.watch(recurringRulesProvider).valueOrNull ?? const [];
+    final activeRecurring = recurringRules.where((r) => r.isActive).toList()
+      ..sort((a, b) => a.nextDueDate.compareTo(b.nextDueDate));
+    final nearestRecurring = activeRecurring.isEmpty
+        ? null
+        : activeRecurring.first;
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
     final categoryById = {for (final c in categories) c.id: c.name};
-    final cardholderName = (profile?.name.trim().isNotEmpty ?? false)
-        ? profile!.name.trim()
-        : 'User';
 
     return Scaffold(
       appBar: NoirHeader(
@@ -52,17 +52,15 @@ class HomePage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
           AppSpacing.md,
-          AppSpacing.md,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           96,
         ),
         children: [
           summary.when(
             data: (data) => SpendlyBlackCard(
               balance: data.currentBalance,
-              availableAmount: data.remainingBudget,
-              cardholderName: cardholderName,
               onTap: () => context.push('/transactions'),
             ),
             loading: () => const SizedBox(
@@ -128,7 +126,7 @@ class HomePage extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
-          if (recurringRules.isNotEmpty) ...[
+          if (activeRecurring.isNotEmpty) ...[
             const SizedBox(height: 12),
             InkWell(
               onTap: () => context.push('/recurring'),
@@ -138,7 +136,7 @@ class HomePage extends ConsumerWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0B0B0B),
+                  color: const Color(0xFF0E0E0E),
                   border: Border.all(color: const Color(0xFF242424)),
                 ),
                 child: Row(
@@ -147,7 +145,10 @@ class HomePage extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${recurringRules.where((r) => r.isActive).length} active recurring rules',
+                        _recurringSummaryText(
+                          activeRecurring.length,
+                          nearestRecurring,
+                        ),
                         style: const TextStyle(
                           fontSize: 12,
                           color: Color(0xFFB2B2B2),
@@ -224,6 +225,14 @@ class HomePage extends ConsumerWidget {
     return Formatters.date(d);
   }
 
+  static String _recurringSummaryText(int activeCount, dynamic nearest) {
+    if (nearest == null) {
+      return '$activeCount active recurring transactions';
+    }
+    final due = Formatters.date(nearest.nextDueDate);
+    return '$activeCount recurring transactions • Next: ${nearest.title} on $due';
+  }
+
   static _SpendComparison _todayComparison(double today, double yesterday) {
     if (today <= 0 && yesterday <= 0) {
       return const _SpendComparison(
@@ -289,7 +298,7 @@ class _StatTile extends StatelessWidget {
       height: 208,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0B0B),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF242424)),
       ),
       child: Column(
@@ -399,7 +408,7 @@ class _LendQuickCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF0B0B0B),
+          color: const Color(0xFF0E0E0E),
           border: Border.all(color: const Color(0xFF242424)),
         ),
         child: Column(

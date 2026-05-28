@@ -111,7 +111,6 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
       return;
     }
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
       _flushUsage();
       _visible = false;
@@ -122,7 +121,6 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
         false;
     if (!enabled) return;
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive ||
         state == AppLifecycleState.hidden) {
       setState(() => _locked = true);
     }
@@ -152,7 +150,7 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     try {
       final authenticated = await LocalAuthentication().authenticate(
         localizedReason: 'Verify it is you to unlock Spendly.',
-        biometricOnly: true,
+        biometricOnly: false,
         persistAcrossBackgrounding: true,
       );
       if (!mounted) return;
@@ -163,7 +161,9 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Could not verify biometrics. Check device settings.'),
+          content: Text(
+            'Could not verify identity. Check biometrics or device lock settings.',
+          ),
         ),
       );
     } finally {
@@ -210,7 +210,7 @@ class _PrivacyBootScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFF0D0D0D),
+      backgroundColor: Colors.black,
       body: Center(
         child: SizedBox(
           width: 22,
@@ -234,7 +234,7 @@ class _PrivacyLockScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),

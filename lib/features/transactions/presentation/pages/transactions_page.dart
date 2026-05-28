@@ -34,9 +34,9 @@ class TransactionsPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.mdPlus,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [
@@ -275,6 +275,18 @@ class TransactionsPage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Type',
+                    style: TextStyle(
+                      color: Color(0xFFB3B3B3),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: AppSpacing.xs,
                   children: [
@@ -302,6 +314,18 @@ class TransactionsPage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Payment Mode',
+                    style: TextStyle(
+                      color: Color(0xFFB3B3B3),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: AppSpacing.xs,
                   children: PaymentMode.values
@@ -449,7 +473,7 @@ class _AccountBreakupCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B0B0B),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: AppColors.borderDark),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
