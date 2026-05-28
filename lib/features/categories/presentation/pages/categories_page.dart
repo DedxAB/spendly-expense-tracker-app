@@ -29,12 +29,12 @@ class CategoriesPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
         child: StatefulBuilder(
@@ -44,12 +44,19 @@ class CategoriesPage extends ConsumerWidget {
               width: AppModalSizes.dialogContentWidth,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const _ModalFieldLabel('Category Name'),
+                  const SizedBox(height: 6),
                   TextField(
                     controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Name'),
+                    decoration: const InputDecoration(
+                      hintText: 'e.g. Food, Salary',
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
+                  const _ModalFieldLabel('Category Type'),
+                  const SizedBox(height: 6),
                   SegmentedButton<TransactionType>(
                     segments: const [
                       ButtonSegment(
@@ -101,7 +108,7 @@ class CategoriesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(allCategoriesProvider);
     final bg = Colors.black;
-    final surface = const Color(0xFF0F0F0F);
+    final surface = const Color(0xFF0E0E0E);
     final border = const Color(0xFF2E2E2E);
     final primary = Colors.white;
     final secondary = const Color(0xFFB0B0B0);
@@ -141,9 +148,9 @@ class CategoriesPage extends ConsumerWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(
-              AppSpacing.md,
+              AppSpacing.smPlus,
               AppSpacing.mdPlus,
-              AppSpacing.md,
+              AppSpacing.smPlus,
               96,
             ),
             itemCount: expenses.length + incomes.length + 2,
@@ -264,6 +271,24 @@ class CategoriesPage extends ConsumerWidget {
             style: const TextStyle(color: Colors.white),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ModalFieldLabel extends StatelessWidget {
+  const _ModalFieldLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFB3B3B3),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

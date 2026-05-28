@@ -6,9 +6,9 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/glass_card.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
@@ -31,37 +31,15 @@ class LendPage extends ConsumerWidget {
   }
 
   Future<void> _showAddPersonDialog(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController();
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text(
-          'Add Person',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-        ),
-        content: SizedBox(
-          width: AppModalSizes.dialogContentWidth,
-          child: TextField(
-            controller: controller,
-            textCapitalization: TextCapitalization.words,
-            decoration: const InputDecoration(hintText: 'Person name'),
-          ),
-        ),
-        actions: [
-          DialogActionsRow(
-            cancelText: 'Cancel',
-            confirmText: 'Add',
-            onCancel: () => Navigator.pop(dialogContext),
-            onConfirm: () async {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              await ref.read(lendRepositoryProvider).addPerson(name);
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-          ),
-        ],
-      ),
+    final name = await showAppTextInputDialog(
+      context,
+      title: 'Add Person',
+      hintText: 'Person name',
+      confirmText: 'Add',
+      textCapitalization: TextCapitalization.words,
     );
+    if (name == null || name.trim().isEmpty) return;
+    await ref.read(lendRepositoryProvider).addPerson(name.trim());
   }
 
   @override
@@ -85,7 +63,12 @@ class LendPage extends ConsumerWidget {
       body: overview.when(
         data: (data) {
           return ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.smPlus,
+              AppSpacing.md,
+              AppSpacing.smPlus,
+              AppSpacing.md,
+            ),
             children: [
               Row(
                 children: [

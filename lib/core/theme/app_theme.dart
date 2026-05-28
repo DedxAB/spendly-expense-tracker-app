@@ -63,13 +63,35 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.lightSurface,
+        fillColor: AppColors.lightSurfaceAlt,
+        labelStyle: AppTypography.textTheme(Brightness.light).bodySmall
+            ?.copyWith(
+              color: const Color(0xFF6E6E6E),
+              fontWeight: FontWeight.w600,
+            ),
+        floatingLabelStyle: AppTypography.textTheme(Brightness.light).bodySmall
+            ?.copyWith(
+              color: AppColors.lightTextSecondary,
+              fontWeight: FontWeight.w700,
+            ),
         hintStyle: AppTypography.textTheme(
           Brightness.light,
-        ).bodySmall?.copyWith(color: AppColors.lightTextSecondary),
+        ).bodySmall?.copyWith(color: const Color(0xFF8A8A8A)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 14,
+          vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: const BorderSide(color: AppColors.borderLight),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: const BorderSide(color: AppColors.borderLight),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -180,21 +202,31 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.darkSurface,
+        fillColor: const Color(0xFF111111),
+        labelStyle: AppTypography.textTheme(Brightness.dark).bodySmall
+            ?.copyWith(
+              color: const Color(0xFF8D8D8D),
+              fontWeight: FontWeight.w600,
+            ),
+        floatingLabelStyle: AppTypography.textTheme(Brightness.dark).bodySmall
+            ?.copyWith(
+              color: const Color(0xFFC9C9C9),
+              fontWeight: FontWeight.w700,
+            ),
         hintStyle: AppTypography.textTheme(
           Brightness.dark,
-        ).bodySmall?.copyWith(color: AppColors.darkTextSecondary),
+        ).bodySmall?.copyWith(color: const Color(0xFF777777)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 14,
+          vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: const BorderSide(color: AppColors.borderDark),
+          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: const BorderSide(color: AppColors.borderDark),
+          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),

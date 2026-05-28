@@ -77,7 +77,7 @@ class InsightsRepositoryImpl implements InsightsRepository {
         final bucket = yearly
             ? DateTime(date.year, date.month, 1)
             : DateTime(date.year, date.month, date.day);
-        
+
         if (totals.containsKey(bucket)) {
           totals[bucket] = totals[bucket]! + row.amount;
         }

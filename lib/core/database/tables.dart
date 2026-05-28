@@ -202,3 +202,54 @@ class AppUsageDays extends Table {
   @override
   Set<Column<Object>> get primaryKey => {dateKey};
 }
+
+class GoalFunds extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text()();
+  TextColumn get category => text()();
+  RealColumn get targetAmount => real().named('target_amount')();
+  IntColumn get targetAmountPaise =>
+      integer().named('target_amount_paise').withDefault(const Constant(0))();
+  RealColumn get savedAmount =>
+      real().named('saved_amount').withDefault(const Constant(0))();
+  IntColumn get savedAmountPaise =>
+      integer().named('saved_amount_paise').withDefault(const Constant(0))();
+  IntColumn get targetDate => integer().named('target_date')();
+  RealColumn get monthlyContribution =>
+      real().named('monthly_contribution').withDefault(const Constant(0))();
+  IntColumn get monthlyContributionPaise => integer()
+      .named('monthly_contribution_paise')
+      .withDefault(const Constant(0))();
+  RealColumn get recentDelta =>
+      real().named('recent_delta').withDefault(const Constant(0))();
+  IntColumn get recentDeltaPaise =>
+      integer().named('recent_delta_paise').withDefault(const Constant(0))();
+  RealColumn get monthlyExpense =>
+      real().named('monthly_expense').withDefault(const Constant(0))();
+  IntColumn get monthlyExpensePaise =>
+      integer().named('monthly_expense_paise').withDefault(const Constant(0))();
+  BoolColumn get isEmergency =>
+      boolean().named('is_emergency').withDefault(const Constant(false))();
+  IntColumn get createdAt => integer().named('created_at')();
+  IntColumn get updatedAt => integer().named('updated_at')();
+  BoolColumn get isDeleted =>
+      boolean().named('is_deleted').withDefault(const Constant(false))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class GoalContributions extends Table {
+  TextColumn get id => text()();
+  TextColumn get goalId => text().named('goal_id')();
+  RealColumn get amount => real()();
+  IntColumn get amountPaise =>
+      integer().named('amount_paise').withDefault(const Constant(0))();
+  TextColumn get note => text().nullable()();
+  IntColumn get createdAt => integer().named('created_at')();
+  BoolColumn get isDeleted =>
+      boolean().named('is_deleted').withDefault(const Constant(false))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

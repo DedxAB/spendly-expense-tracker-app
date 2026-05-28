@@ -40,9 +40,9 @@ class InsightsPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
           AppSpacing.md,
-          AppSpacing.md,
-          AppSpacing.md,
+          AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [
@@ -61,7 +61,7 @@ class InsightsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderDark),
-              color: const Color(0xFF0B0B0B),
+              color: const Color(0xFF0E0E0E),
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Column(
@@ -89,7 +89,7 @@ class InsightsPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'VS LAST\nMONTH',
+                          'VS LAST MONTH',
                           style: TextStyle(
                             letterSpacing: 1.6,
                             fontSize: 12,
@@ -143,7 +143,7 @@ class InsightsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderDark),
-              color: const Color(0xFF0B0B0B),
+              color: const Color(0xFF0E0E0E),
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: distribution.when(
@@ -452,7 +452,7 @@ class _SnapshotTile extends StatelessWidget {
       height: 82,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF101010),
+        color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF252525)),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),

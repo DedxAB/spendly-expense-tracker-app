@@ -11,6 +11,7 @@ import 'package:spendly/features/home/presentation/pages/home_page.dart';
 import 'package:spendly/features/insights/presentation/pages/insights_page.dart';
 import 'package:spendly/features/lend/presentation/pages/lend_page.dart';
 import 'package:spendly/features/lend/presentation/pages/lend_person_detail_page.dart';
+import 'package:spendly/features/goals/presentation/pages/goals_page.dart';
 import 'package:spendly/features/recurring/presentation/pages/recurring_page.dart';
 import 'package:spendly/features/settings/presentation/pages/budget_page.dart';
 import 'package:spendly/features/settings/presentation/pages/notifications_page.dart';
@@ -37,6 +38,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/transactions',
             builder: (context, state) => const TransactionsPage(),
+          ),
+          GoRoute(
+            path: '/goals',
+            builder: (context, state) => const GoalsPage(),
           ),
           GoRoute(
             path: '/budget',
@@ -164,6 +169,7 @@ class AppShell extends StatelessWidget {
     if (location.startsWith('/transactions')) return 1;
     if (location.startsWith('/insights')) return 2;
     if (location.startsWith('/budget')) return 3;
+    if (location.startsWith('/goals')) return 4;
     return 0;
   }
 
@@ -191,6 +197,11 @@ class AppShell extends StatelessWidget {
         icon: AppIcons.budget,
         selectedIcon: AppIcons.budget,
         label: 'Budget',
+      ),
+      _ShellNavItem(
+        icon: AppIcons.goals,
+        selectedIcon: AppIcons.goals,
+        label: 'Goals',
       ),
     ];
 
@@ -233,6 +244,10 @@ class AppShell extends StatelessWidget {
                       }
                       if (i == 3) {
                         context.go('/budget');
+                        return;
+                      }
+                      if (i == 4) {
+                        context.go('/goals');
                       }
                     },
                   ),

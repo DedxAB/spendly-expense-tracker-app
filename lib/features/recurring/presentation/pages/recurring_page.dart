@@ -20,10 +20,16 @@ import 'package:uuid/uuid.dart';
 class RecurringPage extends ConsumerWidget {
   const RecurringPage({super.key});
 
-  Future<void> _openAddDialog(BuildContext context, WidgetRef ref) async {
-    final titleController = TextEditingController();
-    final amountController = TextEditingController();
-    final noteController = TextEditingController();
+  Future<void> _openAddDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    RecurringRuleEntity? existing,
+  }) async {
+    final titleController = TextEditingController(text: existing?.title ?? '');
+    final amountController = TextEditingController(
+      text: existing == null ? '' : existing.amount.toStringAsFixed(2),
+    );
+    final noteController = TextEditingController(text: existing?.note ?? '');
 
     final categories = await ref
         .read(categoriesRepositoryProvider)
@@ -41,9 +47,14 @@ class RecurringPage extends ConsumerWidget {
     }
 
     CategoryEntity selectedCategory = categories.first;
-    PaymentMode selectedPaymentMode = PaymentMode.upi;
-    RecurringFrequency selectedFrequency = RecurringFrequency.monthly;
-    DateTime selectedStartDate = DateTime.now();
+    if (existing != null) {
+      final match = categories.where((c) => c.id == existing.categoryId);
+      if (match.isNotEmpty) selectedCategory = match.first;
+    }
+    PaymentMode selectedPaymentMode = existing?.paymentMode ?? PaymentMode.upi;
+    RecurringFrequency selectedFrequency =
+        existing?.frequency ?? RecurringFrequency.monthly;
+    DateTime selectedStartDate = existing?.startDate ?? DateTime.now();
 
     await showDialog<void>(
       context: context,
@@ -52,12 +63,12 @@ class RecurringPage extends ConsumerWidget {
           colorScheme: const ColorScheme.dark(
             primary: Colors.white,
             onPrimary: Colors.black,
-            surface: Color(0xFF0F0F0F),
+            surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
           dialogTheme: const DialogThemeData(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0F0F0F),
+            backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
         child: StatefulBuilder(
@@ -71,35 +82,44 @@ class RecurringPage extends ConsumerWidget {
                 horizontal: AppModalSizes.horizontalInset,
                 vertical: AppModalSizes.verticalInset,
               ),
-              title: const Text('Add Recurring Expense'),
+              title: Text(
+                existing == null ? 'Add Recurring Expense' : 'Edit Recurring',
+              ),
               content: SizedBox(
                 width: AppModalSizes.dialogContentWidth,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const _ModalFieldLabel('Title'),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: titleController,
-                        decoration: const InputDecoration(labelText: 'Title'),
+                        decoration: const InputDecoration(
+                          hintText: 'e.g. Netflix, Rent',
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Amount'),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: amountController,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
                         decoration: const InputDecoration(
-                          labelText: 'Amount',
                           prefixText: '${AppConstants.currencySymbol} ',
+                          hintText: '0.00',
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Category'),
+                      const SizedBox(height: 6),
                       DropdownButtonFormField<CategoryEntity>(
                         dropdownColor: dropdownMenuColor,
                         initialValue: selectedCategory,
-                        decoration: const InputDecoration(
-                          labelText: 'Category',
-                        ),
+                        decoration: const InputDecoration(),
                         items: categories
                             .map(
                               (c) => DropdownMenuItem(
@@ -114,13 +134,13 @@ class RecurringPage extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Frequency'),
+                      const SizedBox(height: 6),
                       DropdownButtonFormField<RecurringFrequency>(
                         dropdownColor: dropdownMenuColor,
                         initialValue: selectedFrequency,
-                        decoration: const InputDecoration(
-                          labelText: 'Frequency',
-                        ),
+                        decoration: const InputDecoration(),
                         items: const [
                           DropdownMenuItem(
                             value: RecurringFrequency.daily,
@@ -145,25 +165,28 @@ class RecurringPage extends ConsumerWidget {
                           }
                         },
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Account'),
+                      const SizedBox(height: 6),
                       _PaymentModeSegment(
                         selected: selectedPaymentMode,
                         onChanged: (value) {
                           setState(() => selectedPaymentMode = value);
                         },
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Note (optional)'),
+                      const SizedBox(height: 6),
                       TextField(
                         controller: noteController,
-                        decoration: const InputDecoration(
-                          labelText: 'Note (optional)',
-                        ),
+                        decoration: const InputDecoration(hintText: 'Add note'),
                       ),
-                      const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Start Date'),
+                      const SizedBox(height: 4),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Start Date'),
-                        subtitle: Text(Formatters.date(selectedStartDate)),
+                        title: Text(Formatters.date(selectedStartDate)),
                         trailing: const Icon(AppIcons.calendar),
                         onTap: () async {
                           final picked = await showDatePicker(
@@ -186,7 +209,7 @@ class RecurringPage extends ConsumerWidget {
               actions: [
                 DialogActionsRow(
                   cancelText: 'Cancel',
-                  confirmText: 'Save',
+                  confirmText: existing == null ? 'Save' : 'Update',
                   onCancel: () => Navigator.pop(context),
                   onConfirm: () async {
                     final title = titleController.text.trim();
@@ -195,7 +218,7 @@ class RecurringPage extends ConsumerWidget {
 
                     final now = DateTime.now();
                     final rule = RecurringRuleEntity(
-                      id: const Uuid().v4(),
+                      id: existing?.id ?? const Uuid().v4(),
                       title: title,
                       type: TransactionType.expense,
                       amount: amount,
@@ -206,11 +229,11 @@ class RecurringPage extends ConsumerWidget {
                           ? null
                           : noteController.text.trim(),
                       startDate: selectedStartDate,
-                      nextDueDate: selectedStartDate,
-                      createdAt: now,
+                      nextDueDate: existing?.nextDueDate ?? selectedStartDate,
+                      createdAt: existing?.createdAt ?? now,
                       updatedAt: now,
-                      isActive: true,
-                      isDeleted: false,
+                      isActive: existing?.isActive ?? true,
+                      isDeleted: existing?.isDeleted ?? false,
                     );
 
                     await ref
@@ -254,7 +277,12 @@ class RecurringPage extends ConsumerWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.smPlus,
+              AppSpacing.md,
+              AppSpacing.smPlus,
+              AppSpacing.md,
+            ),
             itemCount: items.length,
             itemBuilder: (context, index) {
               final item = items[index];
@@ -272,74 +300,123 @@ class RecurringPage extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: GlassCard(
-                  child: ListTile(
-                    leading: Icon(
-                      item.isActive
-                          ? AppIcons.repeat
-                          : Icons.pause_circle_outline,
-                      color: item.isActive
-                          ? AppColors.emerald
-                          : Theme.of(context).colorScheme.outline,
-                    ),
-                    title: Text(
-                      item.title,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                    subtitle: Text(
-                      '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                    ),
-                    titleTextStyle: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
-                    ),
-                    subtitleTextStyle: const TextStyle(
-                      color: Color(0xFFB8B8B8),
-                      fontSize: 12,
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          Formatters.currency(item.amount),
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Switch(
-                          value: item.isActive,
-                          onChanged: (value) async {
-                            await ref
-                                .read(recurringRepositoryProvider)
-                                .setActive(item.id, value);
-                          },
-                        ),
-                        if (dueToday)
-                          const Text(
-                            'DUE',
-                            style: TextStyle(
-                              color: Color(0xFFFFB3A8),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 34,
+                            height: 34,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF171717),
+                              border: Border.all(
+                                color: const Color(0xFF4A4A4A),
+                              ),
+                            ),
+                            child: Icon(
+                              AppIcons.repeat,
+                              size: 20,
+                              color: item.isActive
+                                  ? const Color(0xFF57F28F)
+                                  : const Color(0xFFB3B3B3),
                             ),
                           ),
-                      ],
-                    ),
-                    onLongPress: () async {
-                      final shouldDelete = await showAppDeleteConfirmDialog(
-                        context,
-                        title: 'Delete recurring rule?',
-                        message: 'Delete "${item.title}"?',
-                      );
-                      if (shouldDelete) {
-                        await ref
-                            .read(recurringRepositoryProvider)
-                            .softDelete(item.id);
-                      }
-                    },
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            Formatters.currency(item.amount),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
+                        style: const TextStyle(
+                          color: Color(0xFFB8B8B8),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          if (dueToday)
+                            const Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: Text(
+                                'DUE',
+                                style: TextStyle(
+                                  color: Color(0xFFFFB3A8),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          const Text(
+                            'Active',
+                            style: TextStyle(
+                              color: Color(0xFF9A9A9A),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Switch(
+                            value: item.isActive,
+                            onChanged: (value) async {
+                              await ref
+                                  .read(recurringRepositoryProvider)
+                                  .setActive(item.id, value);
+                            },
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            tooltip: 'Edit',
+                            onPressed: () =>
+                                _openAddDialog(context, ref, existing: item),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFFD4D4D4),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Delete',
+                            onPressed: () async {
+                              final shouldDelete =
+                                  await showAppDeleteConfirmDialog(
+                                    context,
+                                    title: 'Delete recurring rule?',
+                                    message: 'Delete "${item.title}"?',
+                                  );
+                              if (shouldDelete) {
+                                await ref
+                                    .read(recurringRepositoryProvider)
+                                    .softDelete(item.id);
+                              }
+                            },
+                            icon: const Icon(
+                              AppIcons.trash,
+                              color: Color(0xFFFFB3A8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -405,6 +482,24 @@ class _PaymentModeSegment extends StatelessWidget {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+class _ModalFieldLabel extends StatelessWidget {
+  const _ModalFieldLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFB3B3B3),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
