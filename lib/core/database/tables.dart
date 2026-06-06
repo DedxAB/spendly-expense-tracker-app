@@ -8,6 +8,7 @@ class Transactions extends Table {
       integer().named('amount_paise').withDefault(const Constant(0))();
   TextColumn get categoryId => text().named('category_id')();
   TextColumn get paymentMode => text().named('payment_mode')();
+  TextColumn get cardType => text().named('card_type').nullable()();
   TextColumn get note => text().nullable()();
   IntColumn get date => integer()();
   IntColumn get createdAt => integer().named('created_at')();

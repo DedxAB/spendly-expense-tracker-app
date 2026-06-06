@@ -26,7 +26,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
           kind: 'transaction',
           title: 'Added transaction',
           description:
-              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} recorded (${normalized.paymentMode.label})',
+              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} recorded (${transactionPaymentLabel(type: normalized.type, paymentMode: normalized.paymentMode, cardType: normalized.cardType)})',
         );
   }
 
@@ -44,7 +44,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
           kind: 'transaction',
           title: 'Updated transaction',
           description:
-              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} updated (${normalized.paymentMode.label})',
+              '${normalized.type.name} of ₹${normalized.amount.toStringAsFixed(2)} updated (${transactionPaymentLabel(type: normalized.type, paymentMode: normalized.paymentMode, cardType: normalized.cardType)})',
         );
   }
 

@@ -57,20 +57,9 @@ class CategoriesPage extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   const _ModalFieldLabel('Category Type'),
                   const SizedBox(height: 6),
-                  SegmentedButton<TransactionType>(
-                    segments: const [
-                      ButtonSegment(
-                        value: TransactionType.income,
-                        label: Text('Income'),
-                      ),
-                      ButtonSegment(
-                        value: TransactionType.expense,
-                        label: Text('Expense'),
-                      ),
-                    ],
-                    selected: {type},
-                    onSelectionChanged: (selection) =>
-                        setState(() => type = selection.first),
+                  _CategoryTypeSegment(
+                    selected: type,
+                    onChanged: (value) => setState(() => type = value),
                   ),
                 ],
               ),
@@ -123,11 +112,24 @@ class CategoriesPage extends ConsumerWidget {
         onLeadingTap: () => Navigator.of(context).maybePop(),
         showProfileAction: false,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showCategoryDialog(context, ref),
-        backgroundColor: primary,
-        foregroundColor: Colors.black,
-        child: const Icon(AppIcons.categories),
+      floatingActionButton: SizedBox(
+        width: 178,
+        height: 54,
+        child: FloatingActionButton.extended(
+          onPressed: () => _showCategoryDialog(context, ref),
+          backgroundColor: primary,
+          foregroundColor: Colors.black,
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          icon: const Icon(AppIcons.plus, size: 18),
+          label: const Text(
+            'Add Category',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
       ),
       body: categories.when(
         data: (items) {
@@ -289,6 +291,61 @@ class _ModalFieldLabel extends StatelessWidget {
         color: Color(0xFFB3B3B3),
         fontSize: 12,
         fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+class _CategoryTypeSegment extends StatelessWidget {
+  const _CategoryTypeSegment({required this.selected, required this.onChanged});
+
+  final TransactionType selected;
+  final ValueChanged<TransactionType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = const [
+      (TransactionType.income, 'Income'),
+      (TransactionType.expense, 'Expense'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF4A4A4A)),
+      ),
+      child: Row(
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final isSelected = selected == item.$1;
+          return Expanded(
+            child: InkWell(
+              onTap: () => onChanged(item.$1),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.black,
+                  border: Border(
+                    right: BorderSide(
+                      color: index == items.length - 1
+                          ? Colors.transparent
+                          : const Color(0xFF4A4A4A),
+                    ),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  item.$2,
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white,
+                    fontSize: 13,
+                    letterSpacing: 0.2,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

@@ -14,12 +14,14 @@ import 'package:spendly/features/user/domain/entities/user_profile_entity.dart';
 
 extension TransactionMapper on Transaction {
   TransactionEntity toEntity() {
+    final rawCardType = cardType;
     return TransactionEntity(
       id: id,
       type: TransactionTypeX.fromValue(type),
       amount: amountPaise > 0 ? Money.fromPaise(amountPaise) : amount,
       categoryId: categoryId,
       paymentMode: PaymentModeX.fromValue(paymentMode),
+      cardType: rawCardType == null ? null : CardTypeX.fromValue(rawCardType),
       note: note,
       date: DateTime.fromMillisecondsSinceEpoch(date),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
@@ -168,6 +170,7 @@ TransactionsCompanion transactionToCompanion(TransactionEntity entity) {
     amountPaise: Value(Money.toPaise(entity.amount)),
     categoryId: entity.categoryId,
     paymentMode: entity.paymentMode.value,
+    cardType: Value(entity.cardType?.value),
     note: Value(entity.note),
     date: entity.date.millisecondsSinceEpoch,
     createdAt: entity.createdAt.millisecondsSinceEpoch,

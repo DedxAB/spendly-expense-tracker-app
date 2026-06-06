@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -64,7 +64,6 @@ class AppDatabase extends _$AppDatabase {
       await _ensureDefaultSettings();
       await _ensureDefaultUserProfile();
       await seedDefaultCategoriesIfNeeded();
-      await _ensureDefaultGoalFunds();
     },
     onUpgrade: (m, from, to) async {
       if (from < 3) {
@@ -174,7 +173,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 19) {
         await m.createTable(goalFunds);
         await m.createTable(goalContributions);
-        await _ensureDefaultGoalFunds();
+      }
+      if (from < 20) {
+        await m.addColumn(transactions, transactions.cardType);
       }
     },
     beforeOpen: (details) async {
@@ -182,9 +183,6 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           'UPDATE lend_entries SET settled_amount = 0 WHERE settled_amount IS NULL;',
         );
-      }
-      if (details.versionNow >= 19) {
-        await _ensureDefaultGoalFunds();
       }
     },
   );
@@ -219,114 +217,6 @@ class AppDatabase extends _$AppDatabase {
         createdAt: now,
         updatedAt: now,
       ),
-    );
-  }
-
-  Future<void> _ensureDefaultGoalFunds() async {
-    final countExpr = goalFunds.id.count();
-    final countRow = await (selectOnly(
-      goalFunds,
-    )..addColumns([countExpr])).getSingle();
-    final count = countRow.read(countExpr) ?? 0;
-    if (count > 0) return;
-
-    final now = DateTime.now();
-    final nowMs = now.millisecondsSinceEpoch;
-    final uuid = const Uuid();
-
-    Future<void> seed({
-      required String id,
-      required String title,
-      required String category,
-      required double target,
-      required double saved,
-      required DateTime targetDate,
-      required double monthlyContribution,
-      required double recentDelta,
-      required bool isEmergency,
-      double monthlyExpense = 0,
-    }) async {
-      await into(goalFunds).insert(
-        GoalFundsCompanion.insert(
-          id: id,
-          title: title,
-          category: category,
-          targetAmount: target,
-          targetAmountPaise: Value(Money.toPaise(target)),
-          savedAmount: Value(saved),
-          savedAmountPaise: Value(Money.toPaise(saved)),
-          targetDate: targetDate.millisecondsSinceEpoch,
-          monthlyContribution: Value(monthlyContribution),
-          monthlyContributionPaise: Value(Money.toPaise(monthlyContribution)),
-          recentDelta: Value(recentDelta),
-          recentDeltaPaise: Value(Money.toPaise(recentDelta)),
-          monthlyExpense: Value(monthlyExpense),
-          monthlyExpensePaise: Value(Money.toPaise(monthlyExpense)),
-          isEmergency: Value(isEmergency),
-          createdAt: nowMs,
-          updatedAt: nowMs,
-          isDeleted: const Value(false),
-        ),
-      );
-      if (saved > 0) {
-        await into(goalContributions).insert(
-          GoalContributionsCompanion.insert(
-            id: uuid.v4(),
-            goalId: id,
-            amount: saved,
-            amountPaise: Value(Money.toPaise(saved)),
-            note: const Value('Initial balance'),
-            createdAt: nowMs,
-            isDeleted: const Value(false),
-          ),
-        );
-      }
-    }
-
-    await seed(
-      id: 'emergency',
-      title: 'Emergency Fund',
-      category: 'Primary Liquidity',
-      target: 2000000,
-      saved: 1440000,
-      targetDate: now.add(const Duration(days: 365)),
-      monthlyContribution: 80000,
-      recentDelta: 0,
-      isEmergency: true,
-      monthlyExpense: 250000,
-    );
-    await seed(
-      id: uuid.v4(),
-      title: 'MacBook Pro',
-      category: 'Tech',
-      target: 199000,
-      saved: 65000,
-      targetDate: now.add(const Duration(days: 180)),
-      monthlyContribution: 17000,
-      recentDelta: 1200,
-      isEmergency: false,
-    );
-    await seed(
-      id: uuid.v4(),
-      title: 'Air Jordan 1s',
-      category: 'Lifestyle',
-      target: 18500,
-      saved: 12000,
-      targetDate: now.add(const Duration(days: 40)),
-      monthlyContribution: 5000,
-      recentDelta: 500,
-      isEmergency: false,
-    );
-    await seed(
-      id: uuid.v4(),
-      title: 'Cybertruck',
-      category: 'Asset',
-      target: 5400000,
-      saved: 2400000,
-      targetDate: now.add(const Duration(days: 420)),
-      monthlyContribution: 125000,
-      recentDelta: 50000,
-      isEmergency: false,
     );
   }
 
@@ -1027,7 +917,6 @@ class AppDatabase extends _$AppDatabase {
       await _ensureDefaultSettings();
       await _ensureDefaultUserProfile();
       await seedDefaultCategoriesIfNeeded();
-      await _ensureDefaultGoalFunds();
     });
   }
 }

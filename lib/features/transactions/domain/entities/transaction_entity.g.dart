@@ -14,6 +14,7 @@ _$TransactionEntityImpl _$$TransactionEntityImplFromJson(
   amount: (json['amount'] as num).toDouble(),
   categoryId: json['categoryId'] as String,
   paymentMode: $enumDecode(_$PaymentModeEnumMap, json['paymentMode']),
+  cardType: $enumDecodeNullable(_$CardTypeEnumMap, json['cardType']),
   note: json['note'] as String?,
   date: DateTime.parse(json['date'] as String),
   createdAt: DateTime.parse(json['createdAt'] as String),
@@ -31,6 +32,7 @@ Map<String, dynamic> _$$TransactionEntityImplToJson(
   'amount': instance.amount,
   'categoryId': instance.categoryId,
   'paymentMode': _$PaymentModeEnumMap[instance.paymentMode]!,
+  'cardType': _$CardTypeEnumMap[instance.cardType],
   'note': instance.note,
   'date': instance.date.toIso8601String(),
   'createdAt': instance.createdAt.toIso8601String(),
@@ -50,3 +52,5 @@ const _$PaymentModeEnumMap = {
   PaymentMode.upi: 'upi',
   PaymentMode.card: 'card',
 };
+
+const _$CardTypeEnumMap = {CardType.debit: 'debit', CardType.credit: 'credit'};

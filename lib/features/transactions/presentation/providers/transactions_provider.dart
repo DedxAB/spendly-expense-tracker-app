@@ -4,7 +4,7 @@ import 'package:spendly/features/categories/presentation/providers/categories_pr
 import 'package:spendly/features/transactions/data/repositories/transactions_repository_impl.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 
-enum TransactionDatePreset { thisMonth, lastMonth, thisYear, custom }
+enum TransactionDatePreset { allTime, thisMonth, lastMonth, thisYear, custom }
 
 enum TransactionSortOption {
   newestFirst,
@@ -36,7 +36,7 @@ class TransactionFilterState {
 
   factory TransactionFilterState.initial() {
     return const TransactionFilterState(
-      datePreset: TransactionDatePreset.thisMonth,
+      datePreset: TransactionDatePreset.allTime,
       type: null,
       categoryId: null,
       paymentMode: null,
@@ -95,6 +95,11 @@ class TransactionFilterState {
 
   DateInterval effectiveRange(DateTime now) {
     switch (datePreset) {
+      case TransactionDatePreset.allTime:
+        return DateInterval(
+          start: DateTime(1900, 1, 1),
+          end: DateTime(2100, 12, 31, 23, 59, 59),
+        );
       case TransactionDatePreset.thisMonth:
         final start = DateTime(now.year, now.month, 1);
         final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -146,7 +151,7 @@ class TransactionFilterController
 
   void clearCustomRange() {
     state = state.copyWith(
-      datePreset: TransactionDatePreset.thisMonth,
+      datePreset: TransactionDatePreset.allTime,
       clearCustomFrom: true,
       clearCustomTo: true,
     );
@@ -168,6 +173,7 @@ class TransactionFilterController
   }
 
   void applyAdvanced({
+    TransactionDatePreset? datePreset,
     required PaymentMode? paymentMode,
     required double? minAmount,
     required double? maxAmount,
@@ -175,11 +181,8 @@ class TransactionFilterController
     DateTime? customFrom,
     DateTime? customTo,
   }) {
-    final shouldUseCustomPreset = customFrom != null && customTo != null;
     state = state.copyWith(
-      datePreset: shouldUseCustomPreset
-          ? TransactionDatePreset.custom
-          : state.datePreset,
+      datePreset: datePreset ?? state.datePreset,
       paymentMode: paymentMode,
       clearPaymentMode: paymentMode == null,
       minAmount: minAmount,

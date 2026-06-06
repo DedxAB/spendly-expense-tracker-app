@@ -209,13 +209,13 @@ class GoalsActions {
         category: category,
         targetAmount: normalizedTarget,
         targetAmountPaise: Value(Money.toPaise(normalizedTarget)),
-        savedAmount: Value(normalizedSaved),
-        savedAmountPaise: Value(Money.toPaise(normalizedSaved)),
+        savedAmount: const Value(0),
+        savedAmountPaise: const Value(0),
         targetDate: targetDate.millisecondsSinceEpoch,
         monthlyContribution: Value(normalizedMonthly),
         monthlyContributionPaise: Value(Money.toPaise(normalizedMonthly)),
-        recentDelta: Value(normalizedSaved),
-        recentDeltaPaise: Value(Money.toPaise(normalizedSaved)),
+        recentDelta: const Value(0),
+        recentDeltaPaise: const Value(0),
         monthlyExpense: const Value(0),
         monthlyExpensePaise: const Value(0),
         isEmergency: const Value(false),
@@ -230,6 +230,56 @@ class GoalsActions {
         goalId: goalId,
         amount: normalizedSaved,
         note: 'Initial balance',
+      );
+    }
+  }
+
+  Future<void> updateGoal({
+    required String goalId,
+    required String title,
+    required String category,
+    required double targetAmount,
+    required double savedAmount,
+    required DateTime targetDate,
+    required double monthlyContribution,
+  }) async {
+    final db = _ref.read(appDatabaseProvider);
+    final rows = await db.watchActiveGoals().first;
+    GoalFund? existing;
+    for (final row in rows) {
+      if (row.id == goalId) {
+        existing = row;
+        break;
+      }
+    }
+    if (existing == null) return;
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final normalizedTarget = Money.normalize(targetAmount);
+    final normalizedSaved = Money.normalize(savedAmount.clamp(0, targetAmount));
+    final normalizedMonthly = Money.normalize(monthlyContribution);
+
+    await (db.update(
+      db.goalFunds,
+    )..where((tbl) => tbl.id.equals(goalId))).write(
+      GoalFundsCompanion(
+        title: Value(title),
+        category: Value(category),
+        targetAmount: Value(normalizedTarget),
+        targetAmountPaise: Value(Money.toPaise(normalizedTarget)),
+        targetDate: Value(targetDate.millisecondsSinceEpoch),
+        monthlyContribution: Value(normalizedMonthly),
+        monthlyContributionPaise: Value(Money.toPaise(normalizedMonthly)),
+        updatedAt: Value(nowMs),
+      ),
+    );
+
+    final delta = Money.normalize(normalizedSaved - existing.savedAmount);
+    if (delta != 0) {
+      await db.addGoalContribution(
+        goalId: goalId,
+        amount: delta,
+        note: 'Balance adjustment',
       );
     }
   }
@@ -277,13 +327,13 @@ class GoalsActions {
         category: 'Emergency',
         targetAmount: target,
         targetAmountPaise: Value(Money.toPaise(target)),
-        savedAmount: Value(saved),
-        savedAmountPaise: Value(Money.toPaise(saved)),
+        savedAmount: const Value(0),
+        savedAmountPaise: const Value(0),
         targetDate: now.add(const Duration(days: 365)).millisecondsSinceEpoch,
         monthlyContribution: const Value(0),
         monthlyContributionPaise: const Value(0),
-        recentDelta: Value(saved),
-        recentDeltaPaise: Value(Money.toPaise(saved)),
+        recentDelta: const Value(0),
+        recentDeltaPaise: const Value(0),
         monthlyExpense: Value(expense),
         monthlyExpensePaise: Value(Money.toPaise(expense)),
         isEmergency: const Value(true),
@@ -297,6 +347,53 @@ class GoalsActions {
         goalId: goalId,
         amount: saved,
         note: 'Initial balance',
+      );
+    }
+  }
+
+  Future<void> updateEmergencyFund({
+    required String fundId,
+    required String title,
+    required double targetAmount,
+    required double savedAmount,
+    required double monthlyExpense,
+  }) async {
+    final db = _ref.read(appDatabaseProvider);
+    final rows = await db.watchEmergencyGoalFunds().first;
+    GoalFund? existing;
+    for (final row in rows) {
+      if (row.id == fundId) {
+        existing = row;
+        break;
+      }
+    }
+    if (existing == null) return;
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final normalizedTarget = Money.normalize(targetAmount);
+    final normalizedSaved = Money.normalize(savedAmount.clamp(0, targetAmount));
+    final normalizedExpense = Money.normalize(monthlyExpense);
+
+    await (db.update(
+      db.goalFunds,
+    )..where((tbl) => tbl.id.equals(fundId))).write(
+      GoalFundsCompanion(
+        title: Value(title),
+        category: const Value('Emergency'),
+        targetAmount: Value(normalizedTarget),
+        targetAmountPaise: Value(Money.toPaise(normalizedTarget)),
+        monthlyExpense: Value(normalizedExpense),
+        monthlyExpensePaise: Value(Money.toPaise(normalizedExpense)),
+        updatedAt: Value(nowMs),
+      ),
+    );
+
+    final delta = Money.normalize(normalizedSaved - existing.savedAmount);
+    if (delta != 0) {
+      await db.addGoalContribution(
+        goalId: fundId,
+        amount: delta,
+        note: 'Balance adjustment',
       );
     }
   }

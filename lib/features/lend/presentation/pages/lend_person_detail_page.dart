@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
+import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
@@ -91,39 +92,7 @@ class LendPersonDetailPage extends ConsumerWidget {
               backgroundColor: Color(0xFF0E0E0E),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
-            datePickerTheme: DatePickerThemeData(
-              backgroundColor: const Color(0xFF0E0E0E),
-              surfaceTintColor: Colors.transparent,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-              headerBackgroundColor: const Color(0xFF0E0E0E),
-              headerForegroundColor: Colors.white,
-              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                return Colors.transparent;
-              }),
-              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.black;
-                return Colors.white;
-              }),
-              dayOverlayColor: const WidgetStatePropertyAll(Colors.transparent),
-              dayStyle: const TextStyle(fontWeight: FontWeight.w600),
-              todayForegroundColor: const WidgetStatePropertyAll(Colors.white),
-              todayBorder: const BorderSide(color: Color(0xFF4A4A4A)),
-              todayBackgroundColor: const WidgetStatePropertyAll(
-                Colors.transparent,
-              ),
-              yearForegroundColor: const WidgetStatePropertyAll(Colors.white),
-              rangeSelectionBackgroundColor: const Color(0xFF1E1E1E),
-              dividerColor: const Color(0xFF2A2A2A),
-              dayShape: const WidgetStatePropertyAll(
-                RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              ),
-              yearShape: const WidgetStatePropertyAll(
-                RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              ),
-            ),
+            datePickerTheme: AppDatePickerTheme.darkBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -384,70 +353,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                                     borderRadius: BorderRadius.zero,
                                   ),
                                 ),
-                                datePickerTheme: DatePickerThemeData(
-                                  backgroundColor: const Color(0xFF0E0E0E),
-                                  surfaceTintColor: Colors.transparent,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.zero,
-                                  ),
-                                  headerBackgroundColor: const Color(
-                                    0xFF0E0E0E,
-                                  ),
-                                  headerForegroundColor: Colors.white,
-                                  dayBackgroundColor:
-                                      WidgetStateProperty.resolveWith((states) {
-                                        if (states.contains(
-                                          WidgetState.selected,
-                                        )) {
-                                          return Colors.white;
-                                        }
-                                        return Colors.transparent;
-                                      }),
-                                  dayForegroundColor:
-                                      WidgetStateProperty.resolveWith((states) {
-                                        if (states.contains(
-                                          WidgetState.selected,
-                                        )) {
-                                          return Colors.black;
-                                        }
-                                        return Colors.white;
-                                      }),
-                                  dayOverlayColor: const WidgetStatePropertyAll(
-                                    Colors.transparent,
-                                  ),
-                                  dayStyle: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  todayForegroundColor:
-                                      const WidgetStatePropertyAll(
-                                        Colors.white,
-                                      ),
-                                  todayBorder: const BorderSide(
-                                    color: Color(0xFF4A4A4A),
-                                  ),
-                                  todayBackgroundColor:
-                                      const WidgetStatePropertyAll(
-                                        Colors.transparent,
-                                      ),
-                                  yearForegroundColor:
-                                      const WidgetStatePropertyAll(
-                                        Colors.white,
-                                      ),
-                                  rangeSelectionBackgroundColor: const Color(
-                                    0xFF1E1E1E,
-                                  ),
-                                  dividerColor: const Color(0xFF2A2A2A),
-                                  dayShape: const WidgetStatePropertyAll(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                  ),
-                                  yearShape: const WidgetStatePropertyAll(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
-                                    ),
-                                  ),
-                                ),
+                                datePickerTheme: AppDatePickerTheme.darkBoxy(),
                                 textButtonTheme: TextButtonThemeData(
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.white,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/constants/app_enums.dart';
+import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -77,6 +78,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
 
   late TransactionType _type;
   PaymentMode _account = PaymentMode.upi;
+  CardType? _cardType;
   DateTime _date = DateTime.now();
   String? _selectedCategoryId;
 
@@ -87,12 +89,14 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     if (existing != null) {
       _type = existing.type;
       _account = existing.paymentMode;
+      _cardType = existing.cardType;
       _date = existing.date;
       _selectedCategoryId = existing.categoryId;
       _amountController.text = existing.amount.toStringAsFixed(2);
       _noteController.text = existing.note ?? '';
     } else {
       _type = widget.initialType ?? TransactionType.expense;
+      _cardType = _type == TransactionType.expense ? CardType.debit : null;
     }
   }
 
@@ -120,6 +124,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       amount: amount,
       categoryId: _selectedCategoryId!,
       paymentMode: _account,
+      cardType: _type == TransactionType.expense && _account == PaymentMode.card
+          ? _cardType
+          : null,
       note: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
@@ -186,35 +193,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               backgroundColor: Color(0xFF0E0E0E),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
-            datePickerTheme: DatePickerThemeData(
-              backgroundColor: Color(0xFF0E0E0E),
-              surfaceTintColor: Colors.transparent,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              headerBackgroundColor: Color(0xFF0E0E0E),
-              headerForegroundColor: Colors.white,
-              dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                return Colors.transparent;
-              }),
-              dayForegroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.black;
-                return Colors.white;
-              }),
-              dayOverlayColor: WidgetStatePropertyAll(Colors.transparent),
-              dayStyle: TextStyle(fontWeight: FontWeight.w600),
-              todayForegroundColor: WidgetStatePropertyAll(Colors.white),
-              todayBorder: BorderSide(color: Color(0xFF4A4A4A)),
-              todayBackgroundColor: WidgetStatePropertyAll(Colors.transparent),
-              yearForegroundColor: WidgetStatePropertyAll(Colors.white),
-              rangeSelectionBackgroundColor: Color(0xFF1E1E1E),
-              dividerColor: Color(0xFF2A2A2A),
-              dayShape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              ),
-              yearShape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-              ),
-            ),
+            datePickerTheme: AppDatePickerTheme.darkBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
@@ -334,6 +313,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     onChanged: (value) => setState(() {
                       _type = value;
                       _selectedCategoryId = null;
+                      if (value == TransactionType.income) {
+                        _cardType = null;
+                      } else if (_account == PaymentMode.card &&
+                          _cardType == null) {
+                        _cardType = CardType.debit;
+                      }
                     }),
                   ),
                   const SizedBox(height: 22),
@@ -364,12 +349,29 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     ),
                   ),
                   const SizedBox(height: 22),
-                  const _SheetLabel('ACCOUNT'),
+                  const _SheetLabel('PAYMENT MODE'),
                   const SizedBox(height: 12),
                   _AccountSegment(
                     selected: _account,
-                    onChanged: (value) => setState(() => _account = value),
+                    onChanged: (value) => setState(() {
+                      _account = value;
+                      if (value == PaymentMode.card &&
+                          _type == TransactionType.expense &&
+                          _cardType == null) {
+                        _cardType = CardType.debit;
+                      }
+                    }),
                   ),
+                  if (_type == TransactionType.expense &&
+                      _account == PaymentMode.card) ...[
+                    const SizedBox(height: 12),
+                    const _SheetLabel('CARD TYPE'),
+                    const SizedBox(height: 12),
+                    _CardTypeSegment(
+                      selected: _cardType,
+                      onChanged: (value) => setState(() => _cardType = value),
+                    ),
+                  ],
                   const SizedBox(height: 22),
                   const _SheetLabel('DATE'),
                   const SizedBox(height: 10),
@@ -591,6 +593,62 @@ class _AccountSegment extends StatelessWidget {
                   item.$2,
                   style: TextStyle(
                     color: selected == item.$1 ? Colors.black : Colors.white,
+                    fontSize: 13,
+                    letterSpacing: 0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _CardTypeSegment extends StatelessWidget {
+  const _CardTypeSegment({required this.selected, required this.onChanged});
+
+  final CardType? selected;
+  final ValueChanged<CardType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = const [
+      (CardType.debit, 'Debit'),
+      (CardType.credit, 'Credit'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF4A4A4A)),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
+      child: Row(
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final isSelected = selected == item.$1;
+          return Expanded(
+            child: InkWell(
+              onTap: () => onChanged(item.$1),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.black,
+                  border: Border(
+                    right: BorderSide(
+                      color: index == items.length - 1
+                          ? Colors.transparent
+                          : const Color(0xFF4A4A4A),
+                    ),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  item.$2,
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white,
                     fontSize: 13,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,

@@ -2,6 +2,8 @@ enum TransactionType { income, expense }
 
 enum PaymentMode { cash, upi, card }
 
+enum CardType { debit, credit }
+
 enum AppThemeMode { system, light, dark }
 
 enum RecurringFrequency { daily, weekly, monthly, yearly }
@@ -63,6 +65,52 @@ extension PaymentModeX on PaymentMode {
         return PaymentMode.cash;
     }
   }
+}
+
+extension CardTypeX on CardType {
+  String get label {
+    switch (this) {
+      case CardType.debit:
+        return 'Debit';
+      case CardType.credit:
+        return 'Credit';
+    }
+  }
+
+  String get value {
+    switch (this) {
+      case CardType.debit:
+        return 'debit';
+      case CardType.credit:
+        return 'credit';
+    }
+  }
+
+  static CardType fromValue(String value) {
+    switch (value.toLowerCase()) {
+      case 'credit':
+        return CardType.credit;
+      case 'debit':
+      default:
+        return CardType.debit;
+    }
+  }
+}
+
+String transactionPaymentLabel({
+  required TransactionType type,
+  required PaymentMode paymentMode,
+  CardType? cardType,
+}) {
+  if (paymentMode != PaymentMode.card) {
+    return paymentMode.label;
+  }
+
+  if (type == TransactionType.expense && cardType != null) {
+    return 'Card · ${cardType.label}';
+  }
+
+  return 'Card';
 }
 
 extension AppThemeModeX on AppThemeMode {

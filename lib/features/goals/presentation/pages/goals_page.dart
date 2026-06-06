@@ -25,6 +25,7 @@ class GoalsPage extends ConsumerWidget {
     final emergencyFunds =
         emergencyFundsAsync.valueOrNull ?? const <EmergencyFund>[];
     final goals = goalsAsync.valueOrNull ?? const <GoalItem>[];
+    final hasAnyGoalData = emergencyFunds.isNotEmpty || goals.isNotEmpty;
     if (emergency == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
@@ -64,8 +65,16 @@ class GoalsPage extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Dismissible(
                 key: ValueKey('emergency-${entry.value.id}'),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (_) {
+                direction: DismissDirection.horizontal,
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    await _openEditEmergencySheet(
+                      context,
+                      actions,
+                      entry.value,
+                    );
+                    return false;
+                  }
                   return _confirmDelete(
                     context,
                     title: 'Delete emergency fund?',
@@ -76,7 +85,12 @@ class GoalsPage extends ConsumerWidget {
                 onDismissed: (_) async {
                   await actions.deleteGoal(entry.value.id);
                 },
-                background: const SizedBox.shrink(),
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  color: const Color(0xFF1A1A1A),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Icon(AppIcons.edit, color: Colors.white),
+                ),
                 secondaryBackground: Container(
                   alignment: Alignment.centerRight,
                   color: const Color(0xFF1A1A1A),
@@ -139,16 +153,19 @@ class GoalsPage extends ConsumerWidget {
               label: const Text('Add emergency fund'),
             ),
           ),
-          const SizedBox(height: 20),
-          _AggregateInsightCard(
-            totalSaved: state.totalSaved,
-            totalTarget: state.totalTarget,
-            progress: state.totalProgress,
-            monthlyCommitment: state.monthlyGoalCommitment,
-            onTrackCount: onTrackCount,
-            goalCount: goals.length,
-          ),
-          const SizedBox(height: 22),
+          if (hasAnyGoalData) ...[
+            const SizedBox(height: 20),
+            _AggregateInsightCard(
+              totalSaved: state.totalSaved,
+              totalTarget: state.totalTarget,
+              progress: state.totalProgress,
+              monthlyCommitment: state.monthlyGoalCommitment,
+              onTrackCount: onTrackCount,
+              goalCount: goals.length,
+            ),
+            const SizedBox(height: 22),
+          ] else
+            const SizedBox(height: 20),
           Text('Your Goals', style: AppTypography.sectionTitle(context)),
           const SizedBox(height: 10),
           const Divider(color: AppColors.borderDark, height: 1),
@@ -163,8 +180,12 @@ class GoalsPage extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Dismissible(
                 key: ValueKey('goal-${goal.id}'),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (_) {
+                direction: DismissDirection.horizontal,
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    await _openEditGoalSheet(context, actions, goal);
+                    return false;
+                  }
                   return _confirmDelete(
                     context,
                     title: 'Delete goal?',
@@ -175,7 +196,12 @@ class GoalsPage extends ConsumerWidget {
                 onDismissed: (_) async {
                   await actions.deleteGoal(goal.id);
                 },
-                background: const SizedBox.shrink(),
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  color: const Color(0xFF1A1A1A),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Icon(AppIcons.edit, color: Colors.white),
+                ),
                 secondaryBackground: Container(
                   alignment: Alignment.centerRight,
                   color: const Color(0xFF1A1A1A),
@@ -230,259 +256,111 @@ class GoalsPage extends ConsumerWidget {
     BuildContext context,
     GoalsActions actions,
   ) async {
-    final titleController = TextEditingController();
-    final categoryController = TextEditingController();
-    final targetController = TextEditingController();
-    final savedController = TextEditingController(text: '0');
-    final monthlyController = TextEditingController();
-    DateTime targetDate = DateTime.now().add(const Duration(days: 120));
-
-    await showModalBottomSheet<void>(
+    final draft = await showModalBottomSheet<_GoalDraft>(
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.md,
-          ),
-          child: StatefulBuilder(
-            builder: (context, setModalState) {
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Create Goal',
-                      style: AppTypography.sectionTitle(context),
-                    ),
-                    const SizedBox(height: 14),
-                    _GoalTextField(
-                      controller: titleController,
-                      label: 'Goal name',
-                    ),
-                    const SizedBox(height: 10),
-                    _GoalTextField(
-                      controller: categoryController,
-                      label: 'Category (optional)',
-                    ),
-                    const SizedBox(height: 10),
-                    _GoalTextField(
-                      controller: targetController,
-                      label: 'Target amount',
-                      numeric: true,
-                    ),
-                    const SizedBox(height: 10),
-                    _GoalTextField(
-                      controller: savedController,
-                      label: 'Already saved',
-                      numeric: true,
-                    ),
-                    const SizedBox(height: 10),
-                    _GoalTextField(
-                      controller: monthlyController,
-                      label: 'Monthly contribution (optional)',
-                      numeric: true,
-                    ),
-                    const SizedBox(height: 10),
-                    InkWell(
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: targetDate,
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 3650),
-                          ),
-                        );
-                        if (picked != null) {
-                          setModalState(() => targetDate = picked);
-                        }
-                      },
-                      child: Container(
-                        height: 50,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        alignment: Alignment.centerLeft,
-                        decoration: BoxDecoration(
-                          color: AppColors.darkSurface,
-                          border: Border.all(color: AppColors.borderDark),
-                        ),
-                        child: Text(
-                          'Target date: ${DateFormat('d MMM yyyy').format(targetDate)}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: FilledButton(
-                        onPressed: () async {
-                          final title = titleController.text.trim();
-                          final categoryInput = categoryController.text.trim();
-                          final target =
-                              double.tryParse(targetController.text.trim()) ??
-                              0;
-                          final saved =
-                              double.tryParse(savedController.text.trim()) ?? 0;
-                          final monthlyInput =
-                              double.tryParse(monthlyController.text.trim()) ??
-                              0;
-
-                          if (title.isEmpty || target <= 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Goal name and target are required.',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
-
-                          final normalizedSaved = saved
-                              .clamp(0, target)
-                              .toDouble();
-                          final daysLeft = targetDate
-                              .difference(DateTime.now())
-                              .inDays;
-                          final monthsLeft = (daysLeft / 30).ceil().clamp(
-                            1,
-                            9999,
-                          );
-                          final remaining = (target - normalizedSaved).clamp(
-                            0.0,
-                            double.infinity,
-                          );
-                          final monthly = monthlyInput > 0
-                              ? monthlyInput
-                              : remaining / monthsLeft;
-                          final category = categoryInput.isEmpty
-                              ? 'General'
-                              : categoryInput;
-
-                          await actions.addGoal(
-                            title: title,
-                            category: category,
-                            targetAmount: target,
-                            initialSaved: normalizedSaved,
-                            targetDate: targetDate,
-                            monthlyContribution: monthly,
-                          );
-                          if (!context.mounted) return;
-                          Navigator.of(context).pop();
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
-                        ),
-                        child: const Text('Create Goal'),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
+      builder: (ctx) => const _CreateGoalSheet(),
     );
 
-    titleController.dispose();
-    categoryController.dispose();
-    targetController.dispose();
-    savedController.dispose();
-    monthlyController.dispose();
+    if (draft == null) return;
+    await actions.addGoal(
+      title: draft.title,
+      category: draft.category,
+      targetAmount: draft.targetAmount,
+      initialSaved: draft.initialSaved,
+      targetDate: draft.targetDate,
+      monthlyContribution: draft.monthlyContribution,
+    );
+  }
+
+  Future<void> _openEditGoalSheet(
+    BuildContext context,
+    GoalsActions actions,
+    GoalItem goal,
+  ) async {
+    final draft = await showModalBottomSheet<_GoalDraft>(
+      context: context,
+      backgroundColor: AppColors.darkSurface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (ctx) => _CreateGoalSheet(
+        initialDraft: _GoalDraft(
+          title: goal.title,
+          category: goal.category,
+          targetAmount: goal.targetAmount,
+          initialSaved: goal.savedAmount,
+          targetDate: goal.targetDate,
+          monthlyContribution: goal.monthlyContribution,
+        ),
+        titleText: 'Edit Goal',
+        submitText: 'Save Changes',
+      ),
+    );
+
+    if (draft == null) return;
+    await actions.updateGoal(
+      goalId: goal.id,
+      title: draft.title,
+      category: draft.category,
+      targetAmount: draft.targetAmount,
+      savedAmount: draft.initialSaved,
+      targetDate: draft.targetDate,
+      monthlyContribution: draft.monthlyContribution,
+    );
   }
 
   Future<void> _openCreateEmergencySheet(
     BuildContext context,
     GoalsActions actions,
   ) async {
-    final titleController = TextEditingController(text: 'Emergency Fund');
-    final targetController = TextEditingController();
-    final savedController = TextEditingController(text: '0');
-    final monthlyExpenseController = TextEditingController(text: '0');
-    await showModalBottomSheet<void>(
+    final draft = await showModalBottomSheet<_EmergencyFundDraft>(
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            MediaQuery.of(ctx).viewInsets.bottom + AppSpacing.md,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Add Emergency Fund',
-                style: AppTypography.sectionTitle(context),
-              ),
-              const SizedBox(height: 12),
-              _GoalTextField(controller: titleController, label: 'Name'),
-              const SizedBox(height: 10),
-              _GoalTextField(
-                controller: targetController,
-                label: 'Target amount',
-                numeric: true,
-              ),
-              const SizedBox(height: 10),
-              _GoalTextField(
-                controller: savedController,
-                label: 'Current saved',
-                numeric: true,
-              ),
-              const SizedBox(height: 10),
-              _GoalTextField(
-                controller: monthlyExpenseController,
-                label: 'Monthly expense coverage base',
-                numeric: true,
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: FilledButton(
-                  onPressed: () async {
-                    final title = titleController.text.trim();
-                    final target =
-                        double.tryParse(targetController.text.trim()) ?? 0;
-                    final saved =
-                        double.tryParse(savedController.text.trim()) ?? 0;
-                    final expense =
-                        double.tryParse(monthlyExpenseController.text.trim()) ??
-                        0;
-                    if (title.isEmpty || target <= 0) return;
-                    await actions.addEmergencyFund(
-                      title: title,
-                      targetAmount: target,
-                      initialSaved: saved,
-                      monthlyExpense: expense,
-                    );
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Create'),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (ctx) => const _CreateEmergencyFundSheet(),
+    );
+
+    if (draft == null) return;
+    await actions.addEmergencyFund(
+      title: draft.title,
+      targetAmount: draft.targetAmount,
+      initialSaved: draft.initialSaved,
+      monthlyExpense: draft.monthlyExpense,
+    );
+  }
+
+  Future<void> _openEditEmergencySheet(
+    BuildContext context,
+    GoalsActions actions,
+    EmergencyFund fund,
+  ) async {
+    final draft = await showModalBottomSheet<_EmergencyFundDraft>(
+      context: context,
+      backgroundColor: AppColors.darkSurface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      builder: (ctx) => _CreateEmergencyFundSheet(
+        initialDraft: _EmergencyFundDraft(
+          title: fund.title,
+          targetAmount: fund.targetAmount,
+          initialSaved: fund.currentAmount,
+          monthlyExpense: fund.monthlyExpense,
+        ),
+        titleText: 'Edit Emergency Fund',
+        submitText: 'Save Changes',
+      ),
+    );
+
+    if (draft == null) return;
+    await actions.updateEmergencyFund(
+      fundId: fund.id,
+      title: draft.title,
+      targetAmount: draft.targetAmount,
+      savedAmount: draft.initialSaved,
+      monthlyExpense: draft.monthlyExpense,
     );
   }
 
@@ -613,6 +491,335 @@ class GoalsPage extends ConsumerWidget {
       },
     );
   }
+}
+
+class _GoalDraft {
+  const _GoalDraft({
+    required this.title,
+    required this.category,
+    required this.targetAmount,
+    required this.initialSaved,
+    required this.targetDate,
+    required this.monthlyContribution,
+  });
+
+  final String title;
+  final String category;
+  final double targetAmount;
+  final double initialSaved;
+  final DateTime targetDate;
+  final double monthlyContribution;
+}
+
+class _EmergencyFundDraft {
+  const _EmergencyFundDraft({
+    required this.title,
+    required this.targetAmount,
+    required this.initialSaved,
+    required this.monthlyExpense,
+  });
+
+  final String title;
+  final double targetAmount;
+  final double initialSaved;
+  final double monthlyExpense;
+}
+
+class _CreateGoalSheet extends StatefulWidget {
+  const _CreateGoalSheet({
+    this.initialDraft,
+    this.titleText = 'Create Goal',
+    this.submitText = 'Create Goal',
+  });
+
+  final _GoalDraft? initialDraft;
+  final String titleText;
+  final String submitText;
+
+  @override
+  State<_CreateGoalSheet> createState() => _CreateGoalSheetState();
+}
+
+class _CreateGoalSheetState extends State<_CreateGoalSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _categoryController;
+  late final TextEditingController _targetController;
+  late final TextEditingController _savedController;
+  late final TextEditingController _monthlyController;
+  late DateTime _targetDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialDraft;
+    _titleController = TextEditingController(text: initial?.title ?? '');
+    _categoryController = TextEditingController(text: initial?.category ?? '');
+    _targetController = TextEditingController(
+      text: initial == null ? '' : _formatDecimal(initial.targetAmount),
+    );
+    _savedController = TextEditingController(
+      text: _formatDecimal(initial?.initialSaved ?? 0),
+    );
+    _monthlyController = TextEditingController(
+      text: initial == null ? '' : _formatDecimal(initial.monthlyContribution),
+    );
+    _targetDate =
+        initial?.targetDate ?? DateTime.now().add(const Duration(days: 120));
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _categoryController.dispose();
+    _targetController.dispose();
+    _savedController.dispose();
+    _monthlyController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+            const SizedBox(height: 14),
+            _GoalTextField(controller: _titleController, label: 'Goal name'),
+            const SizedBox(height: 10),
+            _GoalTextField(
+              controller: _categoryController,
+              label: 'Category (optional)',
+            ),
+            const SizedBox(height: 10),
+            _GoalTextField(
+              controller: _targetController,
+              label: 'Target amount',
+              numeric: true,
+            ),
+            const SizedBox(height: 10),
+            _GoalTextField(
+              controller: _savedController,
+              label: 'Already saved',
+              numeric: true,
+            ),
+            const SizedBox(height: 10),
+            _GoalTextField(
+              controller: _monthlyController,
+              label: 'Monthly contribution (optional)',
+              numeric: true,
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _targetDate,
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 3650)),
+                );
+                if (picked != null) {
+                  setState(() => _targetDate = picked);
+                }
+              },
+              child: Container(
+                height: 50,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                alignment: Alignment.centerLeft,
+                decoration: BoxDecoration(
+                  color: AppColors.darkSurface,
+                  border: Border.all(color: AppColors.borderDark),
+                ),
+                child: Text(
+                  'Target date: ${DateFormat('d MMM yyyy').format(_targetDate)}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: FilledButton(
+                onPressed: _submit,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+                child: Text(widget.submitText),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _submit() {
+    final title = _titleController.text.trim();
+    final categoryInput = _categoryController.text.trim();
+    final target = double.tryParse(_targetController.text.trim()) ?? 0;
+    final saved = double.tryParse(_savedController.text.trim()) ?? 0;
+    final monthlyInput = double.tryParse(_monthlyController.text.trim()) ?? 0;
+
+    if (title.isEmpty || target <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Goal name and target are required.')),
+      );
+      return;
+    }
+
+    final normalizedSaved = saved.clamp(0, target).toDouble();
+    final daysLeft = _targetDate.difference(DateTime.now()).inDays;
+    final monthsLeft = (daysLeft / 30).ceil().clamp(1, 9999);
+    final remaining = (target - normalizedSaved).clamp(0.0, double.infinity);
+    final monthly = monthlyInput > 0 ? monthlyInput : remaining / monthsLeft;
+    final category = categoryInput.isEmpty ? 'General' : categoryInput;
+
+    Navigator.of(context).pop(
+      _GoalDraft(
+        title: title,
+        category: category,
+        targetAmount: target,
+        initialSaved: normalizedSaved,
+        targetDate: _targetDate,
+        monthlyContribution: monthly,
+      ),
+    );
+  }
+}
+
+class _CreateEmergencyFundSheet extends StatefulWidget {
+  const _CreateEmergencyFundSheet({
+    this.initialDraft,
+    this.titleText = 'Add Emergency Fund',
+    this.submitText = 'Create',
+  });
+
+  final _EmergencyFundDraft? initialDraft;
+  final String titleText;
+  final String submitText;
+
+  @override
+  State<_CreateEmergencyFundSheet> createState() =>
+      _CreateEmergencyFundSheetState();
+}
+
+class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _targetController;
+  late final TextEditingController _savedController;
+  late final TextEditingController _monthlyExpenseController;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initialDraft;
+    _titleController = TextEditingController(
+      text: initial?.title ?? 'Emergency Fund',
+    );
+    _targetController = TextEditingController(
+      text: initial == null ? '' : _formatDecimal(initial.targetAmount),
+    );
+    _savedController = TextEditingController(
+      text: _formatDecimal(initial?.initialSaved ?? 0),
+    );
+    _monthlyExpenseController = TextEditingController(
+      text: _formatDecimal(initial?.monthlyExpense ?? 0),
+    );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _targetController.dispose();
+    _savedController.dispose();
+    _monthlyExpenseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+          const SizedBox(height: 12),
+          _GoalTextField(controller: _titleController, label: 'Name'),
+          const SizedBox(height: 10),
+          _GoalTextField(
+            controller: _targetController,
+            label: 'Target amount',
+            numeric: true,
+          ),
+          const SizedBox(height: 10),
+          _GoalTextField(
+            controller: _savedController,
+            label: 'Current saved',
+            numeric: true,
+          ),
+          const SizedBox(height: 10),
+          _GoalTextField(
+            controller: _monthlyExpenseController,
+            label: 'Monthly expense coverage base',
+            numeric: true,
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: FilledButton(
+              onPressed: _submit,
+              child: Text(widget.submitText),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submit() {
+    final title = _titleController.text.trim();
+    final target = double.tryParse(_targetController.text.trim()) ?? 0;
+    final saved = double.tryParse(_savedController.text.trim()) ?? 0;
+    final expense = double.tryParse(_monthlyExpenseController.text.trim()) ?? 0;
+
+    if (title.isEmpty || target <= 0) return;
+
+    Navigator.of(context).pop(
+      _EmergencyFundDraft(
+        title: title,
+        targetAmount: target,
+        initialSaved: saved,
+        monthlyExpense: expense,
+      ),
+    );
+  }
+}
+
+String _formatDecimal(double value) {
+  if (value == value.truncateToDouble()) {
+    return value.toStringAsFixed(0);
+  }
+  return value.toStringAsFixed(2);
 }
 
 class _EmergencyFundCard extends StatelessWidget {
