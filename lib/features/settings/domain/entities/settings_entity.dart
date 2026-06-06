@@ -12,6 +12,7 @@ class SettingsEntity with _$SettingsEntity {
     @Default(false) bool budgetAlertsEnabled,
     @Default(false) bool dailyReminderEnabled,
     @Default(false) bool privacyLockEnabled,
+    @Default(true) bool showAmountsEnabled,
     DateTime? lastBudgetAlertAt,
     required DateTime updatedAt,
   }) = _SettingsEntity;

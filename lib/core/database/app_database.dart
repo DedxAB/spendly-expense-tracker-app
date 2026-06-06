@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -177,6 +177,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 20) {
         await m.addColumn(transactions, transactions.cardType);
       }
+      if (from < 21) {
+        final hasShowAmounts = await _hasColumn(
+          'settings',
+          'show_amounts_enabled',
+        );
+        if (!hasShowAmounts) {
+          await m.addColumn(settings, settings.showAmountsEnabled);
+        }
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -198,6 +207,7 @@ class AppDatabase extends _$AppDatabase {
         transactionHintsSeen: const Value(false),
         dailyReminderEnabled: const Value(false),
         privacyLockEnabled: const Value(false),
+        showAmountsEnabled: const Value(true),
         lastBudgetAlertAt: const Value(null),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
       ),

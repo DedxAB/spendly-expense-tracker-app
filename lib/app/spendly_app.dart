@@ -8,6 +8,7 @@ import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_theme.dart';
+import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
@@ -23,6 +24,7 @@ class SpendlyApp extends ConsumerWidget {
     ref.listen(settingsStreamProvider, (previous, next) async {
       final settings = next.valueOrNull;
       if (settings == null) return;
+      AmountVisibilityController.setVisible(settings.showAmountsEnabled);
       final notifications = ref.read(localNotificationServiceProvider);
       await notifications.initialize();
       if (settings.dailyReminderEnabled) {
@@ -52,14 +54,19 @@ class SpendlyApp extends ConsumerWidget {
     });
     final router = ref.watch(appRouterProvider);
 
-    return MaterialApp.router(
-      title: 'Spendly',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme(),
-      themeMode: ThemeMode.dark,
-      routerConfig: router,
-      builder: (context, child) {
-        return PrivacyLockGate(child: child ?? const SizedBox.shrink());
+    return ValueListenableBuilder<bool>(
+      valueListenable: AmountVisibilityController.showAmounts,
+      builder: (context, _, __) {
+        return MaterialApp.router(
+          title: 'Spendly',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkTheme(),
+          themeMode: ThemeMode.dark,
+          routerConfig: router,
+          builder: (context, child) {
+            return PrivacyLockGate(child: child ?? const SizedBox.shrink());
+          },
+        );
       },
     );
   }

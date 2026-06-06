@@ -14,6 +14,7 @@ _$SettingsEntityImpl _$$SettingsEntityImplFromJson(Map<String, dynamic> json) =>
       budgetAlertsEnabled: json['budgetAlertsEnabled'] as bool? ?? false,
       dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? false,
       privacyLockEnabled: json['privacyLockEnabled'] as bool? ?? false,
+      showAmountsEnabled: json['showAmountsEnabled'] as bool? ?? true,
       lastBudgetAlertAt: json['lastBudgetAlertAt'] == null
           ? null
           : DateTime.parse(json['lastBudgetAlertAt'] as String),
@@ -29,6 +30,7 @@ Map<String, dynamic> _$$SettingsEntityImplToJson(
   'budgetAlertsEnabled': instance.budgetAlertsEnabled,
   'dailyReminderEnabled': instance.dailyReminderEnabled,
   'privacyLockEnabled': instance.privacyLockEnabled,
+  'showAmountsEnabled': instance.showAmountsEnabled,
   'lastBudgetAlertAt': instance.lastBudgetAlertAt?.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
 };

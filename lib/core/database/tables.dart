@@ -85,6 +85,9 @@ class Settings extends Table {
   BoolColumn get privacyLockEnabled => boolean()
       .named('privacy_lock_enabled')
       .withDefault(const Constant(false))();
+  BoolColumn get showAmountsEnabled => boolean()
+      .named('show_amounts_enabled')
+      .withDefault(const Constant(true))();
   IntColumn get lastBudgetAlertAt =>
       integer().named('last_budget_alert_at').nullable()();
   IntColumn get updatedAt => integer().named('updated_at')();

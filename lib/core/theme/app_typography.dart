@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/utils/amount_visibility.dart';
 
 class AppTypography {
   static const String headingFamily = 'General Sans';
@@ -130,19 +131,22 @@ class AppTypography {
     BuildContext context, {
     Color? color,
     double fontSize = 20,
-  }) => GoogleFonts.inter(
-    fontSize: fontSize,
-    fontWeight: FontWeight.w700,
-    letterSpacing: 0,
-    height: 1.16,
-    color: color ?? Theme.of(context).colorScheme.onSurface,
-  );
+  }) {
+    final obscured = !AmountVisibilityController.isVisible;
+    return GoogleFonts.inter(
+      fontSize: fontSize,
+      fontWeight: FontWeight.w700,
+      letterSpacing: obscured ? 1.8 : 0,
+      height: obscured ? 1.28 : 1.16,
+      color: obscured ? Colors.white : (color ?? Theme.of(context).colorScheme.onSurface),
+    );
+  }
 
   static TextStyle amountStyle(Color color) => GoogleFonts.inter(
     fontSize: 20,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
     height: 1.16,
-    color: color,
+    color: AmountVisibilityController.isVisible ? color : Colors.white,
   );
 }

@@ -14,6 +14,8 @@ abstract class SettingsRepository {
 
   Future<void> setPrivacyLockEnabled(bool enabled);
 
+  Future<void> setShowAmountsEnabled(bool enabled);
+
   Future<String> exportJson();
 
   Future<void> importJson(String payload);
