@@ -497,7 +497,7 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 26),
           const Center(
             child: Text(
-              'Version 1.1.1',
+              'Version 1.1.2',
               style: TextStyle(color: muted, fontSize: 14),
             ),
           ),
