@@ -59,6 +59,7 @@ extension SettingMapper on Setting {
       budgetAlertsEnabled: transactionHintsSeen,
       dailyReminderEnabled: dailyReminderEnabled,
       privacyLockEnabled: privacyLockEnabled,
+      showAmountsEnabled: showAmountsEnabled,
       lastBudgetAlertAt: lastBudgetAlertAt == null
           ? null
           : DateTime.fromMillisecondsSinceEpoch(lastBudgetAlertAt!),
@@ -204,6 +205,7 @@ SettingsCompanion settingsToCompanion(SettingsEntity entity) {
     transactionHintsSeen: Value(entity.budgetAlertsEnabled),
     dailyReminderEnabled: Value(entity.dailyReminderEnabled),
     privacyLockEnabled: Value(entity.privacyLockEnabled),
+    showAmountsEnabled: Value(entity.showAmountsEnabled),
     lastBudgetAlertAt: Value(entity.lastBudgetAlertAt?.millisecondsSinceEpoch),
     updatedAt: entity.updatedAt.millisecondsSinceEpoch,
   );

@@ -2,23 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/utils/formatters.dart';
 
-class SpendlyBlackCard extends StatefulWidget {
-  const SpendlyBlackCard({super.key, required this.balance, this.onTap});
+class SpendlyBlackCard extends StatelessWidget {
+  const SpendlyBlackCard({
+    super.key,
+    required this.balance,
+    required this.showValues,
+    required this.onToggleValues,
+    this.onTap,
+  });
 
   final double balance;
+  final bool showValues;
+  final VoidCallback onToggleValues;
   final VoidCallback? onTap;
-
-  @override
-  State<SpendlyBlackCard> createState() => _SpendlyBlackCardState();
-}
-
-class _SpendlyBlackCardState extends State<SpendlyBlackCard> {
-  bool _showValues = true;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: widget.onTap,
+      onTap: onTap,
       child: AspectRatio(
         aspectRatio: 2.1,
         child: Container(
@@ -55,11 +56,10 @@ class _SpendlyBlackCardState extends State<SpendlyBlackCard> {
                           height: 32,
                         ),
                         padding: EdgeInsets.zero,
-                        onPressed: () =>
-                            setState(() => _showValues = !_showValues),
-                        tooltip: _showValues ? 'Hide values' : 'Show values',
+                        onPressed: onToggleValues,
+                        tooltip: showValues ? 'Hide values' : 'Show values',
                         icon: Icon(
-                          _showValues ? AppIcons.eye : AppIcons.eyeOff,
+                          showValues ? AppIcons.eye : AppIcons.eyeOff,
                           color: const Color(0xFFDADADA),
                           size: 18,
                         ),
@@ -79,12 +79,12 @@ class _SpendlyBlackCardState extends State<SpendlyBlackCard> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      _showValues
+                      showValues
                           ? FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                Formatters.currency(widget.balance),
+                                Formatters.currency(balance),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 26,
@@ -92,7 +92,11 @@ class _SpendlyBlackCardState extends State<SpendlyBlackCard> {
                                 ),
                               ),
                             )
-                          : const _MaskBars(bars: 10),
+                          : _MaskBars(
+                              bars: Formatters.rawCurrency(balance)
+                                  .replaceAll(RegExp(r'\s+'), '')
+                                  .length,
+                            ),
                     ],
                   ),
                   const Row(
@@ -131,14 +135,14 @@ class _MaskBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 20,
+      height: 24,
       child: Row(
         children: List.generate(
-          bars,
+          bars <= 0 ? 1 : bars,
           (index) => Container(
-            width: 4,
-            height: 18,
-            margin: EdgeInsets.only(right: index == bars - 1 ? 0 : 5),
+            width: 7,
+            height: 22,
+            margin: EdgeInsets.only(right: index == bars - 1 ? 0 : 6),
             color: Colors.white,
           ),
         ),

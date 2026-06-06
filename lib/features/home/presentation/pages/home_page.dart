@@ -6,6 +6,7 @@ import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
+import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -13,6 +14,8 @@ import 'package:spendly/features/home/presentation/providers/home_provider.dart'
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
+import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -27,6 +30,8 @@ class HomePage extends ConsumerWidget {
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
     final recent = ref.watch(recentTransactionsProvider);
     final lendOverview = ref.watch(lendOverviewProvider);
+    final settings = ref.watch(settingsStreamProvider).valueOrNull;
+    final showAmounts = settings?.showAmountsEnabled ?? true;
     final recurringRules =
         ref.watch(recurringRulesProvider).valueOrNull ?? const [];
     final activeRecurring = recurringRules.where((r) => r.isActive).toList()
@@ -61,6 +66,14 @@ class HomePage extends ConsumerWidget {
           summary.when(
             data: (data) => SpendlyBlackCard(
               balance: data.currentBalance,
+              showValues: showAmounts,
+              onToggleValues: () async {
+                final nextValue = !showAmounts;
+                AmountVisibilityController.setVisible(nextValue);
+                await ref
+                    .read(settingsRepositoryProvider)
+                    .setShowAmountsEnabled(nextValue);
+              },
               onTap: () => context.push('/transactions'),
             ),
             loading: () => const SizedBox(
