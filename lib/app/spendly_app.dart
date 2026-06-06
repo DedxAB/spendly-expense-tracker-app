@@ -78,6 +78,7 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     with WidgetsBindingObserver {
   bool _locked = true;
   bool _authenticating = false;
+  bool _unlockPromptQueuedForCurrentLock = false;
   bool _hasSeenEnabledState = false;
   bool _settingsResolvedOnce = false;
   bool _lastPrivacyEnabled = false;
@@ -121,7 +122,10 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     if (!enabled) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
-      setState(() => _locked = true);
+      setState(() {
+        _locked = true;
+        _unlockPromptQueuedForCurrentLock = false;
+      });
     }
   }
 
@@ -145,8 +149,11 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     return !_locked;
   }
 
-  Future<void> _unlock() async {
+  Future<void> _unlock({bool forceRetry = false}) async {
     if (_authenticating) return;
+    if (forceRetry) {
+      _unlockPromptQueuedForCurrentLock = false;
+    }
     setState(() => _authenticating = true);
     try {
       final authenticated = await LocalAuthentication().authenticate(
@@ -156,7 +163,10 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
       );
       if (!mounted) return;
       if (authenticated) {
-        setState(() => _locked = false);
+        setState(() {
+          _locked = false;
+          _unlockPromptQueuedForCurrentLock = false;
+        });
       }
     } on LocalAuthException catch (_) {
       if (!mounted) return;
@@ -186,6 +196,7 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
       _settingsResolvedOnce = true;
       _lastPrivacyEnabled = false;
       _locked = true;
+      _unlockPromptQueuedForCurrentLock = false;
       return widget.child;
     }
     final justEnabledInSession = _settingsResolvedOnce && !_lastPrivacyEnabled;
@@ -194,13 +205,25 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     if (justEnabledInSession && !_hasSeenEnabledState) {
       _hasSeenEnabledState = true;
       _locked = false;
+      _unlockPromptQueuedForCurrentLock = false;
       return widget.child;
     }
-    if (!_locked) return widget.child;
+    if (!_locked) {
+      _unlockPromptQueuedForCurrentLock = false;
+      return widget.child;
+    }
+
+    if (!_authenticating && !_unlockPromptQueuedForCurrentLock) {
+      _unlockPromptQueuedForCurrentLock = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_locked || _authenticating) return;
+        _unlock();
+      });
+    }
 
     return _PrivacyLockScreen(
       authenticating: _authenticating,
-      onUnlock: _unlock,
+      onUnlock: () => _unlock(forceRetry: true),
     );
   }
 }
@@ -281,7 +304,7 @@ class _PrivacyLockScreen extends StatelessWidget {
                         )
                       : const Icon(AppIcons.shield, size: 18),
                   label: Text(
-                    authenticating ? 'Verifying...' : 'Unlock with biometrics',
+                    authenticating ? 'Verifying...' : 'Try again',
                   ),
                 ),
               ),

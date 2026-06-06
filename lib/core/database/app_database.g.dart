@@ -70,6 +70,17 @@ class $TransactionsTable extends Transactions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _cardTypeMeta = const VerificationMeta(
+    'cardType',
+  );
+  @override
+  late final GeneratedColumn<String> cardType = GeneratedColumn<String>(
+    'card_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -158,6 +169,7 @@ class $TransactionsTable extends Transactions
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     note,
     date,
     createdAt,
@@ -226,6 +238,12 @@ class $TransactionsTable extends Transactions
       );
     } else if (isInserting) {
       context.missing(_paymentModeMeta);
+    }
+    if (data.containsKey('card_type')) {
+      context.handle(
+        _cardTypeMeta,
+        cardType.isAcceptableOrUnknown(data['card_type']!, _cardTypeMeta),
+      );
     }
     if (data.containsKey('note')) {
       context.handle(
@@ -314,6 +332,10 @@ class $TransactionsTable extends Transactions
         DriftSqlType.string,
         data['${effectivePrefix}payment_mode'],
       )!,
+      cardType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_type'],
+      ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -358,6 +380,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final int amountPaise;
   final String categoryId;
   final String paymentMode;
+  final String? cardType;
   final String? note;
   final int date;
   final int createdAt;
@@ -372,6 +395,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.amountPaise,
     required this.categoryId,
     required this.paymentMode,
+    this.cardType,
     this.note,
     required this.date,
     required this.createdAt,
@@ -389,6 +413,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     map['amount_paise'] = Variable<int>(amountPaise);
     map['category_id'] = Variable<String>(categoryId);
     map['payment_mode'] = Variable<String>(paymentMode);
+    if (!nullToAbsent || cardType != null) {
+      map['card_type'] = Variable<String>(cardType);
+    }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
@@ -411,6 +438,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       amountPaise: Value(amountPaise),
       categoryId: Value(categoryId),
       paymentMode: Value(paymentMode),
+      cardType: cardType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardType),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       date: Value(date),
       createdAt: Value(createdAt),
@@ -435,6 +465,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       amountPaise: serializer.fromJson<int>(json['amountPaise']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
       paymentMode: serializer.fromJson<String>(json['paymentMode']),
+      cardType: serializer.fromJson<String?>(json['cardType']),
       note: serializer.fromJson<String?>(json['note']),
       date: serializer.fromJson<int>(json['date']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
@@ -456,6 +487,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'amountPaise': serializer.toJson<int>(amountPaise),
       'categoryId': serializer.toJson<String>(categoryId),
       'paymentMode': serializer.toJson<String>(paymentMode),
+      'cardType': serializer.toJson<String?>(cardType),
       'note': serializer.toJson<String?>(note),
       'date': serializer.toJson<int>(date),
       'createdAt': serializer.toJson<int>(createdAt),
@@ -473,6 +505,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     int? amountPaise,
     String? categoryId,
     String? paymentMode,
+    Value<String?> cardType = const Value.absent(),
     Value<String?> note = const Value.absent(),
     int? date,
     int? createdAt,
@@ -487,6 +520,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     amountPaise: amountPaise ?? this.amountPaise,
     categoryId: categoryId ?? this.categoryId,
     paymentMode: paymentMode ?? this.paymentMode,
+    cardType: cardType.present ? cardType.value : this.cardType,
     note: note.present ? note.value : this.note,
     date: date ?? this.date,
     createdAt: createdAt ?? this.createdAt,
@@ -511,6 +545,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       paymentMode: data.paymentMode.present
           ? data.paymentMode.value
           : this.paymentMode,
+      cardType: data.cardType.present ? data.cardType.value : this.cardType,
       note: data.note.present ? data.note.value : this.note,
       date: data.date.present ? data.date.value : this.date,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -534,6 +569,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('note: $note, ')
           ..write('date: $date, ')
           ..write('createdAt: $createdAt, ')
@@ -553,6 +589,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     note,
     date,
     createdAt,
@@ -571,6 +608,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.amountPaise == this.amountPaise &&
           other.categoryId == this.categoryId &&
           other.paymentMode == this.paymentMode &&
+          other.cardType == this.cardType &&
           other.note == this.note &&
           other.date == this.date &&
           other.createdAt == this.createdAt &&
@@ -587,6 +625,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<int> amountPaise;
   final Value<String> categoryId;
   final Value<String> paymentMode;
+  final Value<String?> cardType;
   final Value<String?> note;
   final Value<int> date;
   final Value<int> createdAt;
@@ -602,6 +641,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.amountPaise = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.paymentMode = const Value.absent(),
+    this.cardType = const Value.absent(),
     this.note = const Value.absent(),
     this.date = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -618,6 +658,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.amountPaise = const Value.absent(),
     required String categoryId,
     required String paymentMode,
+    this.cardType = const Value.absent(),
     this.note = const Value.absent(),
     required int date,
     required int createdAt,
@@ -641,6 +682,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<int>? amountPaise,
     Expression<String>? categoryId,
     Expression<String>? paymentMode,
+    Expression<String>? cardType,
     Expression<String>? note,
     Expression<int>? date,
     Expression<int>? createdAt,
@@ -657,6 +699,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (amountPaise != null) 'amount_paise': amountPaise,
       if (categoryId != null) 'category_id': categoryId,
       if (paymentMode != null) 'payment_mode': paymentMode,
+      if (cardType != null) 'card_type': cardType,
       if (note != null) 'note': note,
       if (date != null) 'date': date,
       if (createdAt != null) 'created_at': createdAt,
@@ -676,6 +719,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<int>? amountPaise,
     Value<String>? categoryId,
     Value<String>? paymentMode,
+    Value<String?>? cardType,
     Value<String?>? note,
     Value<int>? date,
     Value<int>? createdAt,
@@ -692,6 +736,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       amountPaise: amountPaise ?? this.amountPaise,
       categoryId: categoryId ?? this.categoryId,
       paymentMode: paymentMode ?? this.paymentMode,
+      cardType: cardType ?? this.cardType,
       note: note ?? this.note,
       date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
@@ -723,6 +768,9 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     }
     if (paymentMode.present) {
       map['payment_mode'] = Variable<String>(paymentMode.value);
+    }
+    if (cardType.present) {
+      map['card_type'] = Variable<String>(cardType.value);
     }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
@@ -760,6 +808,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('note: $note, ')
           ..write('date: $date, ')
           ..write('createdAt: $createdAt, ')
@@ -7769,6 +7818,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       Value<int> amountPaise,
       required String categoryId,
       required String paymentMode,
+      Value<String?> cardType,
       Value<String?> note,
       required int date,
       required int createdAt,
@@ -7786,6 +7836,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<int> amountPaise,
       Value<String> categoryId,
       Value<String> paymentMode,
+      Value<String?> cardType,
       Value<String?> note,
       Value<int> date,
       Value<int> createdAt,
@@ -7832,6 +7883,11 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get paymentMode => $composableBuilder(
     column: $table.paymentMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardType => $composableBuilder(
+    column: $table.cardType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7910,6 +7966,11 @@ class $$TransactionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cardType => $composableBuilder(
+    column: $table.cardType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
@@ -7979,6 +8040,9 @@ class $$TransactionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get cardType =>
+      $composableBuilder(column: $table.cardType, builder: (column) => column);
+
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
 
@@ -8042,6 +8106,7 @@ class $$TransactionsTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<String> paymentMode = const Value.absent(),
+                Value<String?> cardType = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> date = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
@@ -8057,6 +8122,7 @@ class $$TransactionsTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 note: note,
                 date: date,
                 createdAt: createdAt,
@@ -8074,6 +8140,7 @@ class $$TransactionsTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 required String categoryId,
                 required String paymentMode,
+                Value<String?> cardType = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 required int date,
                 required int createdAt,
@@ -8089,6 +8156,7 @@ class $$TransactionsTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 note: note,
                 date: date,
                 createdAt: createdAt,

@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 20;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -173,6 +173,9 @@ class AppDatabase extends _$AppDatabase {
       if (from < 19) {
         await m.createTable(goalFunds);
         await m.createTable(goalContributions);
+      }
+      if (from < 20) {
+        await m.addColumn(transactions, transactions.cardType);
       }
     },
     beforeOpen: (details) async {

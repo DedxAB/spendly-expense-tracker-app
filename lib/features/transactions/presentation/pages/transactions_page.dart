@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_enums.dart';
+import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -25,6 +27,18 @@ class TransactionsPage extends ConsumerWidget {
     final transactions = ref.watch(filteredTransactionsProvider);
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
     final categoryById = {for (final c in categories) c.id: c.name};
+    final activeCategoryName = filters.categoryId == null
+        ? null
+        : categoryById[filters.categoryId!];
+    final hasActiveFilters =
+        filters.searchQuery.trim().isNotEmpty ||
+        filters.type != null ||
+        filters.categoryId != null ||
+        filters.paymentMode != null ||
+        filters.minAmount != null ||
+        filters.maxAmount != null ||
+        filters.sortOption != TransactionSortOption.newestFirst ||
+        filters.datePreset != TransactionDatePreset.allTime;
 
     return Scaffold(
       appBar: NoirHeader(
@@ -62,6 +76,75 @@ class TransactionsPage extends ConsumerWidget {
               ),
             ),
           ),
+          if (hasActiveFilters) ...[
+            const SizedBox(height: AppSpacing.sm),
+            _ActiveFilterBar(
+              filters: filters,
+              onClearAll: filterController.clearAll,
+              onClearSearch: filters.searchQuery.trim().isNotEmpty
+                  ? () => filterController.setSearchQuery('')
+                  : null,
+              onClearType: filters.type != null
+                  ? () => filterController.setType(null)
+                  : null,
+              onClearPaymentMode: filters.paymentMode != null
+                  ? () => ref
+                      .read(transactionFilterProvider.notifier)
+                      .applyAdvanced(
+                        datePreset: filters.datePreset,
+                        paymentMode: null,
+                        minAmount: filters.minAmount,
+                        maxAmount: filters.maxAmount,
+                        sortOption: filters.sortOption,
+                        customFrom: filters.customFrom,
+                        customTo: filters.customTo,
+                      )
+                  : null,
+              onClearCategory: filters.categoryId != null
+                  ? () => filterController.setCategory(null)
+                  : null,
+              onClearAmounts:
+                  filters.minAmount != null || filters.maxAmount != null
+                  ? () => ref
+                      .read(transactionFilterProvider.notifier)
+                      .applyAdvanced(
+                        datePreset: filters.datePreset,
+                        paymentMode: filters.paymentMode,
+                        minAmount: null,
+                        maxAmount: null,
+                        sortOption: filters.sortOption,
+                        customFrom: filters.customFrom,
+                        customTo: filters.customTo,
+                      )
+                  : null,
+              onClearSort: filters.sortOption != TransactionSortOption.newestFirst
+                  ? () => ref
+                      .read(transactionFilterProvider.notifier)
+                      .applyAdvanced(
+                        datePreset: filters.datePreset,
+                        paymentMode: filters.paymentMode,
+                        minAmount: filters.minAmount,
+                        maxAmount: filters.maxAmount,
+                        sortOption: TransactionSortOption.newestFirst,
+                        customFrom: filters.customFrom,
+                        customTo: filters.customTo,
+                      )
+                  : null,
+              onClearDatePreset:
+                  filters.datePreset != TransactionDatePreset.allTime
+                  ? () => ref
+                      .read(transactionFilterProvider.notifier)
+                      .applyAdvanced(
+                        datePreset: TransactionDatePreset.allTime,
+                        paymentMode: filters.paymentMode,
+                        minAmount: filters.minAmount,
+                        maxAmount: filters.maxAmount,
+                        sortOption: filters.sortOption,
+                      )
+                  : null,
+              categoryName: activeCategoryName,
+            ),
+          ],
           const SizedBox(height: AppSpacing.mdPlus),
           const Divider(color: AppColors.borderDark),
           transactions.when(
@@ -73,28 +156,29 @@ class TransactionsPage extends ConsumerWidget {
                 );
               }
 
-              double upiExpense = 0, upiIncome = 0;
-              double cardExpense = 0, cardIncome = 0;
-              double cashExpense = 0, cashIncome = 0;
+              double upiExpense = 0;
+              double cardExpense = 0;
+              double cashExpense = 0;
+              double totalIncome = 0;
               for (final tx in items) {
                 final amt = tx.amount;
                 if (tx.paymentMode == PaymentMode.upi) {
                   if (tx.type == TransactionType.expense) {
                     upiExpense += amt;
                   } else {
-                    upiIncome += amt;
+                    totalIncome += amt;
                   }
                 } else if (tx.paymentMode == PaymentMode.card) {
                   if (tx.type == TransactionType.expense) {
                     cardExpense += amt;
                   } else {
-                    cardIncome += amt;
+                    totalIncome += amt;
                   }
                 } else if (tx.paymentMode == PaymentMode.cash) {
                   if (tx.type == TransactionType.expense) {
                     cashExpense += amt;
                   } else {
-                    cashIncome += amt;
+                    totalIncome += amt;
                   }
                 }
               }
@@ -103,13 +187,47 @@ class TransactionsPage extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E0E0E),
+                      border: Border.all(color: AppColors.borderDark),
+                      borderRadius: BorderRadius.circular(AppRadii.md),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'INCOME',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          Formatters.currency(totalIncome),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF8AF0A0),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
                         child: _AccountBreakupCard(
                           name: 'UPI',
                           expense: upiExpense,
-                          income: upiIncome,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -117,7 +235,6 @@ class TransactionsPage extends ConsumerWidget {
                         child: _AccountBreakupCard(
                           name: 'Card',
                           expense: cardExpense,
-                          income: cardIncome,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -125,7 +242,6 @@ class TransactionsPage extends ConsumerWidget {
                         child: _AccountBreakupCard(
                           name: 'Cash',
                           expense: cashExpense,
-                          income: cashIncome,
                         ),
                       ),
                     ],
@@ -187,7 +303,11 @@ class TransactionsPage extends ConsumerWidget {
                                     categoryById[tx.categoryId] ??
                                     tx.categoryId,
                                 subtitle: tx.note?.trim() ?? '',
-                                paymentModeLabel: tx.paymentMode.label,
+                                paymentModeLabel: transactionPaymentLabel(
+                                  type: tx.type,
+                                  paymentMode: tx.paymentMode,
+                                  cardType: tx.cardType,
+                                ),
                                 amount: tx.amount,
                                 income: tx.type == TransactionType.income,
                                 icon: _iconFor(
@@ -242,6 +362,64 @@ class TransactionsPage extends ConsumerWidget {
     WidgetRef ref,
     TransactionFilterState filters,
   ) async {
+    final availableCategories =
+        ref.read(allCategoriesProvider).valueOrNull ?? const [];
+    var selectedDatePreset = filters.datePreset;
+    var selectedType = filters.type;
+    var selectedPaymentMode = filters.paymentMode;
+    var selectedMinAmount = filters.minAmount;
+    var selectedMaxAmount = filters.maxAmount;
+    var selectedCategoryId = filters.categoryId;
+    var selectedSortOption = filters.sortOption;
+    DateTime? customFrom = filters.customFrom;
+    DateTime? customTo = filters.customTo;
+    final minAmountController = TextEditingController(
+      text: filters.minAmount == null
+          ? ''
+          : _formatAmountInput(filters.minAmount!),
+    );
+    final maxAmountController = TextEditingController(
+      text: filters.maxAmount == null
+          ? ''
+          : _formatAmountInput(filters.maxAmount!),
+    );
+
+    Future<DateTime?> pickDate(DateTime initialDate) {
+      return showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: DateTime(2000),
+        lastDate: DateTime.now().add(const Duration(days: 3650)),
+        builder: (context, child) {
+          final base = Theme.of(context);
+          return Theme(
+            data: base.copyWith(
+              colorScheme: const ColorScheme.dark(
+                primary: Colors.white,
+                onPrimary: Colors.black,
+                surface: Color(0xFF0E0E0E),
+                onSurface: Colors.white,
+              ),
+              dialogTheme: const DialogThemeData(
+                backgroundColor: Color(0xFF0E0E0E),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              ),
+              datePickerTheme: AppDatePickerTheme.darkBoxy(),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+    }
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -249,121 +427,711 @@ class TransactionsPage extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
         return AppModalSurface(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              AppSpacing.xs,
-              AppSpacing.sm,
-              MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.sm,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Center(
-                  child: Container(
-                    width: 64,
-                    height: 4,
-                    color: const Color(0xFF6A6A6A),
-                  ),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              void syncAmountState() {
+                selectedMinAmount = _parseAmountInput(minAmountController.text);
+                selectedMaxAmount = _parseAmountInput(maxAmountController.text);
+              }
+
+              Future<void> chooseFrom() async {
+                final picked =
+                    await pickDate(customFrom ?? DateTime.now()) ?? customFrom;
+                if (picked == null) return;
+                setState(() {
+                  customFrom = DateTime(picked.year, picked.month, picked.day);
+                  if (customTo != null && customTo!.isBefore(customFrom!)) {
+                    customTo = customFrom;
+                  }
+                  selectedDatePreset = TransactionDatePreset.custom;
+                });
+              }
+
+              Future<void> chooseTo() async {
+                final picked =
+                    await pickDate(customTo ?? customFrom ?? DateTime.now()) ??
+                    customTo;
+                if (picked == null) return;
+                setState(() {
+                  customTo = DateTime(picked.year, picked.month, picked.day);
+                  if (customFrom != null && customFrom!.isAfter(customTo!)) {
+                    customFrom = customTo;
+                  }
+                  selectedDatePreset = TransactionDatePreset.custom;
+                });
+              }
+
+              void resetFilters() {
+                setState(() {
+                  selectedDatePreset = TransactionDatePreset.allTime;
+                  selectedType = null;
+                  selectedPaymentMode = null;
+                  selectedCategoryId = null;
+                  selectedMinAmount = null;
+                  selectedMaxAmount = null;
+                  selectedSortOption = TransactionSortOption.newestFirst;
+                  customFrom = null;
+                  customTo = null;
+                  minAmountController.clear();
+                  maxAmountController.clear();
+                });
+              }
+
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.sm,
+                  AppSpacing.xs,
+                  AppSpacing.sm,
+                  MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.sm,
                 ),
-                const SizedBox(height: AppSpacing.smPlus),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Filters',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Type',
-                    style: TextStyle(
-                      color: Color(0xFFB3B3B3),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: AppSpacing.xs,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ChoiceChip(
-                      label: const Text('All'),
-                      selected: filters.type == null,
-                      onSelected: (_) => ref
-                          .read(transactionFilterProvider.notifier)
-                          .setType(null),
+                    Center(
+                      child: Container(
+                        width: 64,
+                        height: 4,
+                        color: const Color(0xFF6A6A6A),
+                      ),
                     ),
-                    ChoiceChip(
-                      label: const Text('Income'),
-                      selected: filters.type == 'income',
-                      onSelected: (_) => ref
-                          .read(transactionFilterProvider.notifier)
-                          .setType('income'),
+                    const SizedBox(height: AppSpacing.smPlus),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Filters',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: resetFilters,
+                          child: const Text('Reset'),
+                        ),
+                      ],
                     ),
-                    ChoiceChip(
-                      label: const Text('Expense'),
-                      selected: filters.type == 'expense',
-                      onSelected: (_) => ref
-                          .read(transactionFilterProvider.notifier)
-                          .setType('expense'),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Date Range'),
+                    const SizedBox(height: 8),
+                    _FilterSegment(
+                      selectedIndex: selectedDatePreset.index,
+                      labels: const [
+                        'All time',
+                        'This month',
+                        'Last month',
+                        'This year',
+                        'Custom',
+                      ],
+                      onChanged: (index) {
+                        setState(() {
+                          selectedDatePreset =
+                              TransactionDatePreset.values[index];
+                          if (selectedDatePreset !=
+                              TransactionDatePreset.custom) {
+                            customFrom = null;
+                            customTo = null;
+                          }
+                        });
+                      },
+                    ),
+                    if (selectedDatePreset == TransactionDatePreset.custom) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _DateRangeButton(
+                              label: customFrom == null
+                                  ? 'From'
+                                  : DateFormat(
+                                      'd MMM yyyy',
+                                    ).format(customFrom!),
+                              onTap: chooseFrom,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _DateRangeButton(
+                              label: customTo == null
+                                  ? 'To'
+                                  : DateFormat('d MMM yyyy').format(customTo!),
+                              onTap: chooseTo,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Type'),
+                    const SizedBox(height: 8),
+                    _FilterSegment(
+                      selectedIndex: selectedType == null
+                          ? 0
+                          : selectedType == 'income'
+                          ? 1
+                          : 2,
+                      labels: const ['All', 'Income', 'Expense'],
+                      onChanged: (index) {
+                        setState(() {
+                          if (index == 0) {
+                            selectedType = null;
+                          } else {
+                            selectedType = index == 1 ? 'income' : 'expense';
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Payment Mode'),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: AppSpacing.xs,
+                      runSpacing: AppSpacing.xs,
+                      children: [
+                        _FilterChip(
+                          label: 'All',
+                          selected: selectedPaymentMode == null,
+                          onTap: () =>
+                              setState(() => selectedPaymentMode = null),
+                        ),
+                        ...PaymentMode.values.map(
+                          (m) => _FilterChip(
+                            label: m.label,
+                            selected: selectedPaymentMode == m,
+                            onTap: () => setState(() {
+                              selectedPaymentMode = selectedPaymentMode == m
+                                  ? null
+                                  : m;
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Category'),
+                    const SizedBox(height: 8),
+                    if (availableCategories.isEmpty)
+                      const Text(
+                        'No categories available.',
+                        style: TextStyle(
+                          color: Color(0xFF8E8E8E),
+                          fontSize: 12,
+                        ),
+                      )
+                    else
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          _FilterChip(
+                            label: 'All',
+                            selected: selectedCategoryId == null,
+                            onTap: () =>
+                                setState(() => selectedCategoryId = null),
+                          ),
+                          ...availableCategories.map(
+                            (category) => _FilterChip(
+                              label: category.name,
+                              selected: selectedCategoryId == category.id,
+                              onTap: () => setState(() {
+                                selectedCategoryId =
+                                    selectedCategoryId == category.id
+                                    ? null
+                                    : category.id;
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Amount'),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: minAmountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.,]'),
+                              ),
+                            ],
+                            onChanged: (_) => setState(syncAmountState),
+                            decoration: const InputDecoration(
+                              hintText: 'Min amount',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: maxAmountController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9.,]'),
+                              ),
+                            ],
+                            onChanged: (_) => setState(syncAmountState),
+                            decoration: const InputDecoration(
+                              hintText: 'Max amount',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    const _FilterSectionLabel('Sort'),
+                    const SizedBox(height: 8),
+                    _FilterSegment(
+                      selectedIndex: selectedSortOption.index,
+                      labels: const ['Newest', 'Oldest', 'High', 'Low'],
+                      onChanged: (index) {
+                        setState(() {
+                          selectedSortOption =
+                              TransactionSortOption.values[index];
+                        });
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            child: const Text('Close'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              syncAmountState();
+                              ref
+                                  .read(transactionFilterProvider.notifier)
+                                  .setCategory(selectedCategoryId);
+                              ref
+                                  .read(transactionFilterProvider.notifier)
+                                  .applyAdvanced(
+                                    datePreset: selectedDatePreset,
+                                    paymentMode: selectedPaymentMode,
+                                    minAmount: selectedMinAmount,
+                                    maxAmount: selectedMaxAmount,
+                                    sortOption: selectedSortOption,
+                                    customFrom:
+                                        selectedDatePreset ==
+                                            TransactionDatePreset.custom
+                                        ? customFrom
+                                        : null,
+                                    customTo:
+                                        selectedDatePreset ==
+                                            TransactionDatePreset.custom
+                                        ? customTo
+                                        : null,
+                                  );
+                              Navigator.pop(sheetContext);
+                            },
+                            child: const Text('Apply'),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Payment Mode',
-                    style: TextStyle(
-                      color: Color(0xFFB3B3B3),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: AppSpacing.xs,
-                  children: PaymentMode.values
-                      .map(
-                        (m) => ChoiceChip(
-                          label: Text(m.label),
-                          selected: filters.paymentMode == m,
-                          onSelected: (_) => ref
-                              .read(transactionFilterProvider.notifier)
-                              .applyAdvanced(
-                                paymentMode: filters.paymentMode == m
-                                    ? null
-                                    : m,
-                                minAmount: filters.minAmount,
-                                maxAmount: filters.maxAmount,
-                                sortOption: filters.sortOption,
-                                customFrom: filters.customFrom,
-                                customTo: filters.customTo,
-                              ),
-                        ),
-                      )
-                      .toList(growable: false),
-                ),
-                const SizedBox(height: AppSpacing.smPlus),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(sheetContext),
-                    child: const Text('Close'),
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
     );
+
+    minAmountController.dispose();
+    maxAmountController.dispose();
   }
+}
+
+class _FilterSectionLabel extends StatelessWidget {
+  const _FilterSectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: const TextStyle(
+        color: Color(0xFFB3B3B3),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+class _FilterSegment extends StatelessWidget {
+  const _FilterSegment({
+    required this.selectedIndex,
+    required this.labels,
+    required this.onChanged,
+  });
+
+  final int selectedIndex;
+  final List<String> labels;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF4A4A4A)),
+      ),
+      child: Row(
+        children: List.generate(labels.length, (index) {
+          final isSelected = selectedIndex == index;
+          return Expanded(
+            child: InkWell(
+              onTap: () => onChanged(index),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.black,
+                  border: Border(
+                    right: BorderSide(
+                      color: index == labels.length - 1
+                          ? Colors.transparent
+                          : const Color(0xFF4A4A4A),
+                    ),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  labels[index],
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white,
+                    fontSize: 12,
+                    letterSpacing: 0.2,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? Colors.white : const Color(0xFF0E0E0E),
+          border: Border.all(
+            color: selected ? Colors.white : const Color(0xFF4A4A4A),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.black : Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveFilterBar extends StatelessWidget {
+  const _ActiveFilterBar({
+    required this.filters,
+    required this.onClearAll,
+    required this.onClearSearch,
+    required this.onClearType,
+    required this.onClearPaymentMode,
+    required this.onClearCategory,
+    required this.onClearAmounts,
+    required this.onClearSort,
+    required this.onClearDatePreset,
+    required this.categoryName,
+  });
+
+  final TransactionFilterState filters;
+  final VoidCallback onClearAll;
+  final VoidCallback? onClearSearch;
+  final VoidCallback? onClearType;
+  final VoidCallback? onClearPaymentMode;
+  final VoidCallback? onClearCategory;
+  final VoidCallback? onClearAmounts;
+  final VoidCallback? onClearSort;
+  final VoidCallback? onClearDatePreset;
+  final String? categoryName;
+
+  @override
+  Widget build(BuildContext context) {
+    final chips = <Widget>[];
+
+    if (filters.datePreset == TransactionDatePreset.custom &&
+        filters.customFrom != null &&
+        filters.customTo != null) {
+      chips.add(
+        _SummaryChip(
+          label:
+              'Date: ${DateFormat('d MMM').format(filters.customFrom!)} - ${DateFormat('d MMM').format(filters.customTo!)}',
+          onRemove: onClearDatePreset,
+        ),
+      );
+    } else if (filters.datePreset != TransactionDatePreset.allTime) {
+      chips.add(
+        _SummaryChip(
+          label: _datePresetLabel(filters.datePreset),
+          onRemove: onClearDatePreset,
+        ),
+      );
+    }
+
+    if (filters.searchQuery.trim().isNotEmpty) {
+      chips.add(
+        _SummaryChip(
+          label: 'Search: ${filters.searchQuery.trim()}',
+          onRemove: onClearSearch,
+        ),
+      );
+    }
+
+    if (filters.type != null) {
+      chips.add(
+        _SummaryChip(
+          label: 'Type: ${filters.type == 'income' ? 'Income' : 'Expense'}',
+          onRemove: onClearType,
+        ),
+      );
+    }
+
+    if (filters.paymentMode != null) {
+      chips.add(
+        _SummaryChip(
+          label: 'Mode: ${filters.paymentMode!.label}',
+          onRemove: onClearPaymentMode,
+        ),
+      );
+    }
+
+    if (filters.categoryId != null) {
+      chips.add(
+        _SummaryChip(
+          label: 'Category: ${categoryName ?? 'Selected'}',
+          onRemove: onClearCategory,
+        ),
+      );
+    }
+
+    if (filters.minAmount != null || filters.maxAmount != null) {
+      chips.add(
+        _SummaryChip(
+          label: _amountLabel(filters.minAmount, filters.maxAmount),
+          onRemove: onClearAmounts,
+        ),
+      );
+    }
+
+    if (filters.sortOption != TransactionSortOption.newestFirst) {
+      chips.add(
+        _SummaryChip(
+          label: 'Sort: ${_sortLabel(filters.sortOption)}',
+          onRemove: onClearSort,
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: AppColors.borderDark),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'ACTIVE FILTERS',
+                  style: TextStyle(
+                    color: Color(0xFFBDBDBD),
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: onClearAll,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 32),
+                ),
+                child: const Text('Clear all'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (chips.isEmpty)
+            const Text(
+              'No filters applied.',
+              style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 12),
+            )
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: chips,
+            ),
+        ],
+      ),
+    );
+  }
+
+  static String _datePresetLabel(TransactionDatePreset preset) {
+    switch (preset) {
+      case TransactionDatePreset.allTime:
+        return 'All time';
+      case TransactionDatePreset.thisMonth:
+        return 'This month';
+      case TransactionDatePreset.lastMonth:
+        return 'Last month';
+      case TransactionDatePreset.thisYear:
+        return 'This year';
+      case TransactionDatePreset.custom:
+        return 'Custom range';
+    }
+  }
+
+  static String _sortLabel(TransactionSortOption sortOption) {
+    switch (sortOption) {
+      case TransactionSortOption.newestFirst:
+        return 'Newest';
+      case TransactionSortOption.oldestFirst:
+        return 'Oldest';
+      case TransactionSortOption.highestAmount:
+        return 'Highest';
+      case TransactionSortOption.lowestAmount:
+        return 'Lowest';
+    }
+  }
+
+  static String _amountLabel(double? minAmount, double? maxAmount) {
+    if (minAmount != null && maxAmount != null) {
+      return 'Amount: ${Formatters.currency(minAmount)} - ${Formatters.currency(maxAmount)}';
+    }
+    if (minAmount != null) {
+      return 'Amount: >= ${Formatters.currency(minAmount)}';
+    }
+    return 'Amount: <= ${Formatters.currency(maxAmount ?? 0)}';
+  }
+}
+
+class _SummaryChip extends StatelessWidget {
+  const _SummaryChip({required this.label, this.onRemove});
+
+  final String label;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF4A4A4A)),
+        color: const Color(0xFF141414),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          if (onRemove != null) ...[
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: onRemove,
+              child: const Icon(Icons.close, size: 14, color: Color(0xFFB0B0B0)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DateRangeButton extends StatelessWidget {
+  const _DateRangeButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        alignment: Alignment.centerLeft,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0E0E0E),
+          border: Border.all(color: const Color(0xFF4A4A4A)),
+        ),
+        child: Text(
+          label,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _formatAmountInput(double amount) {
+  final text = amount.toStringAsFixed(2);
+  return text.endsWith('.00') ? amount.toStringAsFixed(0) : text;
+}
+
+double? _parseAmountInput(String text) {
+  final normalized = text.trim().replaceAll(',', '');
+  if (normalized.isEmpty) return null;
+  return double.tryParse(normalized);
 }
 
 class _HistoryRow extends StatelessWidget {
@@ -458,15 +1226,10 @@ class _HistoryRow extends StatelessWidget {
 }
 
 class _AccountBreakupCard extends StatelessWidget {
-  const _AccountBreakupCard({
-    required this.name,
-    required this.expense,
-    required this.income,
-  });
+  const _AccountBreakupCard({required this.name, required this.expense});
 
   final String name;
   final double expense;
-  final double income;
 
   @override
   Widget build(BuildContext context) {
@@ -496,15 +1259,6 @@ class _AccountBreakupCard extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Color(0xFFFFB3A8),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '+${Formatters.currency(income)}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF8AF0A0),
             ),
           ),
         ],

@@ -527,28 +527,29 @@ class SettingsPage extends ConsumerWidget {
     bool enabled,
   ) async {
     try {
-      if (enabled) {
-        final auth = LocalAuthentication();
-        final isSupported = await auth.isDeviceSupported();
-        final canCheckBiometrics = await auth.canCheckBiometrics;
-        if (!context.mounted) return;
-        if (!isSupported || !canCheckBiometrics) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Biometric unlock is not available on this device.',
-              ),
+      final auth = LocalAuthentication();
+      final isSupported = await auth.isDeviceSupported();
+      if (!context.mounted) return;
+      if (!isSupported) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Device lock is not available on this device.',
             ),
-          );
-          return;
-        }
-
-        final didAuthenticate = await auth.authenticate(
-          localizedReason: 'Verify it is you to enable Privacy Shield.',
-          biometricOnly: true,
-          persistAcrossBackgrounding: true,
+          ),
         );
-        if (!context.mounted || !didAuthenticate) return;
+        return;
+      }
+
+      final didAuthenticate = await auth.authenticate(
+        localizedReason: enabled
+            ? 'Verify it is you to enable Privacy Shield.'
+            : 'Verify it is you to disable Privacy Shield.',
+        biometricOnly: false,
+        persistAcrossBackgrounding: true,
+      );
+      if (!context.mounted || !didAuthenticate) {
+        return;
       }
 
       await ref.read(settingsRepositoryProvider).setPrivacyLockEnabled(enabled);
@@ -888,7 +889,7 @@ class _PrivacyShieldTile extends StatelessWidget {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Require biometric verification for app access',
+                  'Require fingerprint, face, or device PIN for app access',
                   style: TextStyle(color: Color(0xFF8F8F8F), fontSize: 12),
                 ),
               ],

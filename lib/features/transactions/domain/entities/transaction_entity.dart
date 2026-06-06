@@ -12,6 +12,7 @@ class TransactionEntity with _$TransactionEntity {
     required double amount,
     required String categoryId,
     required PaymentMode paymentMode,
+    CardType? cardType,
     String? note,
     required DateTime date,
     required DateTime createdAt,

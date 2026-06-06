@@ -254,6 +254,7 @@ class _MonthGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    final now = DateTime.now();
 
     return Container(
       decoration: BoxDecoration(
@@ -300,6 +301,10 @@ class _MonthGrid extends StatelessWidget {
                   day.year == selectedDate.year &&
                   day.month == selectedDate.month &&
                   day.day == selectedDate.day;
+              final isToday =
+                  day.year == now.year &&
+                  day.month == now.month &&
+                  day.day == now.day;
               final double spend = isCurrentMonth
                   ? (expenseByDay[day.day] ?? 0.0)
                   : 0.0;
@@ -309,8 +314,17 @@ class _MonthGrid extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFE5E5E5) : Colors.black,
-                    border: Border.all(color: AppColors.borderDark),
+                    color: isSelected
+                        ? const Color(0xFFE5E5E5)
+                        : (isToday ? const Color(0xFF111111) : Colors.black),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFE5E5E5)
+                          : (isToday
+                                ? const Color(0xFFE0E0E0)
+                                : AppColors.borderDark),
+                      width: isToday && !isSelected ? 1.2 : 1,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

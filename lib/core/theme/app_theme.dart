@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 
@@ -51,6 +52,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.borderLight),
         ),
       ),
+      datePickerTheme: AppDatePickerTheme.darkBoxy(),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.lightSurface,
         surfaceTintColor: Colors.transparent,
@@ -190,6 +192,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.borderDark),
         ),
       ),
+      datePickerTheme: AppDatePickerTheme.darkBoxy(),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.darkSurface,
         surfaceTintColor: Colors.transparent,

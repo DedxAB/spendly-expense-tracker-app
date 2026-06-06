@@ -26,6 +26,7 @@ mixin _$TransactionEntity {
   double get amount => throw _privateConstructorUsedError;
   String get categoryId => throw _privateConstructorUsedError;
   PaymentMode get paymentMode => throw _privateConstructorUsedError;
+  CardType? get cardType => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   DateTime get date => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
@@ -57,6 +58,7 @@ abstract class $TransactionEntityCopyWith<$Res> {
     double amount,
     String categoryId,
     PaymentMode paymentMode,
+    CardType? cardType,
     String? note,
     DateTime date,
     DateTime createdAt,
@@ -87,6 +89,7 @@ class _$TransactionEntityCopyWithImpl<$Res, $Val extends TransactionEntity>
     Object? amount = null,
     Object? categoryId = null,
     Object? paymentMode = null,
+    Object? cardType = freezed,
     Object? note = freezed,
     Object? date = null,
     Object? createdAt = null,
@@ -117,6 +120,10 @@ class _$TransactionEntityCopyWithImpl<$Res, $Val extends TransactionEntity>
                 ? _value.paymentMode
                 : paymentMode // ignore: cast_nullable_to_non_nullable
                       as PaymentMode,
+            cardType: freezed == cardType
+                ? _value.cardType
+                : cardType // ignore: cast_nullable_to_non_nullable
+                      as CardType?,
             note: freezed == note
                 ? _value.note
                 : note // ignore: cast_nullable_to_non_nullable
@@ -166,6 +173,7 @@ abstract class _$$TransactionEntityImplCopyWith<$Res>
     double amount,
     String categoryId,
     PaymentMode paymentMode,
+    CardType? cardType,
     String? note,
     DateTime date,
     DateTime createdAt,
@@ -195,6 +203,7 @@ class __$$TransactionEntityImplCopyWithImpl<$Res>
     Object? amount = null,
     Object? categoryId = null,
     Object? paymentMode = null,
+    Object? cardType = freezed,
     Object? note = freezed,
     Object? date = null,
     Object? createdAt = null,
@@ -225,6 +234,10 @@ class __$$TransactionEntityImplCopyWithImpl<$Res>
             ? _value.paymentMode
             : paymentMode // ignore: cast_nullable_to_non_nullable
                   as PaymentMode,
+        cardType: freezed == cardType
+            ? _value.cardType
+            : cardType // ignore: cast_nullable_to_non_nullable
+                  as CardType?,
         note: freezed == note
             ? _value.note
             : note // ignore: cast_nullable_to_non_nullable
@@ -267,6 +280,7 @@ class _$TransactionEntityImpl implements _TransactionEntity {
     required this.amount,
     required this.categoryId,
     required this.paymentMode,
+    this.cardType,
     this.note,
     required this.date,
     required this.createdAt,
@@ -290,6 +304,8 @@ class _$TransactionEntityImpl implements _TransactionEntity {
   @override
   final PaymentMode paymentMode;
   @override
+  final CardType? cardType;
+  @override
   final String? note;
   @override
   final DateTime date;
@@ -308,7 +324,7 @@ class _$TransactionEntityImpl implements _TransactionEntity {
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, type: $type, amount: $amount, categoryId: $categoryId, paymentMode: $paymentMode, note: $note, date: $date, createdAt: $createdAt, updatedAt: $updatedAt, recurringRuleId: $recurringRuleId, isRecurringInstance: $isRecurringInstance, isDeleted: $isDeleted)';
+    return 'TransactionEntity(id: $id, type: $type, amount: $amount, categoryId: $categoryId, paymentMode: $paymentMode, cardType: $cardType, note: $note, date: $date, createdAt: $createdAt, updatedAt: $updatedAt, recurringRuleId: $recurringRuleId, isRecurringInstance: $isRecurringInstance, isDeleted: $isDeleted)';
   }
 
   @override
@@ -323,6 +339,8 @@ class _$TransactionEntityImpl implements _TransactionEntity {
                 other.categoryId == categoryId) &&
             (identical(other.paymentMode, paymentMode) ||
                 other.paymentMode == paymentMode) &&
+            (identical(other.cardType, cardType) ||
+                other.cardType == cardType) &&
             (identical(other.note, note) || other.note == note) &&
             (identical(other.date, date) || other.date == date) &&
             (identical(other.createdAt, createdAt) ||
@@ -346,6 +364,7 @@ class _$TransactionEntityImpl implements _TransactionEntity {
     amount,
     categoryId,
     paymentMode,
+    cardType,
     note,
     date,
     createdAt,
@@ -379,6 +398,7 @@ abstract class _TransactionEntity implements TransactionEntity {
     required final double amount,
     required final String categoryId,
     required final PaymentMode paymentMode,
+    final CardType? cardType,
     final String? note,
     required final DateTime date,
     required final DateTime createdAt,
@@ -401,6 +421,8 @@ abstract class _TransactionEntity implements TransactionEntity {
   String get categoryId;
   @override
   PaymentMode get paymentMode;
+  @override
+  CardType? get cardType;
   @override
   String? get note;
   @override

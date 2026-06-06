@@ -11,6 +11,7 @@ void main() {
       amount: 120.5,
       categoryId: 'cat_food',
       paymentMode: PaymentMode.upi,
+      cardType: CardType.credit,
       note: 'Lunch',
       date: now,
       createdAt: now,
@@ -23,5 +24,6 @@ void main() {
     expect(decoded.id, entity.id);
     expect(decoded.amount, entity.amount);
     expect(decoded.paymentMode, PaymentMode.upi);
+    expect(decoded.cardType, CardType.credit);
   });
 }
