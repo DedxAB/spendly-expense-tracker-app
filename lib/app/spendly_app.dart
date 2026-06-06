@@ -99,7 +99,6 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _usageTimer?.cancel();
-    _flushUsage();
     super.dispose();
   }
 
@@ -127,6 +126,7 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
   }
 
   Future<void> _flushUsage() async {
+    if (!mounted) return;
     final now = DateTime.now();
     final last = _lastUsageTick;
     _lastUsageTick = now;
@@ -134,6 +134,7 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
 
     final elapsed = now.difference(last);
     if (elapsed.inSeconds < 1 || elapsed.inMinutes > 10) return;
+    if (!mounted) return;
     await ref.read(activityRepositoryProvider).addScreenTime(elapsed);
   }
 
