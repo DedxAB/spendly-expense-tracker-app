@@ -12,63 +12,63 @@ Track expenses, manage budgets, analyze spending habits, and stay in control of 
 
 ## Features
 
-### Expense Management
+### Financial Tracking
 
-- Add income and expenses
-- Categorized transactions
+- Income management
+- Expense tracking
 - Transaction history
-- Search and filtering
-- Monthly summaries
+- Categorized transactions
 
-### Budget Tracking
+### Budget Management
 
-- Monthly budget planning
-- Remaining budget calculation
+- Monthly budgets
+- Budget monitoring
 - Budget alerts
-- Spending progress tracking
 
-### Analytics
+### Financial Goals
 
-- Spending insights
-- Category-wise breakdown
-- Monthly trends
-- Income vs Expense analysis
-- Interactive charts
+- Goal tracking
+- Progress monitoring
+
+### Insights & Analytics
+
+- Spending breakdowns
+- Financial reflections
+- Trend analysis
 
 ### Recurring Transactions
 
-- Automatic recurring entries
-- Monthly subscriptions
-- Bills and rent tracking
-- Scheduled transaction generation
+- Subscription tracking
+- Automated recurring entries
+
+### Lend & Borrow
+
+- Money lent tracking
+- Borrowed money tracking
+- Settlement history
 
 ### Privacy & Security
 
 - Biometric authentication
-- Device PIN authentication
-- Privacy lock screen
-- Hide sensitive amounts
+- Device authentication
+- Privacy lock
+- Hidden amounts
 
 ### Notifications
 
-- Daily reminder notifications
-- Budget exceeded alerts
-- Local notifications
+- Daily reminders
+- Budget alerts
 
-### Backup & Sync
+### Cloud Sync
 
-- Google Sign-In
-- Google Drive backup support
-- Local-first data ownership
+- Google account integration
+- Backup capabilities
 
 ### Offline First
 
 - Works without internet
-- SQLite powered storage
+- SQLite storage
 - Fast local performance
-- No dependency on backend services
-
----
 
 ## Screenshots
 
