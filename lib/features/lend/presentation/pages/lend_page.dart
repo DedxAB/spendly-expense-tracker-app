@@ -6,7 +6,6 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/glass_card.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
@@ -15,19 +14,24 @@ import 'package:spendly/features/lend/presentation/providers/lend_provider.dart'
 class LendPage extends ConsumerWidget {
   const LendPage({super.key});
 
-  Future<void> _confirmDeletePerson(
+  Future<void> _editPerson(
     BuildContext context,
     WidgetRef ref, {
     required String personId,
     required String personName,
   }) async {
-    final shouldDelete = await showAppDeleteConfirmDialog(
+    final renamed = await showAppTextInputDialog(
       context,
-      title: 'Delete person?',
-      message: 'Delete $personName and all related lend/borrow entries?',
+      title: 'Edit Person',
+      hintText: 'Person name',
+      confirmText: 'Save',
+      textCapitalization: TextCapitalization.words,
+      initialValue: personName,
     );
-    if (!shouldDelete) return;
-    await ref.read(lendRepositoryProvider).deletePerson(personId);
+    if (renamed == null || renamed.trim().isEmpty) return;
+    await ref
+        .read(lendRepositoryProvider)
+        .renamePerson(personId: personId, name: renamed.trim());
   }
 
   Future<void> _showAddPersonDialog(BuildContext context, WidgetRef ref) async {
@@ -80,13 +84,22 @@ class LendPage extends ConsumerWidget {
                   ),
                   OutlinedButton.icon(
                     onPressed: () => _showAddPersonDialog(context, ref),
-                    icon: const Icon(AppIcons.personAdd, size: 16),
+                    icon: Icon(
+                      AppIcons.personAdd,
+                      size: 16,
+                      color: AppIcons.getColorForIcon(AppIcons.personAdd),
+                    ),
                     label: const Text('ADD'),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              GlassCard(
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0E0E0E),
+                  border: Border.all(color: AppColors.borderDark),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -118,8 +131,13 @@ class LendPage extends ConsumerWidget {
               Text('People', style: AppTypography.sectionTitle(context)),
               const SizedBox(height: AppSpacing.xs),
               if (data.peopleBalances.isEmpty)
-                const GlassCard(
-                  child: Text(
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0E0E0E),
+                    border: Border.all(color: AppColors.borderDark),
+                  ),
+                  child: const Text(
                     'No people added yet. Tap + to add your first person.',
                   ),
                 ),
@@ -127,53 +145,148 @@ class LendPage extends ConsumerWidget {
                 final isPositive = item.netBalance >= 0;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: GlassCard(
-                    padding: EdgeInsets.zero,
-                    child: ListTile(
-                      onTap: () => context.push('/lend/${item.person.id}'),
-                      title: Text(
-                        item.person.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
+                  child: Dismissible(
+                    key: ValueKey(item.person.id),
+                    direction: DismissDirection.horizontal,
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.startToEnd) {
+                        await _editPerson(
+                          context,
+                          ref,
+                          personId: item.person.id,
+                          personName: item.person.name,
+                        );
+                        return false;
+                      }
+                      return showAppDeleteConfirmDialog(
+                        context,
+                        title: 'Delete person?',
+                        message:
+                            'Delete ${item.person.name} and all related lend/borrow entries?',
+                      );
+                    },
+                    onDismissed: (_) {
+                      ref
+                          .read(lendRepositoryProvider)
+                          .deletePerson(item.person.id);
+                    },
+                    background: Container(
+                      alignment: Alignment.centerLeft,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      color: const Color(0xFF11261B),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(AppIcons.edit, color: AppColors.income),
+                          SizedBox(width: 8),
+                          Text(
+                            'EDIT',
+                            style: TextStyle(
+                              color: AppColors.income,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
                       ),
-                      subtitle: Text('${item.activeEntryCount} active entries'),
-                      trailing: SizedBox(
-                        width: 140,
+                    ),
+                    secondaryBackground: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      color: const Color(0xFF2A1313),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'DELETE',
+                            style: TextStyle(
+                              color: AppIcons.getColorForIcon(AppIcons.trash),
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            AppIcons.trash,
+                            color: AppIcons.getColorForIcon(AppIcons.trash),
+                          ),
+                        ],
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () => context.push('/lend/${item.person.id}'),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0E0E0E),
+                          border: Border.all(color: AppColors.borderDark),
+                        ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            Flexible(
-                              child: Text(
-                                '${item.netBalance >= 0 ? '+' : '-'}${Formatters.currency(item.netBalance.abs())}',
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: isPositive
-                                      ? AppColors.income
-                                      : AppColors.expense,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
+                            Container(
+                              width: 44,
+                              height: 44,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1A1A1A),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.md,
                                 ),
                               ),
-                            ),
-                            PopupMenuButton<String>(
-                              padding: EdgeInsets.zero,
-                              onSelected: (value) async {
-                                if (value != 'delete') return;
-                                await _confirmDeletePerson(
-                                  context,
-                                  ref,
-                                  personId: item.person.id,
-                                  personName: item.person.name,
-                                );
-                              },
-                              itemBuilder: (context) => const [
-                                PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: Text('Delete person'),
+                              child: Icon(
+                                isPositive
+                                    ? AppIcons.download
+                                    : AppIcons.upload,
+                                color: AppIcons.getColorForIcon(
+                                  isPositive
+                                      ? AppIcons.download
+                                      : AppIcons.upload,
                                 ),
-                              ],
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.person.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${item.activeEntryCount} active entries',
+                                    style: const TextStyle(
+                                      color: Color(0xFFB5B5B5),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
+                            Text(
+                              '${item.netBalance >= 0 ? '+' : '-'}${Formatters.currency(item.netBalance.abs())}',
+                              style: TextStyle(
+                                color: isPositive
+                                    ? AppColors.income
+                                    : AppColors.expense,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              AppIcons.chevronRight,
+                              size: 20,
+                              color: Color(0xFF8E8E8E),
                             ),
                           ],
                         ),
@@ -190,7 +303,10 @@ class LendPage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddPersonDialog(context, ref),
-        icon: const Icon(AppIcons.personAdd),
+        icon: Icon(
+          AppIcons.personAdd,
+          color: AppIcons.getColorForIcon(AppIcons.personAdd),
+        ),
         label: const Text('Add person'),
       ),
     );

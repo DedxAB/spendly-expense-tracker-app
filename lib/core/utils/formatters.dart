@@ -25,9 +25,16 @@ class Formatters {
 
   static String shortDate(DateTime date) => _shortDateFormat.format(date);
 
-  static Color parseHexColor(String hex) {
-    final normalized = hex.replaceFirst('#', '');
-    final value = int.parse('FF$normalized', radix: 16);
-    return Color(value);
+  static Color parseHexColor(
+    String hex, {
+    Color fallback = const Color(0xFFFFFFFF),
+  }) {
+    try {
+      final normalized = hex.replaceFirst('#', '');
+      final value = int.parse('FF$normalized', radix: 16);
+      return Color(value);
+    } catch (_) {
+      return fallback;
+    }
   }
 }

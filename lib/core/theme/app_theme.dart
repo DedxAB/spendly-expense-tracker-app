@@ -20,6 +20,7 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       textTheme: AppTypography.textTheme(Brightness.light),
       fontFamily: AppTypography.bodyFamily,
+      iconTheme: const IconThemeData(color: Color(0xFF4B4B4B)),
       cardTheme: CardThemeData(
         color: AppColors.lightSurface,
         elevation: AppElevation.card,
@@ -32,6 +33,8 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF2E2E2E)),
+        actionsIconTheme: const IconThemeData(color: Color(0xFF2E2E2E)),
         titleTextStyle: AppTypography.textTheme(
           Brightness.light,
         ).titleLarge?.copyWith(color: AppColors.lightTextPrimary),
@@ -160,6 +163,7 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.darkBackground,
       textTheme: AppTypography.textTheme(Brightness.dark),
       fontFamily: AppTypography.bodyFamily,
+      iconTheme: const IconThemeData(color: Color(0xFFD4D4D4)),
       cardTheme: CardThemeData(
         color: AppColors.darkSurface,
         elevation: AppElevation.card,
@@ -172,6 +176,8 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         scrolledUnderElevation: 0,
         elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFFE4E4E4)),
+        actionsIconTheme: const IconThemeData(color: Color(0xFFE4E4E4)),
         titleTextStyle: AppTypography.textTheme(
           Brightness.dark,
         ).titleLarge?.copyWith(color: AppColors.darkTextPrimary),

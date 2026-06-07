@@ -36,7 +36,7 @@ class TransactionFilterState {
 
   factory TransactionFilterState.initial() {
     return const TransactionFilterState(
-      datePreset: TransactionDatePreset.allTime,
+      datePreset: TransactionDatePreset.thisMonth,
       type: null,
       categoryId: null,
       paymentMode: null,

@@ -8,7 +8,6 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/glass_card.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
@@ -299,41 +298,59 @@ class RecurringPage extends ConsumerWidget {
                   );
               return Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: GlassCard(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0E0E0E),
+                    border: Border.all(color: AppColors.borderDark),
+                  ),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            width: 34,
-                            height: 34,
+                            width: 44,
+                            height: 44,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF171717),
-                              border: Border.all(
-                                color: const Color(0xFF4A4A4A),
-                              ),
+                              color: const Color(0xFF1A1A1A),
+                              borderRadius: BorderRadius.circular(AppRadii.md),
                             ),
                             child: Icon(
                               AppIcons.repeat,
                               size: 20,
                               color: item.isActive
-                                  ? const Color(0xFF57F28F)
-                                  : const Color(0xFFB3B3B3),
+                                  ? AppIcons.getColorForIcon(AppIcons.repeat)
+                                  : const Color(0xFF8F8F8F),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
-                            child: Text(
-                              item.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFB8B8B8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          const SizedBox(width: AppSpacing.sm),
                           Text(
                             Formatters.currency(item.amount),
                             style: const TextStyle(
@@ -344,15 +361,7 @@ class RecurringPage extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                        style: const TextStyle(
-                          color: Color(0xFFB8B8B8),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: AppSpacing.sm),
                       Row(
                         children: [
                           if (dueToday)
@@ -376,6 +385,7 @@ class RecurringPage extends ConsumerWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(width: 4),
                           Switch(
                             value: item.isActive,
                             onChanged: (value) async {

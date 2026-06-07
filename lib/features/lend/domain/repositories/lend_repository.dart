@@ -14,6 +14,7 @@ abstract class LendRepository {
   );
 
   Future<void> addPerson(String name);
+  Future<void> renamePerson({required String personId, required String name});
 
   Future<void> addEntry({
     required String personId,

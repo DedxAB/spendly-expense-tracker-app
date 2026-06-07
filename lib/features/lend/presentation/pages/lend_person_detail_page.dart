@@ -4,13 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
+import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/glass_card.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
@@ -36,37 +36,6 @@ class LendPersonDetailPage extends ConsumerWidget {
     if (context.mounted) {
       context.go('/lend');
     }
-  }
-
-  Widget _buildSettlementHistoryRow(List<dynamic> entryEvents) {
-    if (entryEvents.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children: entryEvents
-            .map((event) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFF303030)),
-                  color: const Color(0xFF0E0E0E),
-                  borderRadius: BorderRadius.zero,
-                ),
-                child: Text(
-                  '${_settledDateFmt.format(event.date)} ${Formatters.currency(event.amount)}',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFE0E0E0),
-                  ),
-                ),
-              );
-            })
-            .toList(growable: false),
-      ),
-    );
   }
 
   Future<DateTime?> _pickSettlementDate(
@@ -464,12 +433,20 @@ class LendPersonDetailPage extends ConsumerWidget {
                     ref,
                     personName: person.name,
                   ),
-                  icon: const Icon(Icons.delete_outline),
+                  icon: Icon(
+                    AppIcons.trash,
+                    color: AppIcons.getColorForIcon(AppIcons.trash),
+                  ),
                 ),
             ],
           ),
           const SizedBox(height: 10),
-          GlassCard(
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0E0E0E),
+              border: Border.all(color: AppColors.borderDark),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -503,8 +480,13 @@ class LendPersonDetailPage extends ConsumerWidget {
           entriesAsync.when(
             data: (entries) {
               if (entries.isEmpty) {
-                return const GlassCard(
-                  child: Text('No entries yet. Add your first entry.'),
+                return Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0E0E0E),
+                    border: Border.all(color: AppColors.borderDark),
+                  ),
+                  child: const Text('No entries yet. Add your first entry.'),
                 );
               }
               final active = entries
@@ -547,63 +529,39 @@ class LendPersonDetailPage extends ConsumerWidget {
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: GlassCard(
-                        padding: EdgeInsets.zero,
-                        child: ListTile(
-                          title: Text(
-                            '${isLent ? 'Lent' : 'Borrowed'} ${Formatters.currency(entry.amount)}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${Formatters.date(entry.date)} - Remaining ${Formatters.currency(remaining)}',
-                              ),
-                              if (entry.note != null && entry.note!.isNotEmpty)
-                                Text(
-                                  entry.note!,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              if (entryEvents.isNotEmpty)
-                                Text(
-                                  'Settlements (${entryEvents.length})',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFBDBDBD),
-                                  ),
-                                ),
-                              _buildSettlementHistoryRow(entryEvents),
-                            ],
-                          ),
-                          trailing: SizedBox(
-                            width: 84,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                InkWell(
-                                  borderRadius: BorderRadius.zero,
-                                  onTap: () async {
-                                    await _showSettleDialog(
-                                      context,
-                                      ref,
-                                      entryId: entry.id,
-                                      remainingAmount: remaining,
-                                    );
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Icon(
-                                      isPartial
-                                          ? Icons.toll_outlined
-                                          : Icons.add_circle_outline,
-                                      size: 18,
-                                      color: color,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                      child: _EntryCard(
+                        title: isLent ? 'Lent' : 'Borrowed',
+                        amount: entry.amount,
+                        amountColor: color,
+                        dateLabel:
+                            '${Formatters.date(entry.date)}  Remaining ${Formatters.currency(remaining)}',
+                        note: entry.note,
+                        eventCount: entryEvents.isEmpty
+                            ? null
+                            : entryEvents.length,
+                        eventChips: _buildEventChips(entryEvents),
+                        leadingIcon: isLent
+                            ? AppIcons.download
+                            : AppIcons.upload,
+                        leadingIconColor: color,
+                        trailing: InkWell(
+                          borderRadius: BorderRadius.zero,
+                          onTap: () async {
+                            await _showSettleDialog(
+                              context,
+                              ref,
+                              entryId: entry.id,
+                              remainingAmount: remaining,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              isPartial
+                                  ? Icons.toll_outlined
+                                  : Icons.add_circle_outline,
+                              size: 18,
+                              color: color,
                             ),
                           ),
                         ),
@@ -634,77 +592,65 @@ class LendPersonDetailPage extends ConsumerWidget {
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: GlassCard(
-                        padding: EdgeInsets.zero,
-                        child: ListTile(
-                          title: Text(
-                            '${isLent ? 'Lent' : 'Borrowed'} ${Formatters.currency(entry.amount)}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(Formatters.date(entry.date)),
-                              if (entry.note != null && entry.note!.isNotEmpty)
-                                Text(
-                                  entry.note!,
-                                  style: const TextStyle(fontSize: 12),
+                      child: _EntryCard(
+                        title: isLent ? 'Lent' : 'Borrowed',
+                        amount: entry.amount,
+                        amountColor: color,
+                        dateLabel: Formatters.date(entry.date),
+                        note: entry.note,
+                        eventCount: entryEvents.isEmpty
+                            ? null
+                            : entryEvents.length,
+                        eventChips: _buildEventChips(entryEvents),
+                        leadingIcon: isLent
+                            ? AppIcons.download
+                            : AppIcons.upload,
+                        leadingIconColor: color,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: entry.isSettled
+                                    ? Colors.white.withValues(alpha: 0.12)
+                                    : color.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.zero,
+                              ),
+                              child: Text(
+                                entry.settledAt == null
+                                    ? 'Settled'
+                                    : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
+                                style: TextStyle(
+                                  color: entry.isSettled ? Colors.white : color,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10,
                                 ),
-                              if (entryEvents.isNotEmpty)
-                                Text(
-                                  'Settlements (${entryEvents.length})',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFBDBDBD),
-                                  ),
-                                ),
-                              _buildSettlementHistoryRow(entryEvents),
-                            ],
-                          ),
-                          trailing: SizedBox(
-                            width: 120,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: entry.isSettled
-                                        ? Colors.white.withValues(alpha: 0.18)
-                                        : color.withValues(alpha: 0.16),
-                                    borderRadius: BorderRadius.zero,
-                                  ),
-                                  child: Text(
-                                    entry.settledAt == null
-                                        ? 'Settled'
-                                        : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
-                                    style: TextStyle(
-                                      color: entry.isSettled ? null : color,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                InkWell(
-                                  borderRadius: BorderRadius.zero,
-                                  onTap: () async {
-                                    await ref
-                                        .read(lendRepositoryProvider)
-                                        .clearSettlement(entry.id);
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.all(4),
-                                    child: Icon(Icons.undo, size: 16),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 6),
+                            InkWell(
+                              borderRadius: BorderRadius.zero,
+                              onTap: () async {
+                                await ref
+                                    .read(lendRepositoryProvider)
+                                    .clearSettlement(entry.id);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  Icons.undo,
+                                  size: 16,
+                                  color: AppIcons.getColorForIcon(
+                                    AppIcons.download,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -741,6 +687,142 @@ class _ModalFieldLabel extends StatelessWidget {
         color: Color(0xFFB3B3B3),
         fontSize: 12,
         fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}
+
+List<Widget> _buildEventChips(List<dynamic> entryEvents) {
+  if (entryEvents.isEmpty) return const [];
+  return entryEvents
+      .map(
+        (event) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFF303030)),
+            color: const Color(0xFF0E0E0E),
+            borderRadius: BorderRadius.zero,
+          ),
+          child: Text(
+            '${DateFormat('dd MMM').format(event.date)} ${Formatters.currency(event.amount)}',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFE0E0E0),
+            ),
+          ),
+        ),
+      )
+      .toList(growable: false);
+}
+
+class _EntryCard extends StatelessWidget {
+  const _EntryCard({
+    required this.title,
+    required this.amount,
+    required this.amountColor,
+    required this.dateLabel,
+    required this.leadingIcon,
+    required this.leadingIconColor,
+    required this.trailing,
+    this.note,
+    this.eventCount,
+    this.eventChips = const [],
+  });
+
+  final String title;
+  final double amount;
+  final Color amountColor;
+  final String dateLabel;
+  final String? note;
+  final int? eventCount;
+  final List<Widget> eventChips;
+  final IconData leadingIcon;
+  final Color leadingIconColor;
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: AppColors.borderDark),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+            ),
+            child: Icon(leadingIcon, size: 20, color: leadingIconColor),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      Formatters.currency(amount),
+                      style: TextStyle(
+                        color: amountColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  dateLabel,
+                  style: const TextStyle(
+                    color: Color(0xFFB5B5B5),
+                    fontSize: 12,
+                  ),
+                ),
+                if (note != null && note!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(note!, style: const TextStyle(fontSize: 12)),
+                ],
+                if (eventCount != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Settlements ($eventCount)',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFBDBDBD),
+                    ),
+                  ),
+                ],
+                if (eventChips.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(spacing: 6, runSpacing: 6, children: eventChips),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          trailing,
+        ],
       ),
     );
   }

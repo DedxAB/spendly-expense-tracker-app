@@ -307,13 +307,10 @@ class _ShellNavTile extends StatelessWidget {
               Icon(
                 selected ? item.selectedIcon : item.icon,
                 size: 19,
-                color: selected
-                    ? (isDark
-                          ? AppColors.darkTextPrimary
-                          : AppColors.lightTextPrimary)
-                    : (isDark
-                          ? AppColors.darkTextSecondary
-                          : AppColors.lightTextSecondary),
+                color: AppIcons.getColorForIcon(
+                  selected ? item.selectedIcon : item.icon,
+                  label: item.label,
+                ).withValues(alpha: selected ? 1.0 : 0.62),
               ),
               const SizedBox(height: 4),
               Text(

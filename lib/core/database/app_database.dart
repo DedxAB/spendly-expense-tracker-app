@@ -494,8 +494,22 @@ class AppDatabase extends _$AppDatabase {
     return query.get();
   }
 
+  Future<LendPeopleData?> getLendPersonById(String personId) {
+    final query = select(lendPeople)..where((tbl) => tbl.id.equals(personId));
+    return query.getSingleOrNull();
+  }
+
   Future<void> upsertLendPerson(LendPeopleCompanion companion) async {
     await into(lendPeople).insertOnConflictUpdate(companion);
+  }
+
+  Future<void> updateLendPersonName(String personId, String name) async {
+    await (update(lendPeople)..where((tbl) => tbl.id.equals(personId))).write(
+      LendPeopleCompanion(
+        name: Value(name),
+        updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
+      ),
+    );
   }
 
   Future<void> softDeleteLendPerson(String personId) async {
@@ -677,6 +691,12 @@ class AppDatabase extends _$AppDatabase {
     final cutoffKey = _usageDateKey(cutoffDate);
     final query = select(appUsageDays)
       ..where((tbl) => tbl.dateKey.isBiggerOrEqualValue(cutoffKey))
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.dateKey)]);
+    return query.watch();
+  }
+
+  Stream<List<AppUsageDay>> watchAllAppUsageDays() {
+    final query = select(appUsageDays)
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.dateKey)]);
     return query.watch();
   }

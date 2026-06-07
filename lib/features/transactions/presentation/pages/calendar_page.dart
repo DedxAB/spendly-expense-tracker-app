@@ -7,6 +7,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -39,7 +40,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget build(BuildContext context) {
     final all = ref.watch(allTransactionsProvider).valueOrNull ?? const [];
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
-    final categoryById = {for (final c in categories) c.id: c.name};
+    final categoryById = {for (final c in categories) c.id: c};
 
     final expenseByDay = <int, double>{};
     for (final tx in all) {
@@ -157,11 +158,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               (tx) => _CalendarTransactionRow(
                 title: tx.note?.trim().isNotEmpty == true
                     ? tx.note!.trim()
-                    : (categoryById[tx.categoryId] ?? tx.categoryId),
-                subtitle: (categoryById[tx.categoryId] ?? tx.categoryId)
+                    : (categoryById[tx.categoryId]?.name ?? tx.categoryId),
+                subtitle: (categoryById[tx.categoryId]?.name ?? tx.categoryId)
                     .toUpperCase(),
                 amount: tx.amount,
-                icon: _iconFor(categoryById[tx.categoryId] ?? tx.categoryId),
+                icon: _iconFor(
+                  categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                ),
+                iconColor: _categoryIconColor(
+                  categoryById[tx.categoryId],
+                  tx.type,
+                ),
               ),
             ),
         ],
@@ -175,6 +182,18 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
   static IconData _iconFor(String text) {
     return AppIcons.getIconForCategory(text);
+  }
+
+  static Color _categoryIconColor(
+    CategoryEntity? category,
+    TransactionType type,
+  ) {
+    if (category != null) {
+      return AppIcons.getColorForCategory(category.name, type);
+    }
+    return type == TransactionType.income
+        ? AppColors.income
+        : AppColors.expense;
   }
 
   static List<DateTime> _buildVisibleDays(DateTime month) {
@@ -379,12 +398,14 @@ class _CalendarTransactionRow extends StatelessWidget {
     required this.subtitle,
     required this.amount,
     required this.icon,
+    required this.iconColor,
   });
 
   final String title;
   final String subtitle;
   final double amount;
   final IconData icon;
+  final Color iconColor;
 
   static final NumberFormat _currency = NumberFormat.currency(
     locale: 'en_IN',
@@ -405,7 +426,7 @@ class _CalendarTransactionRow extends StatelessWidget {
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -419,7 +440,7 @@ class _CalendarTransactionRow extends StatelessWidget {
           ),
           Text(
             _currency.format(amount),
-            style: AppTypography.amountStyle(Colors.white),
+            style: AppTypography.amountStyle(iconColor),
           ),
         ],
       ),
