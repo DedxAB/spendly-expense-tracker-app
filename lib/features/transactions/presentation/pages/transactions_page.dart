@@ -12,6 +12,7 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
@@ -26,10 +27,10 @@ class TransactionsPage extends ConsumerWidget {
     final filterController = ref.read(transactionFilterProvider.notifier);
     final transactions = ref.watch(filteredTransactionsProvider);
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
-    final categoryById = {for (final c in categories) c.id: c.name};
+    final categoryById = {for (final c in categories) c.id: c};
     final activeCategoryName = filters.categoryId == null
         ? null
-        : categoryById[filters.categoryId!];
+        : categoryById[filters.categoryId!]?.name;
     final hasActiveFilters =
         filters.searchQuery.trim().isNotEmpty ||
         filters.type != null ||
@@ -89,16 +90,16 @@ class TransactionsPage extends ConsumerWidget {
                   : null,
               onClearPaymentMode: filters.paymentMode != null
                   ? () => ref
-                      .read(transactionFilterProvider.notifier)
-                      .applyAdvanced(
-                        datePreset: filters.datePreset,
-                        paymentMode: null,
-                        minAmount: filters.minAmount,
-                        maxAmount: filters.maxAmount,
-                        sortOption: filters.sortOption,
-                        customFrom: filters.customFrom,
-                        customTo: filters.customTo,
-                      )
+                        .read(transactionFilterProvider.notifier)
+                        .applyAdvanced(
+                          datePreset: filters.datePreset,
+                          paymentMode: null,
+                          minAmount: filters.minAmount,
+                          maxAmount: filters.maxAmount,
+                          sortOption: filters.sortOption,
+                          customFrom: filters.customFrom,
+                          customTo: filters.customTo,
+                        )
                   : null,
               onClearCategory: filters.categoryId != null
                   ? () => filterController.setCategory(null)
@@ -106,41 +107,42 @@ class TransactionsPage extends ConsumerWidget {
               onClearAmounts:
                   filters.minAmount != null || filters.maxAmount != null
                   ? () => ref
-                      .read(transactionFilterProvider.notifier)
-                      .applyAdvanced(
-                        datePreset: filters.datePreset,
-                        paymentMode: filters.paymentMode,
-                        minAmount: null,
-                        maxAmount: null,
-                        sortOption: filters.sortOption,
-                        customFrom: filters.customFrom,
-                        customTo: filters.customTo,
-                      )
+                        .read(transactionFilterProvider.notifier)
+                        .applyAdvanced(
+                          datePreset: filters.datePreset,
+                          paymentMode: filters.paymentMode,
+                          minAmount: null,
+                          maxAmount: null,
+                          sortOption: filters.sortOption,
+                          customFrom: filters.customFrom,
+                          customTo: filters.customTo,
+                        )
                   : null,
-              onClearSort: filters.sortOption != TransactionSortOption.newestFirst
+              onClearSort:
+                  filters.sortOption != TransactionSortOption.newestFirst
                   ? () => ref
-                      .read(transactionFilterProvider.notifier)
-                      .applyAdvanced(
-                        datePreset: filters.datePreset,
-                        paymentMode: filters.paymentMode,
-                        minAmount: filters.minAmount,
-                        maxAmount: filters.maxAmount,
-                        sortOption: TransactionSortOption.newestFirst,
-                        customFrom: filters.customFrom,
-                        customTo: filters.customTo,
-                      )
+                        .read(transactionFilterProvider.notifier)
+                        .applyAdvanced(
+                          datePreset: filters.datePreset,
+                          paymentMode: filters.paymentMode,
+                          minAmount: filters.minAmount,
+                          maxAmount: filters.maxAmount,
+                          sortOption: TransactionSortOption.newestFirst,
+                          customFrom: filters.customFrom,
+                          customTo: filters.customTo,
+                        )
                   : null,
               onClearDatePreset:
                   filters.datePreset != TransactionDatePreset.allTime
                   ? () => ref
-                      .read(transactionFilterProvider.notifier)
-                      .applyAdvanced(
-                        datePreset: TransactionDatePreset.allTime,
-                        paymentMode: filters.paymentMode,
-                        minAmount: filters.minAmount,
-                        maxAmount: filters.maxAmount,
-                        sortOption: filters.sortOption,
-                      )
+                        .read(transactionFilterProvider.notifier)
+                        .applyAdvanced(
+                          datePreset: TransactionDatePreset.allTime,
+                          paymentMode: filters.paymentMode,
+                          minAmount: filters.minAmount,
+                          maxAmount: filters.maxAmount,
+                          sortOption: filters.sortOption,
+                        )
                   : null,
               categoryName: activeCategoryName,
             ),
@@ -284,23 +286,58 @@ class TransactionsPage extends ConsumerWidget {
                               },
                               background: Container(
                                 alignment: Alignment.centerLeft,
-                                color: const Color(0xFF1A1A1A),
+                                color: const Color(0xFF11261B),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
-                                child: const Icon(AppIcons.edit),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      AppIcons.edit,
+                                      color: AppColors.income,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'EDIT',
+                                      style: TextStyle(
+                                        color: AppColors.income,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               secondaryBackground: Container(
                                 alignment: Alignment.centerRight,
-                                color: const Color(0xFF1A1A1A),
+                                color: const Color(0xFF2A1313),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
-                                child: const Icon(AppIcons.trash),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'DELETE',
+                                      style: TextStyle(
+                                        color: AppColors.expense,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(
+                                      AppIcons.trash,
+                                      color: AppColors.expense,
+                                    ),
+                                  ],
+                                ),
                               ),
                               child: _HistoryRow(
                                 title:
-                                    categoryById[tx.categoryId] ??
+                                    categoryById[tx.categoryId]?.name ??
                                     tx.categoryId,
                                 subtitle: tx.note?.trim() ?? '',
                                 paymentModeLabel: transactionPaymentLabel(
@@ -311,7 +348,12 @@ class TransactionsPage extends ConsumerWidget {
                                 amount: tx.amount,
                                 income: tx.type == TransactionType.income,
                                 icon: _iconFor(
-                                  categoryById[tx.categoryId] ?? tx.categoryId,
+                                  categoryById[tx.categoryId]?.name ??
+                                      tx.categoryId,
+                                ),
+                                iconColor: _categoryIconColor(
+                                  categoryById[tx.categoryId],
+                                  tx.type,
                                 ),
                               ),
                             ),
@@ -355,6 +397,18 @@ class TransactionsPage extends ConsumerWidget {
 
   static IconData _iconFor(String text) {
     return AppIcons.getIconForCategory(text);
+  }
+
+  static Color _categoryIconColor(
+    CategoryEntity? category,
+    TransactionType type,
+  ) {
+    if (category != null) {
+      return AppIcons.getColorForCategory(category.name, type);
+    }
+    return type == TransactionType.income
+        ? AppColors.income
+        : AppColors.expense;
   }
 
   Future<void> _openFilters(
@@ -1004,11 +1058,7 @@ class _ActiveFilterBar extends StatelessWidget {
               style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 12),
             )
           else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: chips,
-            ),
+            Wrap(spacing: 8, runSpacing: 8, children: chips),
         ],
       ),
     );
@@ -1082,7 +1132,11 @@ class _SummaryChip extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               onTap: onRemove,
-              child: const Icon(Icons.close, size: 14, color: Color(0xFFB0B0B0)),
+              child: const Icon(
+                Icons.close,
+                size: 14,
+                color: Color(0xFFB0B0B0),
+              ),
             ),
           ],
         ],
@@ -1142,6 +1196,7 @@ class _HistoryRow extends StatelessWidget {
     required this.amount,
     required this.income,
     required this.icon,
+    required this.iconColor,
   });
 
   final String title;
@@ -1150,6 +1205,7 @@ class _HistoryRow extends StatelessWidget {
   final double amount;
   final bool income;
   final IconData icon;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1167,7 +1223,7 @@ class _HistoryRow extends StatelessWidget {
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(

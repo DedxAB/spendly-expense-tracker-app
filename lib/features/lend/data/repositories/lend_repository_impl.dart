@@ -65,6 +65,18 @@ class LendRepositoryImpl implements LendRepository {
   }
 
   @override
+  Future<void> renamePerson({
+    required String personId,
+    required String name,
+  }) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    final current = await _db.getLendPersonById(personId);
+    if (current == null || current.isDeleted) return;
+    await _db.updateLendPersonName(personId, trimmed);
+  }
+
+  @override
   Future<void> addEntry({
     required String personId,
     required LendEntryType type,

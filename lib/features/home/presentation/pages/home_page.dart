@@ -16,6 +16,7 @@ import 'package:spendly/features/lend/presentation/providers/lend_provider.dart'
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -40,7 +41,7 @@ class HomePage extends ConsumerWidget {
         ? null
         : activeRecurring.first;
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
-    final categoryById = {for (final c in categories) c.id: c.name};
+    final categoryById = {for (final c in categories) c.id: c};
 
     return Scaffold(
       appBar: NoirHeader(
@@ -154,7 +155,11 @@ class HomePage extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(AppIcons.repeat, size: 16, color: Colors.white),
+                    Icon(
+                      AppIcons.repeat,
+                      size: 16,
+                      color: AppIcons.getColorForIcon(AppIcons.repeat),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -202,12 +207,17 @@ class HomePage extends ConsumerWidget {
                 children: items
                     .map(
                       (tx) => _TransactionRow(
-                        title: categoryById[tx.categoryId] ?? tx.categoryId,
+                        title:
+                            categoryById[tx.categoryId]?.name ?? tx.categoryId,
                         subtitle: _subtitle(tx),
                         amount: tx.amount,
                         isIncome: tx.type == TransactionType.income,
                         icon: _iconFor(
-                          categoryById[tx.categoryId] ?? tx.categoryId,
+                          categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                        ),
+                        iconColor: _categoryIconColor(
+                          categoryById[tx.categoryId],
+                          tx.type,
                         ),
                       ),
                     )
@@ -227,6 +237,18 @@ class HomePage extends ConsumerWidget {
 
   static IconData _iconFor(String text) {
     return AppIcons.getIconForCategory(text);
+  }
+
+  static Color _categoryIconColor(
+    CategoryEntity? category,
+    TransactionType type,
+  ) {
+    if (category != null) {
+      return AppIcons.getColorForCategory(category.name, type);
+    }
+    return type == TransactionType.income
+        ? AppColors.income
+        : AppColors.expense;
   }
 
   static String _subtitle(dynamic tx) {
@@ -344,6 +366,7 @@ class _TransactionRow extends StatelessWidget {
     required this.amount,
     required this.isIncome,
     required this.icon,
+    required this.iconColor,
   });
 
   final String title;
@@ -351,6 +374,7 @@ class _TransactionRow extends StatelessWidget {
   final double amount;
   final bool isIncome;
   final IconData icon;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -368,7 +392,7 @@ class _TransactionRow extends StatelessWidget {
               color: const Color(0xFF1A1A1A),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Icon(icon, size: 20, color: Colors.white),
+            child: Icon(icon, size: 20, color: iconColor),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -429,7 +453,11 @@ class _LendQuickCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(AppIcons.money, size: 16, color: Colors.white),
+                Icon(
+                  AppIcons.money,
+                  size: 16,
+                  color: AppIcons.getColorForIcon(AppIcons.money),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'LEND & BORROW',

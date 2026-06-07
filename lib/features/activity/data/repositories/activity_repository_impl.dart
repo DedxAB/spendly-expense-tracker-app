@@ -74,6 +74,23 @@ class ActivityRepository {
         );
   }
 
+  Stream<List<AppUsageDayEntry>> watchAllUsageDays() {
+    return _ref
+        .read(appDatabaseProvider)
+        .watchAllAppUsageDays()
+        .map(
+          (rows) => rows
+              .map(
+                (row) => AppUsageDayEntry(
+                  dateKey: row.dateKey,
+                  totalSeconds: row.totalSeconds,
+                  updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
+                ),
+              )
+              .toList(growable: false),
+        );
+  }
+
   Future<void> recordEvent({
     required String kind,
     required String title,
@@ -110,4 +127,8 @@ final recentActivityEventsProvider = StreamProvider((ref) {
 
 final recentUsageDaysProvider = StreamProvider((ref) {
   return ref.watch(activityRepositoryProvider).watchRecentUsageDays(days: 4);
+});
+
+final allUsageDaysProvider = StreamProvider((ref) {
+  return ref.watch(activityRepositoryProvider).watchAllUsageDays();
 });

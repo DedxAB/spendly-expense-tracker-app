@@ -215,7 +215,14 @@ class CategoriesPage extends ConsumerWidget {
                       color: const Color(0xFF1A1A1A),
                       borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
-                    child: Icon(icon, color: primary, size: 20),
+                    child: Icon(
+                      icon,
+                      color: AppIcons.getColorForCategory(
+                        category.name,
+                        category.type,
+                      ),
+                      size: 20,
+                    ),
                   ),
                   title: Text(
                     category.name,

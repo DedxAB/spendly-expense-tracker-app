@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
 class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
@@ -9,6 +10,7 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
     super.key,
     this.showLeading = false,
     this.leadingIcon = Icons.calendar_month_outlined,
+    this.leadingIconColor,
     this.onLeadingTap,
     this.onProfileTap,
     this.showProfileAction = true,
@@ -16,6 +18,7 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
 
   final bool showLeading;
   final IconData leadingIcon;
+  final Color? leadingIconColor;
   final VoidCallback? onLeadingTap;
   final VoidCallback? onProfileTap;
   final bool showProfileAction;
@@ -43,7 +46,12 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
       ),
       leading: showLeading
           ? IconButton(
-              icon: Icon(leadingIcon, size: 22),
+              icon: Icon(
+                leadingIcon,
+                size: 22,
+                color:
+                    leadingIconColor ?? AppIcons.getColorForIcon(leadingIcon),
+              ),
               onPressed: onLeadingTap,
             )
           : const SizedBox.shrink(),
@@ -63,12 +71,19 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                       border: Border.all(color: AppColors.borderDark),
                     ),
                     child: imageUrl == null
-                        ? const Icon(Icons.person, size: 18)
+                        ? Icon(
+                            Icons.person,
+                            size: 18,
+                            color: AppIcons.getColorForIcon(Icons.person),
+                          )
                         : Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.person, size: 18),
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.person,
+                              size: 18,
+                              color: AppIcons.getColorForIcon(Icons.person),
+                            ),
                           ),
                   ),
                 ),

@@ -221,7 +221,10 @@ class SettingsPage extends ConsumerWidget {
             title: 'Account',
             onTap: () => _editAccount(context, ref),
             textColor: primary,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.user,
+              label: 'Account',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -229,7 +232,10 @@ class SettingsPage extends ConsumerWidget {
             title: 'Notifications',
             onTap: () => context.push('/notifications'),
             textColor: primary,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.notifications,
+              label: 'Notifications',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -237,7 +243,10 @@ class SettingsPage extends ConsumerWidget {
             title: 'Categories',
             onTap: () => context.push('/categories'),
             textColor: primary,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.categories,
+              label: 'Categories',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -247,7 +256,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => context.go('/lend'),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.money,
+              label: 'Lend & Borrow',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -257,7 +269,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => context.push('/recurring'),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.repeat,
+              label: 'Recurring',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -267,7 +282,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => context.push('/activity'),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.history,
+              label: 'Activity & Screen Time',
+            ),
             dividerColor: divider,
           ),
           const SizedBox(height: 24),
@@ -285,7 +303,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => _openExport(context, ref),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.download,
+              label: 'Export JSON',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -295,7 +316,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => _openImport(context, ref),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: muted,
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.upload,
+              label: 'Import Data',
+            ),
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -305,7 +329,10 @@ class SettingsPage extends ConsumerWidget {
             onTap: () => _eraseAllData(context, ref),
             textColor: primary,
             subtitleColor: muted,
-            iconColor: const Color(0xFFFF8D8D),
+            iconColor: AppIcons.getColorForIcon(
+              AppIcons.trash,
+              label: 'Erase All Data',
+            ),
             dividerColor: divider,
           ),
           const SizedBox(height: 24),
@@ -885,9 +912,7 @@ class _PrivacyShieldTile extends StatelessWidget {
             ),
             child: Icon(
               AppIcons.shield,
-              color: enabled
-                  ? const Color(0xFF57F28F)
-                  : const Color(0xFF8F8F8F),
+              color: AppIcons.getColorForIcon(AppIcons.shield),
               size: 22,
             ),
           ),
@@ -937,7 +962,11 @@ class _TransactionCountPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(AppIcons.receipt, size: 14, color: Color(0xFFD7D7D7)),
+          Icon(
+            AppIcons.receipt,
+            size: 14,
+            color: AppIcons.getColorForIcon(AppIcons.receipt),
+          ),
           const SizedBox(width: 6),
           Text(
             label,
@@ -976,7 +1005,11 @@ class _TrackingSincePill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(AppIcons.history, size: 14, color: Color(0xFFBDBDBD)),
+          Icon(
+            AppIcons.history,
+            size: 14,
+            color: AppIcons.getColorForIcon(AppIcons.history),
+          ),
           const SizedBox(width: 6),
           Text(
             label,
@@ -1093,13 +1126,7 @@ class _ProfileRow extends StatelessWidget {
                 color: const Color(0xFF1A1A1A),
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
-              child: Icon(
-                icon,
-                color: iconColor == const Color(0xFFFF8D8D)
-                    ? iconColor
-                    : Colors.white,
-                size: 20,
-              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(

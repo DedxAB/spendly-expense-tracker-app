@@ -46,6 +46,7 @@ class GoalsPage extends ConsumerWidget {
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.bell,
+        leadingIconColor: const Color(0xFFFFC857),
         onLeadingTap: () => context.push('/notifications'),
       ),
       body: ListView(
