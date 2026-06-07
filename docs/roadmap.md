@@ -11,6 +11,8 @@
 - Privacy lock
 - Biometric authentication
 - Dark theme experience
+- Goals
+- Cloud Sync
 
 ---
 
