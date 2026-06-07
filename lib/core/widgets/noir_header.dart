@@ -34,7 +34,7 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
       toolbarHeight: 72,
       centerTitle: true,
       title: Text(
-        'SPENDLY',
+        'Spendly',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           fontSize: 18,
           fontWeight: FontWeight.w600,

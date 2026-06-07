@@ -19,6 +19,7 @@ import 'package:spendly/features/transactions/domain/entities/transaction_entity
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 import 'package:spendly/features/user/data/repositories/user_profile_repository_impl.dart';
 import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -495,6 +496,20 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 26),
+          Center(
+            child: TextButton(
+              onPressed: () async {
+                await launchUrl(
+                  Uri.parse('https://dedxab.vercel.app/spendly/privacy-policy'),
+                  mode: LaunchMode.inAppBrowserView,
+                );
+              },
+              child: const Text(
+                'Privacy Policy',
+                style: TextStyle(fontSize: 14),
+              ),
+            ),
+          ),
           const Center(
             child: Text(
               'Version 1.1.2',
@@ -533,9 +548,7 @@ class SettingsPage extends ConsumerWidget {
       if (!isSupported) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Device lock is not available on this device.',
-            ),
+            content: Text('Device lock is not available on this device.'),
           ),
         );
         return;
