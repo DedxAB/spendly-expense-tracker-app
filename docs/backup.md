@@ -2,62 +2,138 @@
 
 ## Overview
 
-Spendly supports backup capabilities to prevent data loss.
+Spendly backs up your data to Google Drive so you can restore it if you switch devices or reinstall the app. The local SQLite database is always the source of truth — Drive is purely a safety net.
 
 ---
 
-## Goals
+## How It Works
 
-A backup solution should:
+Backup is a two-step process: export the local database to JSON, then upload that file to Google Drive.
 
-- Protect user data
-- Be easy to restore
-- Require minimal user effort
-
----
-
-## Current Direction
-
-Google account integration is used as the foundation for cloud backups.
-
-Potential backup contents:
-
-- Transactions
-- Budgets
-- Settings
-- Recurring transactions
-
----
-
-## Backup Flow
+### Backup Flow
 
 ```text
-Local SQLite Database
+User triggers backup (manually or on app launch)
         ↓
-Backup Service
+CloudSyncRepository.backupNow()
         ↓
-Google Drive
+SettingsRepository.exportJson()
+  ← reads all tables: transactions, categories, settings,
+    recurring rules, goals, lend entries, etc.
+  ← serialises everything to a single JSON string
+        ↓
+DriveService.uploadFile(jsonString)
+  ← authenticates with the connected Google account
+  ← uploads file to the app's private Drive folder
+        ↓
+Backup metadata saved (timestamp, file ID)
+```
+
+### Restore Flow
+
+```text
+User taps "Restore from Backup"
+        ↓
+CloudSyncRepository.restoreFromBackup()
+        ↓
+DriveService.downloadLatestFile()
+  ← fetches the JSON file from Drive
+        ↓
+SettingsRepository.importJson(jsonString)
+  ← clears existing local data
+  ← writes all records back to SQLite
+        ↓
+App reloads — streams emit fresh data
 ```
 
 ---
 
-## Restore Flow
+## Google Account Integration
+
+Handled by two services:
+
+- `GoogleAuthService` — wraps `google_sign_in`. Provides `connectAccount()` and `disconnectAccount()`. Stores the signed-in account state.
+- `DriveService` — wraps the Google Drive REST API. Creates a dedicated app folder, uploads/downloads the backup JSON file.
+
+### Connect Account Flow
 
 ```text
-Google Drive
-      ↓
-Restore Service
-      ↓
-SQLite Database
+User taps "Connect Google Account"
+        ↓
+GoogleAuthService.connectAccount()
+  ← opens Google Sign-In sheet
+  ← returns authenticated account (email, token)
+        ↓
+CloudSyncState updates to "connected"
+        ↓
+Settings page shows connected email and backup options
 ```
+
+### Disconnect Flow
+
+```text
+User taps "Disconnect"
+        ↓
+GoogleAuthService.disconnectAccount()
+  ← signs out and revokes Drive access
+        ↓
+CloudSyncState updates to "disconnected"
+```
+
+---
+
+## Automatic Daily Backup
+
+On every app launch, `SplashPage` calls `CloudSyncRepository.runDailyBackupIfNeeded()`.
+
+```text
+App launches → SplashPage
+        ↓
+runDailyBackupIfNeeded()
+  ← checks: is a Google account connected?
+  ← checks: has a backup already run today?
+  ← if yes to both → skip
+  ← if no → run backupNow()
+```
+
+This means the user's last day of data is always protected without any manual action.
+
+---
+
+## What Gets Backed Up
+
+The JSON export includes all user data:
+
+- Transactions (including recurring instances)
+- Categories (including custom ones)
+- Recurring rules
+- Settings (budget, currency, preferences)
+- Goals and contributions
+- Lend entries and settlements
+- Monthly reflections
+- Category budgets
+- Activity events
+
+---
+
+## What Does Not Get Backed Up
+
+- App usage / screen time (device-specific)
+- Notification state (managed by the OS)
+
+---
+
+## Security
+
+- Backup is stored in the user's own Google Drive, in an app-private folder
+- No Spendly server ever sees your financial data
+- Drive access can be revoked at any time from Google Account settings
 
 ---
 
 ## Future Enhancements
 
-Planned:
-
-- Automatic backups
-- Backup history
-- Encrypted backups
-- One-click restore
+- Encrypted backup file (AES)
+- Backup history with restore-to-specific-date
+- One-tap restore with conflict resolution
+- Automatic backup on significant data changes

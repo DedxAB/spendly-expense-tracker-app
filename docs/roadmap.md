@@ -1,25 +1,88 @@
 # Roadmap
 
-## Completed
+## Shipped
 
-- Offline-first architecture
-- Expense tracking
-- Budget management
-- Analytics dashboard
-- Recurring transactions
-- Local notifications
-- Privacy lock
-- Biometric authentication
-- Dark theme experience
-- Goals
-- Cloud Sync
+Everything listed here is fully implemented in the codebase.
+
+### Core
+
+- Offline-first architecture (Drift + SQLite, no server required)
+- Expense and income tracking
+- Custom categories with icon and color
+- Payment mode tracking (cash, card, UPI)
+- Soft delete with restore support
+
+### Budget
+
+- Monthly budget with remaining balance on dashboard
+- Per-category monthly budgets
+- Budget alert notifications when spending is close to limit
+
+### Recurring Transactions
+
+- Recurring rules with daily / weekly / monthly / yearly frequency
+- Auto-generation of transaction instances on app launch
+- Pause, resume, and delete rules
+- "Delete this and future" to stop a rule from a date
+
+### Analytics
+
+- Expense trend chart (daily and monthly)
+- Expense distribution by category (pie chart)
+- Income vs expense comparison
+- Yearly income vs expense (monthly bars)
+- Payment mode breakdown
+
+### Goals
+
+- Financial goals with target amount and monthly contribution
+- Emergency fund (dedicated goal type)
+- Contribution history per goal
+- Progress tracking (% complete, months to reach target)
+
+### Lending
+
+- Track money lent to and borrowed from people
+- Partial settlement support
+- Per-person balance summary
+
+### Privacy & Security
+
+- Biometric lock (fingerprint / face / PIN) on app resume
+- Hide all financial amounts with a single toggle
+- All data stored locally on device
+
+### Notifications
+
+- Daily reminder notification
+- Budget alert when spending approaches the monthly limit
+
+### Cloud Sync
+
+- Google account sign-in
+- Automatic daily backup to Google Drive
+- Manual backup and restore
+
+### Settings
+
+- Currency setting
+- Monthly budget configuration
+- Notification preferences
+- Data export and import (JSON)
+- Clear all data
+
+### Onboarding
+
+- Profile setup on first launch
+- Routes directly to home on subsequent launches
 
 ---
 
 ## In Progress
 
-- Improved backup experience
-- Better analytics
+- Improved backup UX (backup status, last backup time)
+- Richer monthly analytics and spending comparisons
+- Monthly reflections (notes per month)
 
 ---
 
@@ -27,62 +90,61 @@
 
 ### Smart Search
 
-Natural language search:
-
-Examples:
+Natural language search across transactions:
 
 - "Food expenses this month"
-- "Swiggy expenses"
-- "Coffee spending"
-
----
-
-### Financial Insights
-
-Examples:
-
-- Spending trend analysis
-- Monthly comparisons
-- Budget recommendations
+- "Swiggy spending"
+- "Coffee last week"
 
 ---
 
 ### CSV Import & Export
 
-Support migration from:
+Import transactions from:
 
-- Excel
 - Bank statements
+- Excel / CSV files
 - Other finance apps
 
 ---
 
-### Financial Goals
+### Financial Insights (AI-assisted)
 
-Examples:
-
-- Emergency fund
-- Travel fund
-- Savings targets
+- Spending trend analysis with recommendations
+- Monthly budget recommendations based on history
+- Unusual spending alerts
 
 ---
 
 ### Multi-Currency Support
 
-Support tracking expenses in different currencies.
+Track transactions in different currencies with conversion.
+
+---
+
+### Encrypted Backups
+
+AES-encrypted Drive backup files. Data is unreadable even if the Drive account is compromised.
 
 ---
 
 ### Secure Vault
 
-Store sensitive information securely:
+Store sensitive non-transaction data:
 
-- Notes
-- IDs
-- Account details
+- Account numbers
+- Card details
+- Important IDs
+
+---
+
+### Backup History
+
+- View list of past backups
+- Restore to a specific date
 
 ---
 
 ## Long-Term Vision
 
-Build a privacy-first personal finance app that works beautifully offline while giving users complete ownership of their financial data.
+A privacy-first personal finance app that works completely offline, gives users full ownership of their data, and uses smart insights to help them make better financial decisions — without sending any data to a third-party server.
