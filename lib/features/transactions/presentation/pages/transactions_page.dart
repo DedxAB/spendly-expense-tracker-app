@@ -12,6 +12,7 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
@@ -91,7 +92,22 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
           AppSpacing.md,
         ),
         children: [
-          Text('Search Ledger', style: AppTypography.screenTitle(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Search Ledger',
+                  style: AppTypography.screenTitle(context),
+                ),
+              ),
+              const SwipeActionsInfoButton(
+                tooltip: 'Transaction swipe help',
+                title: 'Transaction swipe actions',
+                message:
+                    'Transactions support quick gestures so you can act without opening another screen.',
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.smPlus),
           TextField(
             controller: _searchController,

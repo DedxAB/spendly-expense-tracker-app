@@ -10,6 +10,7 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/goals/presentation/providers/goals_provider.dart';
 
 class GoalsPage extends ConsumerWidget {
@@ -57,7 +58,22 @@ class GoalsPage extends ConsumerWidget {
           94,
         ),
         children: [
-          Text('Emergency Funds', style: AppTypography.sectionTitle(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Emergency Funds',
+                  style: AppTypography.sectionTitle(context),
+                ),
+              ),
+              const SwipeActionsInfoButton(
+                tooltip: 'Emergency fund swipe help',
+                title: 'Emergency fund actions',
+                message:
+                    'Emergency fund cards can be swiped to edit or delete.',
+              ),
+            ],
+          ),
           const SizedBox(height: 10),
           const Divider(color: AppColors.borderDark, height: 1),
           const SizedBox(height: 12),
@@ -167,7 +183,21 @@ class GoalsPage extends ConsumerWidget {
             const SizedBox(height: 22),
           ] else
             const SizedBox(height: 20),
-          Text('Your Goals', style: AppTypography.sectionTitle(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Your Goals',
+                  style: AppTypography.sectionTitle(context),
+                ),
+              ),
+              const SwipeActionsInfoButton(
+                tooltip: 'Goals swipe help',
+                title: 'Goal actions',
+                message: 'Goal cards can be swiped to edit or delete.',
+              ),
+            ],
+          ),
           const SizedBox(height: 10),
           const Divider(color: AppColors.borderDark, height: 1),
           const SizedBox(height: 14),

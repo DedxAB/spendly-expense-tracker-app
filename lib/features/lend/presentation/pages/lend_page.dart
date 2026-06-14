@@ -8,6 +8,7 @@ import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
@@ -82,6 +83,14 @@ class LendPage extends ConsumerWidget {
                       style: AppTypography.screenTitle(context),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  const SwipeActionsInfoButton(
+                    tooltip: 'Lend and borrow swipe help',
+                    title: 'Lend & Borrow actions',
+                    message:
+                        'People can be swiped to edit or delete from the list.',
+                  ),
+                  const SizedBox(width: 8),
                   OutlinedButton.icon(
                     onPressed: () => _showAddPersonDialog(context, ref),
                     icon: Icon(

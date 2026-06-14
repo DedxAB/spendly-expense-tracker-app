@@ -12,6 +12,7 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
@@ -522,7 +523,21 @@ class LendPersonDetailPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text('History', style: AppTypography.sectionTitle(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'History',
+                  style: AppTypography.sectionTitle(context),
+                ),
+              ),
+              const SwipeActionsInfoButton(
+                tooltip: 'History swipe help',
+                title: 'Entry actions',
+                message: 'History entries can be swiped to edit or delete.',
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xs),
           entriesAsync.when(
             data: (entries) {
