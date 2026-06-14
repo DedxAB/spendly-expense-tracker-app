@@ -12,7 +12,9 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
+import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
 class LendPersonDetailPage extends ConsumerWidget {
@@ -185,191 +187,237 @@ class LendPersonDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _showAddEntryDialog(BuildContext context, WidgetRef ref) async {
-    final amountController = TextEditingController();
-    final noteController = TextEditingController();
-    var selectedType = LendEntryType.lent;
-    var selectedDate = DateTime.now();
+  Future<void> _showEntryDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    LendEntryEntity? existing,
+  }) async {
+    final amountController = TextEditingController(
+      text: existing == null ? '' : existing.amount.toStringAsFixed(2),
+    );
+    final noteController = TextEditingController(text: existing?.note ?? '');
+    var selectedType = existing?.type ?? LendEntryType.lent;
+    var selectedDate = existing?.date ?? DateTime.now();
+    final isEditing = existing != null;
 
-    await showDialog<void>(
-      context: context,
-      builder: (_) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          inputDecorationTheme: const InputDecorationTheme(
-            filled: false,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: Color(0xFF2E2E2E)),
+    try {
+      await showDialog<void>(
+        context: context,
+        builder: (_) => Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Colors.white,
+              onPrimary: Colors.black,
+              surface: Color(0xFF0E0E0E),
+              onSurface: Colors.white,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: Color(0xFF2E2E2E)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-              borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-            ),
-          ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
-          segmentedButtonTheme: SegmentedButtonThemeData(
-            style: ButtonStyle(
-              side: const WidgetStatePropertyAll(
-                BorderSide(color: Color(0xFF4A4A4A)),
+            inputDecorationTheme: const InputDecorationTheme(
+              filled: false,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color(0xFF2E2E2E)),
               ),
-              shape: const WidgetStatePropertyAll(
-                RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color(0xFF2E2E2E)),
               ),
-              foregroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.black;
-                return Colors.white;
-              }),
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) return Colors.white;
-                return Colors.black;
-              }),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: Color(0xFFBDBDBD)),
+              ),
+            ),
+            dialogTheme: const DialogThemeData(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              backgroundColor: Color(0xFF0E0E0E),
+            ),
+            segmentedButtonTheme: SegmentedButtonThemeData(
+              style: ButtonStyle(
+                side: const WidgetStatePropertyAll(
+                  BorderSide(color: Color(0xFF4A4A4A)),
+                ),
+                shape: const WidgetStatePropertyAll(
+                  RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                ),
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return Colors.black;
+                  }
+                  return Colors.white;
+                }),
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return Colors.white;
+                  }
+                  return Colors.black;
+                }),
+              ),
             ),
           ),
-        ),
-        child: StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: const Text(
-              'Add Entry',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-            content: SizedBox(
-              width: AppModalSizes.dialogContentWidth,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _ModalFieldLabel('Entry Type'),
-                    const SizedBox(height: 6),
-                    SegmentedButton<LendEntryType>(
-                      showSelectedIcon: false,
-                      segments: const [
-                        ButtonSegment(
-                          value: LendEntryType.lent,
-                          label: Text('Lent'),
-                        ),
-                        ButtonSegment(
-                          value: LendEntryType.borrowed,
-                          label: Text('Borrowed'),
-                        ),
-                      ],
-                      selected: {selectedType},
-                      onSelectionChanged: (value) {
-                        setState(() => selectedType = value.first);
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _ModalFieldLabel('Amount'),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        prefixText: '\u20B9 ',
-                        hintText: '0.00',
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _ModalFieldLabel('Note (optional)'),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: noteController,
-                      decoration: const InputDecoration(hintText: 'Add note'),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _ModalFieldLabel('Date'),
-                    const SizedBox(height: 4),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(Formatters.date(selectedDate)),
-                      trailing: const Icon(Icons.calendar_month),
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 3650),
+          child: StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
+              title: Text(
+                isEditing ? 'Edit Entry' : 'Add Entry',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              content: SizedBox(
+                width: AppModalSizes.dialogContentWidth,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ModalFieldLabel('Entry Type'),
+                      const SizedBox(height: 6),
+                      SegmentedButton<LendEntryType>(
+                        showSelectedIcon: false,
+                        segments: const [
+                          ButtonSegment(
+                            value: LendEntryType.lent,
+                            label: Text('Lent'),
                           ),
-                          builder: (context, child) {
-                            final base = Theme.of(context);
-                            return Theme(
-                              data: base.copyWith(
-                                colorScheme: const ColorScheme.dark(
-                                  primary: Colors.white,
-                                  onPrimary: Colors.black,
-                                  surface: Color(0xFF0E0E0E),
-                                  onSurface: Colors.white,
-                                ),
-                                dialogTheme: const DialogThemeData(
-                                  backgroundColor: Color(0xFF0E0E0E),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.zero,
+                          ButtonSegment(
+                            value: LendEntryType.borrowed,
+                            label: Text('Borrowed'),
+                          ),
+                        ],
+                        selected: {selectedType},
+                        onSelectionChanged: (value) {
+                          setState(() => selectedType = value.first);
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Amount'),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          prefixText: '\u20B9 ',
+                          hintText: '0.00',
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Note (optional)'),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: noteController,
+                        decoration: const InputDecoration(hintText: 'Add note'),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Date'),
+                      const SizedBox(height: 4),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(Formatters.date(selectedDate)),
+                        trailing: const Icon(Icons.calendar_month),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 3650),
+                            ),
+                            builder: (context, child) {
+                              final base = Theme.of(context);
+                              return Theme(
+                                data: base.copyWith(
+                                  colorScheme: const ColorScheme.dark(
+                                    primary: Colors.white,
+                                    onPrimary: Colors.black,
+                                    surface: Color(0xFF0E0E0E),
+                                    onSurface: Colors.white,
                                   ),
-                                ),
-                                datePickerTheme: AppDatePickerTheme.darkBoxy(),
-                                textButtonTheme: TextButtonThemeData(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    shape: const RoundedRectangleBorder(
+                                  dialogTheme: const DialogThemeData(
+                                    backgroundColor: Color(0xFF0E0E0E),
+                                    shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.zero,
                                     ),
                                   ),
+                                  datePickerTheme:
+                                      AppDatePickerTheme.darkBoxy(),
+                                  textButtonTheme: TextButtonThemeData(
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.white,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.zero,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (picked != null) {
-                          setState(() => selectedDate = picked);
-                        }
-                      },
-                    ),
-                  ],
+                                child: child!,
+                              );
+                            },
+                          );
+                          if (picked != null) {
+                            setState(() => selectedDate = picked);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            actions: [
-              DialogActionsRow(
-                cancelText: 'Cancel',
-                confirmText: 'Save',
-                onCancel: () => Navigator.pop(context),
-                onConfirm: () async {
-                  final amount = Money.tryParse(amountController.text.trim());
-                  if (amount == null || amount <= 0) return;
-                  await ref
-                      .read(lendRepositoryProvider)
-                      .addEntry(
+              actions: [
+                DialogActionsRow(
+                  cancelText: 'Cancel',
+                  confirmText: isEditing ? 'Save' : 'Add',
+                  onCancel: () => Navigator.pop(context),
+                  onConfirm: () async {
+                    final amount = Money.tryParse(amountController.text.trim());
+                    if (amount == null || amount <= 0) return;
+                    final repository = ref.read(lendRepositoryProvider);
+                    if (isEditing) {
+                      await repository.updateEntry(
+                        entryId: existing.id,
                         personId: personId,
                         type: selectedType,
                         amount: amount,
                         date: selectedDate,
                         note: noteController.text.trim(),
                       );
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-            ],
+                    } else {
+                      await repository.addEntry(
+                        personId: personId,
+                        type: selectedType,
+                        amount: amount,
+                        date: selectedDate,
+                        note: noteController.text.trim(),
+                      );
+                    }
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
-      ),
+      );
+    } finally {
+      amountController.dispose();
+      noteController.dispose();
+    }
+  }
+
+  Future<bool> _deleteEntry(
+    BuildContext context,
+    WidgetRef ref, {
+    required String entryId,
+    required String title,
+  }) async {
+    final shouldDelete = await showAppDeleteConfirmDialog(
+      context,
+      title: 'Delete entry?',
+      message: 'Delete this $title entry and its settlements?',
     );
+    if (!shouldDelete) return false;
+    await ref.read(lendRepositoryProvider).deleteEntry(entryId);
+    return true;
   }
 
   @override
@@ -475,7 +523,21 @@ class LendPersonDetailPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Text('History', style: AppTypography.sectionTitle(context)),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'History',
+                  style: AppTypography.sectionTitle(context),
+                ),
+              ),
+              const SwipeActionsInfoButton(
+                tooltip: 'History swipe help',
+                title: 'Entry actions',
+                message: 'History entries can be swiped to edit or delete.',
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.xs),
           entriesAsync.when(
             data: (entries) {
@@ -529,40 +591,106 @@ class LendPersonDetailPage extends ConsumerWidget {
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: _EntryCard(
-                        title: isLent ? 'Lent' : 'Borrowed',
-                        amount: entry.amount,
-                        amountColor: color,
-                        dateLabel:
-                            '${Formatters.date(entry.date)}  Remaining ${Formatters.currency(remaining)}',
-                        note: entry.note,
-                        eventCount: entryEvents.isEmpty
-                            ? null
-                            : entryEvents.length,
-                        eventChips: _buildEventChips(entryEvents),
-                        leadingIcon: isLent
-                            ? AppIcons.download
-                            : AppIcons.upload,
-                        leadingIconColor: color,
-                        trailing: InkWell(
-                          borderRadius: BorderRadius.zero,
-                          onTap: () async {
-                            await _showSettleDialog(
+                      child: Dismissible(
+                        key: ValueKey('lend-entry-${entry.id}'),
+                        direction: DismissDirection.horizontal,
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.startToEnd) {
+                            await _showEntryDialog(
                               context,
                               ref,
-                              entryId: entry.id,
-                              remainingAmount: remaining,
+                              existing: entry,
                             );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(4),
-                            child: Icon(
-                              isPartial
-                                  ? Icons.toll_outlined
-                                  : Icons.add_circle_outline,
-                              size: 18,
-                              color: color,
-                            ),
+                            return false;
+                          }
+                          return _deleteEntry(
+                            context,
+                            ref,
+                            entryId: entry.id,
+                            title: isLent ? 'lent' : 'borrowed',
+                          );
+                        },
+                        background: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          color: const Color(0xFF11261B),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(AppIcons.edit, color: AppColors.income),
+                              SizedBox(width: 8),
+                              Text(
+                                'EDIT',
+                                style: TextStyle(
+                                  color: AppColors.income,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        secondaryBackground: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          color: const Color(0xFF2A1313),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'DELETE',
+                                style: TextStyle(
+                                  color: AppColors.expense,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(AppIcons.trash, color: AppColors.expense),
+                            ],
+                          ),
+                        ),
+                        child: _EntryCard(
+                          title: isLent ? 'Lent' : 'Borrowed',
+                          amount: entry.amount,
+                          amountColor: color,
+                          dateLabel:
+                              '${Formatters.date(entry.date)}  Remaining ${Formatters.currency(remaining)}',
+                          note: entry.note,
+                          eventCount: entryEvents.isEmpty
+                              ? null
+                              : entryEvents.length,
+                          eventChips: _buildEventChips(entryEvents),
+                          leadingIcon: isLent
+                              ? AppIcons.download
+                              : AppIcons.upload,
+                          leadingIconColor: color,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              InkWell(
+                                borderRadius: BorderRadius.zero,
+                                onTap: () async {
+                                  await _showSettleDialog(
+                                    context,
+                                    ref,
+                                    entryId: entry.id,
+                                    remainingAmount: remaining,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    isPartial
+                                        ? Icons.toll_outlined
+                                        : Icons.add_circle_outline,
+                                    size: 18,
+                                    color: color,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -592,65 +720,128 @@ class LendPersonDetailPage extends ConsumerWidget {
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: _EntryCard(
-                        title: isLent ? 'Lent' : 'Borrowed',
-                        amount: entry.amount,
-                        amountColor: color,
-                        dateLabel: Formatters.date(entry.date),
-                        note: entry.note,
-                        eventCount: entryEvents.isEmpty
-                            ? null
-                            : entryEvents.length,
-                        eventChips: _buildEventChips(entryEvents),
-                        leadingIcon: isLent
-                            ? AppIcons.download
-                            : AppIcons.upload,
-                        leadingIconColor: color,
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: entry.isSettled
-                                    ? Colors.white.withValues(alpha: 0.12)
-                                    : color.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.zero,
-                              ),
-                              child: Text(
-                                entry.settledAt == null
-                                    ? 'Settled'
-                                    : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
+                      child: Dismissible(
+                        key: ValueKey('lend-entry-${entry.id}'),
+                        direction: DismissDirection.horizontal,
+                        confirmDismiss: (direction) async {
+                          if (direction == DismissDirection.startToEnd) {
+                            await _showEntryDialog(
+                              context,
+                              ref,
+                              existing: entry,
+                            );
+                            return false;
+                          }
+                          return _deleteEntry(
+                            context,
+                            ref,
+                            entryId: entry.id,
+                            title: isLent ? 'lent' : 'borrowed',
+                          );
+                        },
+                        background: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          color: const Color(0xFF11261B),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(AppIcons.edit, color: AppColors.income),
+                              SizedBox(width: 8),
+                              Text(
+                                'EDIT',
                                 style: TextStyle(
-                                  color: entry.isSettled ? Colors.white : color,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 10,
+                                  color: AppColors.income,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            InkWell(
-                              borderRadius: BorderRadius.zero,
-                              onTap: () async {
-                                await ref
-                                    .read(lendRepositoryProvider)
-                                    .clearSettlement(entry.id);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.all(4),
-                                child: Icon(
-                                  Icons.undo,
-                                  size: 16,
-                                  color: AppIcons.getColorForIcon(
-                                    AppIcons.download,
+                            ],
+                          ),
+                        ),
+                        secondaryBackground: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          color: const Color(0xFF2A1313),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'DELETE',
+                                style: TextStyle(
+                                  color: AppColors.expense,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.1,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Icon(AppIcons.trash, color: AppColors.expense),
+                            ],
+                          ),
+                        ),
+                        child: _EntryCard(
+                          title: isLent ? 'Lent' : 'Borrowed',
+                          amount: entry.amount,
+                          amountColor: color,
+                          dateLabel: Formatters.date(entry.date),
+                          note: entry.note,
+                          eventCount: entryEvents.isEmpty
+                              ? null
+                              : entryEvents.length,
+                          eventChips: _buildEventChips(entryEvents),
+                          leadingIcon: isLent
+                              ? AppIcons.download
+                              : AppIcons.upload,
+                          leadingIconColor: color,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: entry.isSettled
+                                      ? Colors.white.withValues(alpha: 0.12)
+                                      : color.withValues(alpha: 0.14),
+                                  borderRadius: BorderRadius.zero,
+                                ),
+                                child: Text(
+                                  entry.settledAt == null
+                                      ? 'Settled'
+                                      : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
+                                  style: TextStyle(
+                                    color: entry.isSettled
+                                        ? Colors.white
+                                        : color,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 6),
+                              InkWell(
+                                borderRadius: BorderRadius.zero,
+                                onTap: () async {
+                                  await ref
+                                      .read(lendRepositoryProvider)
+                                      .clearSettlement(entry.id);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4),
+                                  child: Icon(
+                                    Icons.undo,
+                                    size: 16,
+                                    color: AppIcons.getColorForIcon(
+                                      AppIcons.download,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -664,9 +855,7 @@ class LendPersonDetailPage extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: person == null
-            ? null
-            : () => _showAddEntryDialog(context, ref),
+        onPressed: person == null ? null : () => _showEntryDialog(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('Add entry'),
       ),

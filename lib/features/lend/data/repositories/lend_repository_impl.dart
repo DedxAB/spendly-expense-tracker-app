@@ -108,6 +108,54 @@ class LendRepositoryImpl implements LendRepository {
   }
 
   @override
+  Future<void> updateEntry({
+    required String entryId,
+    required String personId,
+    required LendEntryType type,
+    required double amount,
+    required DateTime date,
+    String? note,
+  }) async {
+    final current = await _db.getLendEntryById(entryId);
+    if (current == null || current.isDeleted) return;
+
+    final normalizedAmount = Money.normalize(amount);
+    if (normalizedAmount <= 0) return;
+
+    final settlementEvents = await _db.getLendSettlementEventsByEntry(entryId);
+    final settledTotal = Money.normalize(
+      settlementEvents.fold<double>(0, (sum, event) => sum + event.amount),
+    );
+    final effectiveAmount = normalizedAmount < settledTotal
+        ? settledTotal
+        : normalizedAmount;
+    final normalizedNote = note?.trim().isEmpty == true ? null : note?.trim();
+    final isSettled = settledTotal >= effectiveAmount;
+    final resolvedSettledAtEpoch = isSettled
+        ? current.settledAt ??
+              (settlementEvents.isNotEmpty ? settlementEvents.first.date : null)
+        : null;
+    final now = DateTime.now();
+
+    await _db.updateLendEntry(
+      entryId,
+      LendEntriesCompanion(
+        personId: Value(personId),
+        type: Value(type.value),
+        amount: Value(effectiveAmount),
+        amountPaise: Value(Money.toPaise(effectiveAmount)),
+        date: Value(date.millisecondsSinceEpoch),
+        note: Value(normalizedNote),
+        isSettled: Value(isSettled),
+        settledAmount: Value(settledTotal),
+        settledAmountPaise: Value(Money.toPaise(settledTotal)),
+        settledAt: Value(resolvedSettledAtEpoch),
+        updatedAt: Value(now.millisecondsSinceEpoch),
+      ),
+    );
+  }
+
+  @override
   Future<void> applySettlement({
     required String entryId,
     required double amount,
@@ -167,6 +215,11 @@ class LendRepositoryImpl implements LendRepository {
       settledAmount: normalizedSettled,
       settledAtEpoch: events.isEmpty ? null : events.first.date,
     );
+  }
+
+  @override
+  Future<void> deleteEntry(String entryId) async {
+    await _db.softDeleteLendEntry(entryId);
   }
 
   @override

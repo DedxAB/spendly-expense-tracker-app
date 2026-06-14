@@ -61,12 +61,13 @@ flutter:
           weight: 700
   assets:
     - assets/images/spendly_splash.png
-    - assets/icons/app_icon.png
+    - assets/icons/ic_launcher_round.png
 
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path_android: "ic_launcher.png"
-  adaptive_icon_foreground: "ic_launcher_foreground.png"
-  adaptive_icon_monochrome: "ic_launcher_round.png"
+
+  image_path_android: "assets/icons/ic_launcher.png"
+  adaptive_icon_foreground: "assets/icons/ic_launcher_foreground.png"
+  adaptive_icon_monochrome: "assets/icons/ic_launcher_round.png"
   adaptive_icon_background: "#000000"

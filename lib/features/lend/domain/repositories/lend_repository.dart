@@ -24,6 +24,15 @@ abstract class LendRepository {
     String? note,
   });
 
+  Future<void> updateEntry({
+    required String entryId,
+    required String personId,
+    required LendEntryType type,
+    required double amount,
+    required DateTime date,
+    String? note,
+  });
+
   Future<void> applySettlement({
     required String entryId,
     required double amount,
@@ -31,6 +40,8 @@ abstract class LendRepository {
   });
 
   Future<void> clearSettlement(String entryId);
+
+  Future<void> deleteEntry(String entryId);
 
   Future<void> deletePerson(String personId);
 }

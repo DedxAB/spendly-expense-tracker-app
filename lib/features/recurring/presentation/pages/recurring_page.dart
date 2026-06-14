@@ -4,11 +4,13 @@ import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
+import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/recurring/data/repositories/recurring_repository_impl.dart';
@@ -271,166 +273,253 @@ class RecurringPage extends ConsumerWidget {
       ),
       body: rules.when(
         data: (items) {
-          if (items.isEmpty) {
-            return const Center(child: Text('No recurring expenses yet.'));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.smPlus,
-              AppSpacing.md,
-              AppSpacing.smPlus,
-              AppSpacing.md,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              final dueToday =
-                  DateTime(
-                    item.nextDueDate.year,
-                    item.nextDueDate.month,
-                    item.nextDueDate.day,
-                  ) ==
-                  DateTime(
-                    DateTime.now().year,
-                    DateTime.now().month,
-                    DateTime.now().day,
-                  );
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0E0E0E),
-                    border: Border.all(color: AppColors.borderDark),
-                  ),
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1A1A1A),
-                              borderRadius: BorderRadius.circular(AppRadii.md),
-                            ),
-                            child: Icon(
-                              AppIcons.repeat,
-                              size: 20,
-                              color: item.isActive
-                                  ? AppIcons.getColorForIcon(AppIcons.repeat)
-                                  : const Color(0xFF8F8F8F),
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                                  style: const TextStyle(
-                                    color: Color(0xFFB8B8B8),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(
-                            Formatters.currency(item.amount),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.smPlus,
+                  AppSpacing.md,
+                  AppSpacing.smPlus,
+                  AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Recurring Expenses',
+                        style: AppTypography.screenTitle(context),
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      Row(
-                        children: [
-                          if (dueToday)
-                            const Padding(
-                              padding: EdgeInsets.only(right: 10),
-                              child: Text(
-                                'DUE',
-                                style: TextStyle(
-                                  color: Color(0xFFFFB3A8),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1,
-                                ),
-                              ),
+                    ),
+                    const SwipeActionsInfoButton(
+                      tooltip: 'Recurring swipe help',
+                      title: 'Recurring actions',
+                      message:
+                          'Recurring rules can be swiped to edit or delete.',
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: items.isEmpty
+                    ? const Center(child: Text('No recurring expenses yet.'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.smPlus,
+                          0,
+                          AppSpacing.smPlus,
+                          AppSpacing.md,
+                        ),
+                        itemCount: items.length,
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          final dueToday =
+                              DateTime(
+                                item.nextDueDate.year,
+                                item.nextDueDate.month,
+                                item.nextDueDate.day,
+                              ) ==
+                              DateTime(
+                                DateTime.now().year,
+                                DateTime.now().month,
+                                DateTime.now().day,
+                              );
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: AppSpacing.sm,
                             ),
-                          const Text(
-                            'Active',
-                            style: TextStyle(
-                              color: Color(0xFF9A9A9A),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Switch(
-                            value: item.isActive,
-                            onChanged: (value) async {
-                              await ref
-                                  .read(recurringRepositoryProvider)
-                                  .setActive(item.id, value);
-                            },
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            tooltip: 'Edit',
-                            onPressed: () =>
-                                _openAddDialog(context, ref, existing: item),
-                            icon: const Icon(
-                              Icons.edit_outlined,
-                              color: Color(0xFFD4D4D4),
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Delete',
-                            onPressed: () async {
-                              final shouldDelete =
-                                  await showAppDeleteConfirmDialog(
+                            child: Dismissible(
+                              key: ValueKey(item.id),
+                              direction: DismissDirection.horizontal,
+                              confirmDismiss: (direction) async {
+                                if (direction == DismissDirection.startToEnd) {
+                                  await _openAddDialog(
                                     context,
-                                    title: 'Delete recurring rule?',
-                                    message: 'Delete "${item.title}"?',
+                                    ref,
+                                    existing: item,
                                   );
-                              if (shouldDelete) {
+                                  return false;
+                                }
+                                final shouldDelete =
+                                    await showAppDeleteConfirmDialog(
+                                      context,
+                                      title: 'Delete recurring rule?',
+                                      message: 'Delete "${item.title}"?',
+                                    );
+                                return shouldDelete;
+                              },
+                              onDismissed: (_) async {
                                 await ref
                                     .read(recurringRepositoryProvider)
                                     .softDelete(item.id);
-                              }
-                            },
-                            icon: const Icon(
-                              AppIcons.trash,
-                              color: Color(0xFFFFB3A8),
+                              },
+                              background: Container(
+                                alignment: Alignment.centerLeft,
+                                color: const Color(0xFF11261B),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      AppIcons.edit,
+                                      color: AppColors.income,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'EDIT',
+                                      style: TextStyle(
+                                        color: AppColors.income,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              secondaryBackground: Container(
+                                alignment: Alignment.centerRight,
+                                color: const Color(0xFF2A1313),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'DELETE',
+                                      style: TextStyle(
+                                        color: AppColors.expense,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(
+                                      AppIcons.trash,
+                                      color: AppColors.expense,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0E0E0E),
+                                  border: Border.all(
+                                    color: AppColors.borderDark,
+                                  ),
+                                ),
+                                padding: const EdgeInsets.all(AppSpacing.sm),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF1A1A1A),
+                                            borderRadius: BorderRadius.circular(
+                                              AppRadii.md,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            AppIcons.repeat,
+                                            size: 20,
+                                            color: item.isActive
+                                                ? AppIcons.getColorForIcon(
+                                                    AppIcons.repeat,
+                                                  )
+                                                : const Color(0xFF8F8F8F),
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.title,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
+                                                style: const TextStyle(
+                                                  color: Color(0xFFB8B8B8),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: AppSpacing.sm),
+                                        Text(
+                                          Formatters.currency(item.amount),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Row(
+                                      children: [
+                                        if (dueToday)
+                                          const Padding(
+                                            padding: EdgeInsets.only(right: 10),
+                                            child: Text(
+                                              'DUE',
+                                              style: TextStyle(
+                                                color: Color(0xFFFFB3A8),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 1,
+                                              ),
+                                            ),
+                                          ),
+                                        const Text(
+                                          'Active',
+                                          style: TextStyle(
+                                            color: Color(0xFF9A9A9A),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Switch(
+                                          value: item.isActive,
+                                          onChanged: (value) async {
+                                            await ref
+                                                .read(
+                                                  recurringRepositoryProvider,
+                                                )
+                                                .setActive(item.id, value);
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
