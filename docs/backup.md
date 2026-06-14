@@ -2,7 +2,7 @@
 
 ## Overview
 
-Spendly backs up your data to Google Drive so you can restore it if you switch devices or reinstall the app. The local SQLite database is always the source of truth — Drive is purely a safety net.
+Spendly backs up your data to Google Drive so you can restore it if you switch devices or reinstall the app. The local SQLite database is always the source of truth. Drive is a portable snapshot for recovery and device migration, not a live sync engine.
 
 ---
 
@@ -14,18 +14,18 @@ Backup is a two-step process: export the local database to JSON, then upload tha
 
 ```text
 User triggers backup (manually or on app launch)
-        ↓
+        |
 CloudSyncRepository.backupNow()
-        ↓
+        |
 SettingsRepository.exportJson()
-  ← reads all tables: transactions, categories, settings,
-    recurring rules, goals, lend entries, etc.
-  ← serialises everything to a single JSON string
-        ↓
+  <- reads all tables: transactions, categories, settings,
+     recurring rules, goals, lend entries, activity logs,
+     and app usage totals
+        |
 DriveService.uploadFile(jsonString)
-  ← authenticates with the connected Google account
-  ← uploads file to the app's private Drive folder
-        ↓
+  <- authenticates with the connected Google account
+  <- uploads file to the app's private Drive folder
+        |
 Backup metadata saved (timestamp, file ID)
 ```
 
@@ -33,17 +33,17 @@ Backup metadata saved (timestamp, file ID)
 
 ```text
 User taps "Restore from Backup"
-        ↓
-CloudSyncRepository.restoreFromBackup()
-        ↓
+        |
+CloudSyncRepository.restoreFromDrive()
+        |
 DriveService.downloadLatestFile()
-  ← fetches the JSON file from Drive
-        ↓
+  <- fetches the JSON file from Drive
+        |
 SettingsRepository.importJson(jsonString)
-  ← clears existing local data
-  ← writes all records back to SQLite
-        ↓
-App reloads — streams emit fresh data
+  <- clears existing local data
+  <- writes all records back to SQLite
+        |
+App reloads - streams emit fresh data
 ```
 
 ---
@@ -52,20 +52,20 @@ App reloads — streams emit fresh data
 
 Handled by two services:
 
-- `GoogleAuthService` — wraps `google_sign_in`. Provides `connectAccount()` and `disconnectAccount()`. Stores the signed-in account state.
-- `DriveService` — wraps the Google Drive REST API. Creates a dedicated app folder, uploads/downloads the backup JSON file.
+- `GoogleAuthService` - wraps `google_sign_in`. Provides `connectAccount()` and `disconnectAccount()`. Stores the signed-in account state.
+- `DriveService` - wraps the Google Drive REST API. Creates a dedicated app folder, uploads/downloads the backup JSON file.
 
 ### Connect Account Flow
 
 ```text
 User taps "Connect Google Account"
-        ↓
+        |
 GoogleAuthService.connectAccount()
-  ← opens Google Sign-In sheet
-  ← returns authenticated account (email, token)
-        ↓
+  <- opens Google Sign-In sheet
+  <- returns authenticated account (email, token)
+        |
 CloudSyncState updates to "connected"
-        ↓
+        |
 Settings page shows connected email and backup options
 ```
 
@@ -73,10 +73,10 @@ Settings page shows connected email and backup options
 
 ```text
 User taps "Disconnect"
-        ↓
+        |
 GoogleAuthService.disconnectAccount()
-  ← signs out and revokes Drive access
-        ↓
+  <- signs out and revokes Drive access
+        |
 CloudSyncState updates to "disconnected"
 ```
 
@@ -87,13 +87,13 @@ CloudSyncState updates to "disconnected"
 On every app launch, `SplashPage` calls `CloudSyncRepository.runDailyBackupIfNeeded()`.
 
 ```text
-App launches → SplashPage
-        ↓
+App launches -> SplashPage
+        |
 runDailyBackupIfNeeded()
-  ← checks: is a Google account connected?
-  ← checks: has a backup already run today?
-  ← if yes to both → skip
-  ← if no → run backupNow()
+  <- checks: is a Google account connected?
+  <- checks: has a backup already run today?
+  <- if yes to both -> skip
+  <- if no -> run backupNow()
 ```
 
 This means the user's last day of data is always protected without any manual action.
@@ -113,13 +113,15 @@ The JSON export includes all user data:
 - Monthly reflections
 - Category budgets
 - Activity events
+- App usage days and lifetime screen-time totals
 
 ---
 
 ## What Does Not Get Backed Up
 
-- App usage / screen time (device-specific)
 - Notification state (managed by the OS)
+
+App usage is recorded locally on each device, but because it is included in the backup snapshot, it can be restored onto another device when you import the Drive backup.
 
 ---
 

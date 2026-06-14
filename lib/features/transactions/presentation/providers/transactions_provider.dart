@@ -198,7 +198,18 @@ class TransactionFilterController
   }
 
   void clearAll() {
-    state = TransactionFilterState.initial();
+    state = state.copyWith(
+      datePreset: TransactionDatePreset.allTime,
+      clearType: true,
+      clearCategory: true,
+      clearPaymentMode: true,
+      clearMinAmount: true,
+      clearMaxAmount: true,
+      searchQuery: '',
+      sortOption: TransactionSortOption.newestFirst,
+      clearCustomFrom: true,
+      clearCustomTo: true,
+    );
   }
 }
 

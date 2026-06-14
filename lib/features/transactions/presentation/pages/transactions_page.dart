@@ -18,11 +18,47 @@ import 'package:spendly/features/transactions/domain/entities/transaction_entity
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
-class TransactionsPage extends ConsumerWidget {
+class TransactionsPage extends ConsumerStatefulWidget {
   const TransactionsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends ConsumerState<TransactionsPage> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController(
+      text: ref.read(transactionFilterProvider).searchQuery,
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _setSearchQuery(String query) {
+    if (_searchController.text != query) {
+      _searchController.value = TextEditingValue(
+        text: query,
+        selection: TextSelection.collapsed(offset: query.length),
+      );
+    }
+    ref.read(transactionFilterProvider.notifier).setSearchQuery(query);
+  }
+
+  void _clearAllFilters() {
+    _searchController.clear();
+    ref.read(transactionFilterProvider.notifier).clearAll();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final filters = ref.watch(transactionFilterProvider);
     final filterController = ref.read(transactionFilterProvider.notifier);
     final transactions = ref.watch(filteredTransactionsProvider);
@@ -58,7 +94,8 @@ class TransactionsPage extends ConsumerWidget {
           Text('Search Ledger', style: AppTypography.screenTitle(context)),
           const SizedBox(height: AppSpacing.smPlus),
           TextField(
-            onChanged: filterController.setSearchQuery,
+            controller: _searchController,
+            onChanged: _setSearchQuery,
             style: const TextStyle(fontSize: 18),
             decoration: const InputDecoration(
               hintText: 'MERCHANT, CATEGORY, OR AMOUNT',
@@ -71,7 +108,7 @@ class TransactionsPage extends ConsumerWidget {
             child: SizedBox(
               width: 134,
               child: OutlinedButton.icon(
-                onPressed: () => _openFilters(context, ref, filters),
+                onPressed: () => _openFilters(context, filters),
                 icon: const Icon(AppIcons.filter, size: 16),
                 label: const Text('Filters'),
               ),
@@ -81,9 +118,9 @@ class TransactionsPage extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
             _ActiveFilterBar(
               filters: filters,
-              onClearAll: filterController.clearAll,
+              onClearAll: _clearAllFilters,
               onClearSearch: filters.searchQuery.trim().isNotEmpty
-                  ? () => filterController.setSearchQuery('')
+                  ? () => _setSearchQuery('')
                   : null,
               onClearType: filters.type != null
                   ? () => filterController.setType(null)
@@ -413,7 +450,6 @@ class TransactionsPage extends ConsumerWidget {
 
   Future<void> _openFilters(
     BuildContext context,
-    WidgetRef ref,
     TransactionFilterState filters,
   ) async {
     final availableCategories =

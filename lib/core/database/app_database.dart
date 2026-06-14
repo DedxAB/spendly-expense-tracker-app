@@ -566,6 +566,15 @@ class AppDatabase extends _$AppDatabase {
     await into(lendEntries).insertOnConflictUpdate(companion);
   }
 
+  Future<void> updateLendEntry(
+    String entryId,
+    LendEntriesCompanion companion,
+  ) async {
+    await (update(
+      lendEntries,
+    )..where((tbl) => tbl.id.equals(entryId))).write(companion);
+  }
+
   Future<void> upsertLendSettlementEvent(
     LendSettlementEventsCompanion companion,
   ) async {
@@ -614,6 +623,16 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> softDeleteLendSettlementEvent(String eventId) async {
     await (update(lendSettlementEvents)..where((tbl) => tbl.id.equals(eventId)))
+        .write(const LendSettlementEventsCompanion(isDeleted: Value(true)));
+  }
+
+  Future<void> softDeleteLendEntry(String entryId) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    await (update(lendEntries)..where((tbl) => tbl.id.equals(entryId))).write(
+      LendEntriesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+    );
+    await (update(lendSettlementEvents)
+          ..where((tbl) => tbl.entryId.equals(entryId)))
         .write(const LendSettlementEventsCompanion(isDeleted: Value(true)));
   }
 
@@ -677,6 +696,12 @@ class AppDatabase extends _$AppDatabase {
     return query.watch();
   }
 
+  Future<List<ActivityEvent>> getActivityEvents() {
+    final query = select(activityEvents)
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.occurredAt)]);
+    return query.get();
+  }
+
   Future<void> insertActivityEvent(ActivityEventsCompanion companion) async {
     await into(activityEvents).insert(companion);
   }
@@ -699,6 +724,12 @@ class AppDatabase extends _$AppDatabase {
     final query = select(appUsageDays)
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.dateKey)]);
     return query.watch();
+  }
+
+  Future<List<AppUsageDay>> getAppUsageDays() {
+    final query = select(appUsageDays)
+      ..orderBy([(tbl) => OrderingTerm.asc(tbl.dateKey)]);
+    return query.get();
   }
 
   Future<void> addScreenTimeSeconds(int seconds) async {
@@ -867,6 +898,8 @@ class AppDatabase extends _$AppDatabase {
     required List<LendSettlementEventsCompanion> lendSettlementEventRows,
     required List<MonthlyReflectionsCompanion> monthlyReflectionRows,
     required List<CategoryBudgetsCompanion> categoryBudgetRows,
+    required List<ActivityEventsCompanion> activityEventRows,
+    required List<AppUsageDaysCompanion> appUsageDayRows,
     List<GoalFundsCompanion> goalFundRows = const [],
     List<GoalContributionsCompanion> goalContributionRows = const [],
     required SettingsCompanion settingsRow,
@@ -914,6 +947,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (categoryBudgetRows.isNotEmpty) {
         await batch((b) => b.insertAll(categoryBudgets, categoryBudgetRows));
+      }
+      if (activityEventRows.isNotEmpty) {
+        await batch((b) => b.insertAll(activityEvents, activityEventRows));
+      }
+      if (appUsageDayRows.isNotEmpty) {
+        await batch((b) => b.insertAll(appUsageDays, appUsageDayRows));
       }
       if (goalFundRows.isNotEmpty) {
         await batch((b) => b.insertAll(goalFunds, goalFundRows));

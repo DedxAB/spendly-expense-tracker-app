@@ -141,6 +141,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
     return normalized;
   }
 
+  Map<String, dynamic> _normalizeActivityEventJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    _normalizeDateField(normalized, 'occurredAt');
+    return normalized;
+  }
+
+  Map<String, dynamic> _normalizeAppUsageDayJson(Map<String, dynamic> json) {
+    final normalized = Map<String, dynamic>.from(json);
+    _normalizeDateField(normalized, 'updatedAt');
+    return normalized;
+  }
+
   @override
   Future<void> clearAllData() async {
     await _ref.read(appDatabaseProvider).clearAllAndReseed();
@@ -167,6 +179,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final reflections = await db.getMonthlyReflections();
     final goalFunds = await db.getGoalFunds();
     final goalContributions = await db.getGoalContributions();
+    final activityEvents = await db.getActivityEvents();
+    final appUsageDays = await db.getAppUsageDays();
     final now = DateTime.now();
     final monthKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     final categoryBudgets = await db.getCategoryBudgetsForMonth(monthKey);
@@ -237,6 +251,26 @@ class SettingsRepositoryImpl implements SettingsRepository {
               },
             )
             .toList(growable: false),
+        'activityEvents': activityEvents
+            .map(
+              (e) => {
+                'id': e.id,
+                'kind': e.kind,
+                'title': e.title,
+                'description': e.description,
+                'occurredAt': e.occurredAt,
+              },
+            )
+            .toList(growable: false),
+        'appUsageDays': appUsageDays
+            .map(
+              (e) => {
+                'dateKey': e.dateKey,
+                'totalSeconds': e.totalSeconds,
+                'updatedAt': e.updatedAt,
+              },
+            )
+            .toList(growable: false),
       },
     };
 
@@ -270,6 +304,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final categoryBudgetsJson = _asObjectMapList(data['categoryBudgets']);
     final goalFundsJson = _asObjectMapList(data['goalFunds']);
     final goalContributionsJson = _asObjectMapList(data['goalContributions']);
+    final activityEventsJson = _asObjectMapList(data['activityEvents']);
+    final appUsageDaysJson = _asObjectMapList(data['appUsageDays']);
 
     final settings = settingsJson != null
         ? SettingsEntity.fromJson(_normalizeSettingsJson(settingsJson))
@@ -432,6 +468,56 @@ class SettingsRepositoryImpl implements SettingsRepository {
         })
         .where((row) => row.id.value.isNotEmpty && row.goalId.value.isNotEmpty)
         .toList(growable: false);
+    final activityEventRows = activityEventsJson
+        .map(
+          (json) {
+            final normalized = _normalizeActivityEventJson(json);
+            return ActivityEventsCompanion.insert(
+              id: (normalized['id'] as String?) ?? '',
+              kind: (normalized['kind'] as String?) ?? '',
+              title: (normalized['title'] as String?) ?? '',
+              description: (normalized['description'] as String?) ?? '',
+              occurredAt:
+                  (DateTime.tryParse(
+                            (normalized['occurredAt'] ?? '').toString(),
+                          ) ??
+                          DateTime.now())
+                      .millisecondsSinceEpoch,
+            );
+          },
+        )
+        .where(
+          (row) =>
+              row.id.value.isNotEmpty &&
+              row.kind.value.isNotEmpty &&
+              row.title.value.isNotEmpty &&
+              row.description.value.isNotEmpty,
+        )
+        .toList(growable: false);
+    final appUsageDayRows = appUsageDaysJson
+        .map(
+          (json) {
+            final normalized = _normalizeAppUsageDayJson(json);
+            final dateKey = (normalized['dateKey'] as String?) ?? '';
+            if (dateKey.isEmpty) {
+              return null;
+            }
+            return AppUsageDaysCompanion.insert(
+              dateKey: dateKey,
+              totalSeconds: Value(
+                (normalized['totalSeconds'] as num?)?.toInt() ?? 0,
+              ),
+              updatedAt:
+                  (DateTime.tryParse(
+                            (normalized['updatedAt'] ?? '').toString(),
+                          ) ??
+                          DateTime.now())
+                      .millisecondsSinceEpoch,
+            );
+          },
+        )
+        .whereType<AppUsageDaysCompanion>()
+        .toList(growable: false);
 
     await _ref
         .read(appDatabaseProvider)
@@ -444,6 +530,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
           lendSettlementEventRows: lendSettlementEventRows,
           monthlyReflectionRows: monthlyReflectionRows,
           categoryBudgetRows: categoryBudgetRows,
+          activityEventRows: activityEventRows,
+          appUsageDayRows: appUsageDayRows,
           goalFundRows: goalFundRows,
           goalContributionRows: goalContributionRows,
           settingsRow: settingsToCompanion(settings),
