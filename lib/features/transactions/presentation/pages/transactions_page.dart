@@ -28,6 +28,9 @@ class TransactionsPage extends ConsumerStatefulWidget {
 
 class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
+  static const _pageSize = 30;
+  int _visibleCount = _pageSize;
 
   @override
   void initState() {
@@ -35,12 +38,155 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     _searchController = TextEditingController(
       text: ref.read(transactionFilterProvider).searchQuery,
     );
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    setState(() {
+      _visibleCount += _pageSize;
+    });
+  }
+
+  void _resetPagination() {
+    setState(() {
+      _visibleCount = _pageSize;
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
+
+  Widget _buildTransactionGroups(
+    Map<String, List<TransactionEntity>> grouped,
+    int totalCount,
+    Map<String, CategoryEntity> categoryById,
+  ) {
+    final entries = grouped.entries.toList();
+    int shown = 0;
+    final visible = <MapEntry<String, List<TransactionEntity>>>[];
+    for (final entry in entries) {
+      if (shown >= _visibleCount) break;
+      visible.add(entry);
+      shown += entry.value.length;
+    }
+
+    return Column(
+      children: [
+        ...visible.map((entry) => Padding(
+          padding: const EdgeInsets.only(top: 26),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(entry.key, style: AppTypography.sectionTitle(context)),
+              const SizedBox(height: 12),
+              const Divider(color: AppColors.borderDark),
+              ...entry.value.map((tx) => Dismissible(
+                key: ValueKey(tx.id),
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    await showAddExpenseSheet(context, existing: tx);
+                    return false;
+                  }
+                  return showAppDeleteConfirmDialog(
+                    context,
+                    title: 'Delete transaction?',
+                    message: 'This transaction will be removed.',
+                  );
+                },
+                onDismissed: (_) {
+                  ref.read(transactionActionsProvider).softDelete(tx.id);
+                },
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  color: const Color(0xFF11261B),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(AppIcons.edit, color: AppColors.income),
+                      SizedBox(width: 8),
+                      Text('EDIT', style: TextStyle(
+                        color: AppColors.income,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      )),
+                    ],
+                  ),
+                ),
+                secondaryBackground: Container(
+                  alignment: Alignment.centerRight,
+                  color: const Color(0xFF2A1313),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('DELETE', style: TextStyle(
+                        color: AppColors.expense,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      )),
+                      SizedBox(width: 8),
+                      Icon(AppIcons.trash, color: AppColors.expense),
+                    ],
+                  ),
+                ),
+                child: _HistoryRow(
+                  title: categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                  subtitle: tx.note?.trim() ?? '',
+                  paymentModeLabel: transactionPaymentLabel(
+                    type: tx.type, paymentMode: tx.paymentMode, cardType: tx.cardType,
+                  ),
+                  amount: tx.amount,
+                  type: tx.type,
+                  icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
+                  iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
+                ),
+              )),
+            ],
+          ),
+        )),
+        if (shown < totalCount)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _loadMore,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.borderDark),
+                  backgroundColor: const Color(0xFF0E0E0E),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                  ),
+                ),
+                child: Text(
+                  'Show more (${totalCount - shown} left)',
+                  style: const TextStyle(color: Color(0xFFD0D0D0)),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   void _setSearchQuery(String query) {
@@ -78,6 +224,10 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
         filters.sortOption != TransactionSortOption.newestFirst ||
         filters.datePreset != TransactionDatePreset.allTime;
 
+    ref.listen(transactionFilterProvider, (previous, next) {
+      if (previous != null && previous != next) _resetPagination();
+    });
+
     return Scaffold(
       appBar: NoirHeader(
         showLeading: true,
@@ -85,6 +235,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
         onLeadingTap: () => context.push('/calendar'),
       ),
       body: ListView(
+        controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.smPlus,
           AppSpacing.mdPlus,
@@ -303,118 +454,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   ),
                   const SizedBox(height: 16),
                   const Divider(color: AppColors.borderDark),
-                  ...grouped.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 26),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            entry.key,
-                            style: AppTypography.sectionTitle(context),
-                          ),
-                          const SizedBox(height: 12),
-                          const Divider(color: AppColors.borderDark),
-                          ...entry.value.map(
-                            (tx) => Dismissible(
-                              key: ValueKey(tx.id),
-                              confirmDismiss: (direction) async {
-                                if (direction == DismissDirection.startToEnd) {
-                                  await showAddExpenseSheet(
-                                    context,
-                                    existing: tx,
-                                  );
-                                  return false;
-                                }
-                                return showAppDeleteConfirmDialog(
-                                  context,
-                                  title: 'Delete transaction?',
-                                  message: 'This transaction will be removed.',
-                                );
-                              },
-                              onDismissed: (_) {
-                                ref
-                                    .read(transactionActionsProvider)
-                                    .softDelete(tx.id);
-                              },
-                              background: Container(
-                                alignment: Alignment.centerLeft,
-                                color: const Color(0xFF11261B),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      AppIcons.edit,
-                                      color: AppColors.income,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'EDIT',
-                                      style: TextStyle(
-                                        color: AppColors.income,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              secondaryBackground: Container(
-                                alignment: Alignment.centerRight,
-                                color: const Color(0xFF2A1313),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'DELETE',
-                                      style: TextStyle(
-                                        color: AppColors.expense,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(
-                                      AppIcons.trash,
-                                      color: AppColors.expense,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              child: _HistoryRow(
-                                title:
-                                    categoryById[tx.categoryId]?.name ??
-                                    tx.categoryId,
-                                subtitle: tx.note?.trim() ?? '',
-                                paymentModeLabel: transactionPaymentLabel(
-                                  type: tx.type,
-                                  paymentMode: tx.paymentMode,
-                                  cardType: tx.cardType,
-                                ),
-                                amount: tx.amount,
-                                type: tx.type,
-                                icon: _iconFor(
-                                  categoryById[tx.categoryId]?.name ??
-                                      tx.categoryId,
-                                ),
-                                iconColor: _categoryIconColor(
-                                  categoryById[tx.categoryId],
-                                  tx.type,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                  _buildTransactionGroups(grouped, items.length, categoryById),
                 ],
               );
             },

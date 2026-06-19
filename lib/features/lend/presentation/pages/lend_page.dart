@@ -42,8 +42,9 @@ class LendPage extends ConsumerWidget {
       hintText: 'Person name',
       confirmText: 'Add',
       textCapitalization: TextCapitalization.words,
+      requiredLabel: 'Name',
     );
-    if (name == null || name.trim().isEmpty) return;
+    if (name == null) return;
     await ref.read(lendRepositoryProvider).addPerson(name.trim());
   }
 

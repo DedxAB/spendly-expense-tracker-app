@@ -12,6 +12,7 @@ Future<String?> showAppTextInputDialog(
   TextInputType keyboardType = TextInputType.text,
   TextCapitalization textCapitalization = TextCapitalization.none,
   String initialValue = '',
+  String? requiredLabel,
 }) async {
   return showDialog<String>(
     context: context,
@@ -33,6 +34,7 @@ Future<String?> showAppTextInputDialog(
         textCapitalization: textCapitalization,
         initialValue: initialValue,
         surfaceColor: surfaceColor,
+        requiredLabel: requiredLabel,
       );
     },
   );
@@ -51,6 +53,7 @@ class _AppTextInputDialog extends StatefulWidget {
     required this.textCapitalization,
     required this.initialValue,
     required this.surfaceColor,
+    this.requiredLabel,
   });
 
   final String title;
@@ -64,6 +67,7 @@ class _AppTextInputDialog extends StatefulWidget {
   final TextCapitalization textCapitalization;
   final String initialValue;
   final Color surfaceColor;
+  final String? requiredLabel;
 
   @override
   State<_AppTextInputDialog> createState() => _AppTextInputDialogState();
@@ -73,6 +77,7 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialValue,
   );
+  var _formAttempted = false;
 
   @override
   void dispose() {
@@ -119,6 +124,29 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
               Text(widget.message!, style: widget.messageStyle),
               const SizedBox(height: AppSpacing.sm),
             ],
+            if (widget.requiredLabel != null) ...[
+              Row(
+                children: [
+                  Text(
+                    widget.requiredLabel!,
+                    style: const TextStyle(
+                      color: Color(0xFFB3B3B3),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Text(
+                    ' *',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+            ],
             TextField(
               controller: _controller,
               keyboardType: widget.keyboardType,
@@ -126,6 +154,16 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
               autofocus: true,
               decoration: InputDecoration(hintText: widget.hintText),
             ),
+            if (widget.requiredLabel != null &&
+                _formAttempted &&
+                _controller.text.trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Name is required',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
           ],
         ),
       ),
@@ -135,6 +173,9 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
           confirmText: widget.confirmText,
           onCancel: () => rootNav.pop(null),
           onConfirm: () {
+            setState(() {
+              _formAttempted = true;
+            });
             final value = _controller.text.trim();
             if (value.isEmpty) return;
             rootNav.pop(value);

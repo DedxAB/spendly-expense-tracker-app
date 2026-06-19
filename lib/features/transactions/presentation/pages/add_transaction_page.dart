@@ -81,6 +81,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   CardType? _cardType;
   DateTime _date = DateTime.now();
   String? _selectedCategoryId;
+  bool _formAttempted = false;
 
   @override
   void initState() {
@@ -108,11 +109,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   }
 
   Future<void> _save(List<CategoryEntity> categories) async {
+    setState(() => _formAttempted = true);
     final amount = Money.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0 || _selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add amount and choose category')),
-      );
       return;
     }
 
@@ -269,7 +268,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     ],
                   ),
                   const SizedBox(height: 6),
-                  const _SheetLabel('AMOUNT'),
+                  const _SheetLabel('AMOUNT', required: true),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _amountController,
@@ -303,6 +302,15 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
+                  if (_formAttempted && (Money.tryParse(_amountController.text.trim()) == null ||
+                      Money.tryParse(_amountController.text.trim())! <= 0))
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Enter a valid amount',
+                        style: TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+                      ),
+                    ),
                   const SizedBox(height: 14),
                   const Divider(color: Color(0xFF2A2A2A), height: 1),
                   const SizedBox(height: 22),
@@ -322,7 +330,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     }),
                   ),
                   const SizedBox(height: 22),
-                  const _SheetLabel('CATEGORY'),
+                  const _SheetLabel('CATEGORY', required: true),
                   const SizedBox(height: 12),
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -348,6 +356,14 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ],
                     ),
                   ),
+                  if (_formAttempted && _selectedCategoryId == null)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Select a category',
+                        style: TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+                      ),
+                    ),
                   const SizedBox(height: 22),
                   const _SheetLabel('PAYMENT MODE'),
                   const SizedBox(height: 12),
@@ -484,20 +500,37 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
 }
 
 class _SheetLabel extends StatelessWidget {
-  const _SheetLabel(this.text);
+  const _SheetLabel(this.text, {this.required = false});
 
   final String text;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Color(0xFFC5C5C5),
-        fontSize: 12,
-        letterSpacing: 1.6,
-        fontWeight: FontWeight.w700,
-      ),
+    return Row(
+      children: [
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFFC5C5C5),
+            fontSize: 12,
+            letterSpacing: 1.6,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (required)
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Text(
+              '*',
+              style: TextStyle(
+                color: Color(0xFFFF7A7A),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

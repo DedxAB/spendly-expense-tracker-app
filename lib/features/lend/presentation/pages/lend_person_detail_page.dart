@@ -89,6 +89,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       text: remainingAmount.toStringAsFixed(2),
     );
     var selectedDate = DateTime.now();
+    var formAttempted = false;
 
     await showDialog<void>(
       context: context,
@@ -120,16 +121,16 @@ class LendPersonDetailPage extends ConsumerWidget {
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
-        child: AlertDialog(
-          title: const Text('Settle Amount'),
-          content: SizedBox(
-            width: AppModalSizes.dialogContentWidth,
-            child: StatefulBuilder(
-              builder: (context, setState) => Column(
+        child: StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: const Text('Settle Amount'),
+            content: SizedBox(
+              width: AppModalSizes.dialogContentWidth,
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _ModalFieldLabel('Amount'),
+                  const _ModalFieldLabel('Amount', required_: true),
                   const SizedBox(height: 6),
                   TextField(
                     controller: amountController,
@@ -142,6 +143,14 @@ class LendPersonDetailPage extends ConsumerWidget {
                           'Remaining ${Formatters.currency(remainingAmount)}',
                     ),
                   ),
+                  if (formAttempted && amountController.text.trim().isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Amount is required',
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
                   const SizedBox(height: AppSpacing.sm),
                   const _ModalFieldLabel('Settlement Date'),
                   const SizedBox(height: 4),
@@ -162,26 +171,28 @@ class LendPersonDetailPage extends ConsumerWidget {
                 ],
               ),
             ),
+            actions: [
+              DialogActionsRow(
+                cancelText: 'Cancel',
+                confirmText: 'Settle',
+                onCancel: () => Navigator.pop(context),
+                onConfirm: () async {
+                  formAttempted = true;
+                  setState(() {});
+                  final amount = Money.tryParse(amountController.text.trim());
+                  if (amount == null || amount <= 0) return;
+                  await ref
+                      .read(lendRepositoryProvider)
+                      .applySettlement(
+                        entryId: entryId,
+                        amount: amount,
+                        settledAt: selectedDate,
+                      );
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+            ],
           ),
-          actions: [
-            DialogActionsRow(
-              cancelText: 'Cancel',
-              confirmText: 'Settle',
-              onCancel: () => Navigator.pop(context),
-              onConfirm: () async {
-                final amount = Money.tryParse(amountController.text.trim());
-                if (amount == null || amount <= 0) return;
-                await ref
-                    .read(lendRepositoryProvider)
-                    .applySettlement(
-                      entryId: entryId,
-                      amount: amount,
-                      settledAt: selectedDate,
-                    );
-                if (context.mounted) Navigator.pop(context);
-              },
-            ),
-          ],
         ),
       ),
     );
@@ -199,6 +210,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     var selectedType = existing?.type ?? LendEntryType.lent;
     var selectedDate = existing?.date ?? DateTime.now();
     final isEditing = existing != null;
+    var formAttempted = false;
 
     try {
       await showDialog<void>(
@@ -289,7 +301,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         },
                       ),
                       const SizedBox(height: AppSpacing.sm),
-                      const _ModalFieldLabel('Amount'),
+                      const _ModalFieldLabel('Amount', required_: true),
                       const SizedBox(height: 6),
                       TextField(
                         controller: amountController,
@@ -301,6 +313,14 @@ class LendPersonDetailPage extends ConsumerWidget {
                           hintText: '0.00',
                         ),
                       ),
+                      if (formAttempted && amountController.text.trim().isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Amount is required',
+                            style: TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        ),
                       const SizedBox(height: AppSpacing.sm),
                       const _ModalFieldLabel('Note (optional)'),
                       const SizedBox(height: 6),
@@ -369,6 +389,8 @@ class LendPersonDetailPage extends ConsumerWidget {
                   confirmText: isEditing ? 'Save' : 'Add',
                   onCancel: () => Navigator.pop(context),
                   onConfirm: () async {
+                    formAttempted = true;
+                    setState(() {});
                     final amount = Money.tryParse(amountController.text.trim());
                     if (amount == null || amount <= 0) return;
                     final repository = ref.read(lendRepositoryProvider);
@@ -864,18 +886,29 @@ class LendPersonDetailPage extends ConsumerWidget {
 }
 
 class _ModalFieldLabel extends StatelessWidget {
-  const _ModalFieldLabel(this.label);
+  const _ModalFieldLabel(this.label, {this.required_ = false});
 
   final String label;
+  final bool required_;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: Color(0xFFB3B3B3),
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
+    return Text.rich(
+      TextSpan(
+        text: label,
+        style: const TextStyle(
+          color: Color(0xFFB3B3B3),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+        children: required_
+            ? const [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ]
+            : null,
       ),
     );
   }
