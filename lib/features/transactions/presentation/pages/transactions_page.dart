@@ -28,6 +28,9 @@ class TransactionsPage extends ConsumerStatefulWidget {
 
 class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   late final TextEditingController _searchController;
+  late final ScrollController _scrollController;
+  static const _pageSize = 30;
+  int _visibleCount = _pageSize;
 
   @override
   void initState() {
@@ -35,12 +38,155 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     _searchController = TextEditingController(
       text: ref.read(transactionFilterProvider).searchQuery,
     );
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    setState(() {
+      _visibleCount += _pageSize;
+    });
+  }
+
+  void _resetPagination() {
+    setState(() {
+      _visibleCount = _pageSize;
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+    });
+  }
+
+  Widget _buildTransactionGroups(
+    Map<String, List<TransactionEntity>> grouped,
+    int totalCount,
+    Map<String, CategoryEntity> categoryById,
+  ) {
+    final entries = grouped.entries.toList();
+    int shown = 0;
+    final visible = <MapEntry<String, List<TransactionEntity>>>[];
+    for (final entry in entries) {
+      if (shown >= _visibleCount) break;
+      visible.add(entry);
+      shown += entry.value.length;
+    }
+
+    return Column(
+      children: [
+        ...visible.map((entry) => Padding(
+          padding: const EdgeInsets.only(top: 26),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(entry.key, style: AppTypography.sectionTitle(context)),
+              const SizedBox(height: 12),
+              const Divider(color: AppColors.borderDark),
+              ...entry.value.map((tx) => Dismissible(
+                key: ValueKey(tx.id),
+                confirmDismiss: (direction) async {
+                  if (direction == DismissDirection.startToEnd) {
+                    await showAddExpenseSheet(context, existing: tx);
+                    return false;
+                  }
+                  return showAppDeleteConfirmDialog(
+                    context,
+                    title: 'Delete transaction?',
+                    message: 'This transaction will be removed.',
+                  );
+                },
+                onDismissed: (_) {
+                  ref.read(transactionActionsProvider).softDelete(tx.id);
+                },
+                background: Container(
+                  alignment: Alignment.centerLeft,
+                  color: const Color(0xFF11261B),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(AppIcons.edit, color: AppColors.income),
+                      SizedBox(width: 8),
+                      Text('EDIT', style: TextStyle(
+                        color: AppColors.income,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      )),
+                    ],
+                  ),
+                ),
+                secondaryBackground: Container(
+                  alignment: Alignment.centerRight,
+                  color: const Color(0xFF2A1313),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('DELETE', style: TextStyle(
+                        color: AppColors.expense,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                      )),
+                      SizedBox(width: 8),
+                      Icon(AppIcons.trash, color: AppColors.expense),
+                    ],
+                  ),
+                ),
+                child: _HistoryRow(
+                  title: categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                  subtitle: tx.note?.trim() ?? '',
+                  paymentModeLabel: transactionPaymentLabel(
+                    type: tx.type, paymentMode: tx.paymentMode, cardType: tx.cardType,
+                  ),
+                  amount: tx.amount,
+                  type: tx.type,
+                  icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
+                  iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
+                ),
+              )),
+            ],
+          ),
+        )),
+        if (shown < totalCount)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _loadMore,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppColors.borderDark),
+                  backgroundColor: const Color(0xFF0E0E0E),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.lg),
+                  ),
+                ),
+                child: Text(
+                  'Show more (${totalCount - shown} left)',
+                  style: const TextStyle(color: Color(0xFFD0D0D0)),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   void _setSearchQuery(String query) {
@@ -78,6 +224,10 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
         filters.sortOption != TransactionSortOption.newestFirst ||
         filters.datePreset != TransactionDatePreset.allTime;
 
+    ref.listen(transactionFilterProvider, (previous, next) {
+      if (previous != null && previous != next) _resetPagination();
+    });
+
     return Scaffold(
       appBar: NoirHeader(
         showLeading: true,
@@ -85,6 +235,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
         onLeadingTap: () => context.push('/calendar'),
       ),
       body: ListView(
+        controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.smPlus,
           AppSpacing.mdPlus,
@@ -303,118 +454,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   ),
                   const SizedBox(height: 16),
                   const Divider(color: AppColors.borderDark),
-                  ...grouped.entries.map((entry) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 26),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            entry.key,
-                            style: AppTypography.sectionTitle(context),
-                          ),
-                          const SizedBox(height: 12),
-                          const Divider(color: AppColors.borderDark),
-                          ...entry.value.map(
-                            (tx) => Dismissible(
-                              key: ValueKey(tx.id),
-                              confirmDismiss: (direction) async {
-                                if (direction == DismissDirection.startToEnd) {
-                                  await showAddExpenseSheet(
-                                    context,
-                                    existing: tx,
-                                  );
-                                  return false;
-                                }
-                                return showAppDeleteConfirmDialog(
-                                  context,
-                                  title: 'Delete transaction?',
-                                  message: 'This transaction will be removed.',
-                                );
-                              },
-                              onDismissed: (_) {
-                                ref
-                                    .read(transactionActionsProvider)
-                                    .softDelete(tx.id);
-                              },
-                              background: Container(
-                                alignment: Alignment.centerLeft,
-                                color: const Color(0xFF11261B),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      AppIcons.edit,
-                                      color: AppColors.income,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'EDIT',
-                                      style: TextStyle(
-                                        color: AppColors.income,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              secondaryBackground: Container(
-                                alignment: Alignment.centerRight,
-                                color: const Color(0xFF2A1313),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'DELETE',
-                                      style: TextStyle(
-                                        color: AppColors.expense,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 1.1,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(
-                                      AppIcons.trash,
-                                      color: AppColors.expense,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              child: _HistoryRow(
-                                title:
-                                    categoryById[tx.categoryId]?.name ??
-                                    tx.categoryId,
-                                subtitle: tx.note?.trim() ?? '',
-                                paymentModeLabel: transactionPaymentLabel(
-                                  type: tx.type,
-                                  paymentMode: tx.paymentMode,
-                                  cardType: tx.cardType,
-                                ),
-                                amount: tx.amount,
-                                income: tx.type == TransactionType.income,
-                                icon: _iconFor(
-                                  categoryById[tx.categoryId]?.name ??
-                                      tx.categoryId,
-                                ),
-                                iconColor: _categoryIconColor(
-                                  categoryById[tx.categoryId],
-                                  tx.type,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                  _buildTransactionGroups(grouped, items.length, categoryById),
                 ],
               );
             },
@@ -459,9 +499,14 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     if (category != null) {
       return AppIcons.getColorForCategory(category.name, type);
     }
-    return type == TransactionType.income
-        ? AppColors.income
-        : AppColors.expense;
+    switch (type) {
+      case TransactionType.income:
+        return AppColors.income;
+      case TransactionType.investment:
+        return const Color(0xFF8B5CF6);
+      case TransactionType.expense:
+        return AppColors.expense;
+    }
   }
 
   Future<void> _openFilters(
@@ -674,14 +719,20 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           ? 0
                           : selectedType == 'income'
                           ? 1
-                          : 2,
-                      labels: const ['All', 'Income', 'Expense'],
+                          : selectedType == 'expense'
+                          ? 2
+                          : 3,
+                      labels: const ['All', 'Income', 'Expense', 'Investment'],
                       onChanged: (index) {
                         setState(() {
                           if (index == 0) {
                             selectedType = null;
+                          } else if (index == 1) {
+                            selectedType = 'income';
+                          } else if (index == 2) {
+                            selectedType = 'expense';
                           } else {
-                            selectedType = index == 1 ? 'income' : 'expense';
+                            selectedType = 'investment';
                           }
                         });
                       },
@@ -1028,7 +1079,7 @@ class _ActiveFilterBar extends StatelessWidget {
     if (filters.type != null) {
       chips.add(
         _SummaryChip(
-          label: 'Type: ${filters.type == 'income' ? 'Income' : 'Expense'}',
+          label: 'Type: ${_typeLabel(filters.type!)}',
           onRemove: onClearType,
         ),
       );
@@ -1246,7 +1297,7 @@ class _HistoryRow extends StatelessWidget {
     required this.subtitle,
     required this.paymentModeLabel,
     required this.amount,
-    required this.income,
+    required this.type,
     required this.icon,
     required this.iconColor,
   });
@@ -1255,7 +1306,7 @@ class _HistoryRow extends StatelessWidget {
   final String subtitle;
   final String paymentModeLabel;
   final double amount;
-  final bool income;
+  final TransactionType type;
   final IconData icon;
   final Color iconColor;
 
@@ -1321,11 +1372,17 @@ class _HistoryRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${income ? '+' : '-'}${Formatters.currency(amount)}',
+            _amountWithSign(amount, type),
             style: AppTypography.amount(
               context,
               fontSize: 16,
-            ).copyWith(color: income ? const Color(0xFF5DF393) : Colors.white),
+            ).copyWith(
+              color: type == TransactionType.income
+                  ? const Color(0xFF5DF393)
+                  : type == TransactionType.investment
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.white,
+            ),
           ),
         ],
       ),
@@ -1373,4 +1430,27 @@ class _AccountBreakupCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _typeLabel(String type) {
+  switch (type) {
+    case 'income':
+      return 'Income';
+    case 'expense':
+      return 'Expense';
+    case 'investment':
+      return 'Investment';
+    default:
+      return type;
+  }
+}
+
+String _amountWithSign(double amount, TransactionType type) {
+  if (type == TransactionType.income) {
+    return '+${Formatters.currency(amount)}';
+  }
+  if (type == TransactionType.investment && amount < 0) {
+    return '+${Formatters.currency(amount.abs())}';
+  }
+  return '-${Formatters.currency(amount.abs())}';
 }

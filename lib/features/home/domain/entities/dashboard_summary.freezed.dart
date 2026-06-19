@@ -20,6 +20,7 @@ mixin _$DashboardSummary {
   double get currentBalance => throw _privateConstructorUsedError;
   double get monthlyIncome => throw _privateConstructorUsedError;
   double get monthlyExpense => throw _privateConstructorUsedError;
+  double get monthlyInvestment => throw _privateConstructorUsedError;
   double get remainingBudget => throw _privateConstructorUsedError;
 
   /// Create a copy of DashboardSummary
@@ -40,6 +41,7 @@ abstract class $DashboardSummaryCopyWith<$Res> {
     double currentBalance,
     double monthlyIncome,
     double monthlyExpense,
+    double monthlyInvestment,
     double remainingBudget,
   });
 }
@@ -62,6 +64,7 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
     Object? currentBalance = null,
     Object? monthlyIncome = null,
     Object? monthlyExpense = null,
+    Object? monthlyInvestment = null,
     Object? remainingBudget = null,
   }) {
     return _then(
@@ -77,6 +80,10 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
             monthlyExpense: null == monthlyExpense
                 ? _value.monthlyExpense
                 : monthlyExpense // ignore: cast_nullable_to_non_nullable
+                      as double,
+            monthlyInvestment: null == monthlyInvestment
+                ? _value.monthlyInvestment
+                : monthlyInvestment // ignore: cast_nullable_to_non_nullable
                       as double,
             remainingBudget: null == remainingBudget
                 ? _value.remainingBudget
@@ -101,6 +108,7 @@ abstract class _$$DashboardSummaryImplCopyWith<$Res>
     double currentBalance,
     double monthlyIncome,
     double monthlyExpense,
+    double monthlyInvestment,
     double remainingBudget,
   });
 }
@@ -122,6 +130,7 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
     Object? currentBalance = null,
     Object? monthlyIncome = null,
     Object? monthlyExpense = null,
+    Object? monthlyInvestment = null,
     Object? remainingBudget = null,
   }) {
     return _then(
@@ -137,6 +146,10 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
         monthlyExpense: null == monthlyExpense
             ? _value.monthlyExpense
             : monthlyExpense // ignore: cast_nullable_to_non_nullable
+                  as double,
+        monthlyInvestment: null == monthlyInvestment
+            ? _value.monthlyInvestment
+            : monthlyInvestment // ignore: cast_nullable_to_non_nullable
                   as double,
         remainingBudget: null == remainingBudget
             ? _value.remainingBudget
@@ -154,6 +167,7 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
     required this.currentBalance,
     required this.monthlyIncome,
     required this.monthlyExpense,
+    required this.monthlyInvestment,
     required this.remainingBudget,
   });
 
@@ -164,11 +178,13 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
   @override
   final double monthlyExpense;
   @override
+  final double monthlyInvestment;
+  @override
   final double remainingBudget;
 
   @override
   String toString() {
-    return 'DashboardSummary(currentBalance: $currentBalance, monthlyIncome: $monthlyIncome, monthlyExpense: $monthlyExpense, remainingBudget: $remainingBudget)';
+    return 'DashboardSummary(currentBalance: $currentBalance, monthlyIncome: $monthlyIncome, monthlyExpense: $monthlyExpense, monthlyInvestment: $monthlyInvestment, remainingBudget: $remainingBudget)';
   }
 
   @override
@@ -182,6 +198,8 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
                 other.monthlyIncome == monthlyIncome) &&
             (identical(other.monthlyExpense, monthlyExpense) ||
                 other.monthlyExpense == monthlyExpense) &&
+            (identical(other.monthlyInvestment, monthlyInvestment) ||
+                other.monthlyInvestment == monthlyInvestment) &&
             (identical(other.remainingBudget, remainingBudget) ||
                 other.remainingBudget == remainingBudget));
   }
@@ -192,6 +210,7 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
     currentBalance,
     monthlyIncome,
     monthlyExpense,
+    monthlyInvestment,
     remainingBudget,
   );
 
@@ -212,6 +231,7 @@ abstract class _DashboardSummary implements DashboardSummary {
     required final double currentBalance,
     required final double monthlyIncome,
     required final double monthlyExpense,
+    required final double monthlyInvestment,
     required final double remainingBudget,
   }) = _$DashboardSummaryImpl;
 
@@ -221,6 +241,8 @@ abstract class _DashboardSummary implements DashboardSummary {
   double get monthlyIncome;
   @override
   double get monthlyExpense;
+  @override
+  double get monthlyInvestment;
   @override
   double get remainingBudget;
 

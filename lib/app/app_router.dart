@@ -60,6 +60,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final initialType = switch (rawType) {
             'income' => TransactionType.income,
             'expense' => TransactionType.expense,
+            'investment' => TransactionType.investment,
             _ => null,
           };
           return AddTransactionPage(initialType: initialType);

@@ -124,10 +124,22 @@ class GoalsPage extends ConsumerWidget {
                       confirmText: 'Add',
                     );
                     if (amount == null) return;
-                    await actions.addToEmergencyFund(
+                    final added = await actions.addToEmergencyFund(
                       amount,
                       fundId: entry.value.id,
                     );
+                    if (!context.mounted) return;
+                    if (added < amount) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            added > 0
+                                ? "Target nearly reached! Added ₹${added.toInt()} only."
+                                : 'Emergency fund target already reached.',
+                          ),
+                        ),
+                      );
+                    }
                     HapticFeedback.selectionClick();
                   },
                   onRemoveFunds: () async {
@@ -241,15 +253,27 @@ class GoalsPage extends ConsumerWidget {
                 ),
                 child: _GoalCard(
                   goal: goal,
-                  onQuickAdd: () async {
-                    final amount = await _askAmount(
-                      context,
-                      title: 'Add funds to ${goal.title}',
-                    );
-                    if (amount == null) return;
-                    await actions.addToGoal(goal.id, amount);
-                    HapticFeedback.selectionClick();
-                  },
+                    onQuickAdd: () async {
+                      final amount = await _askAmount(
+                        context,
+                        title: 'Add funds to ${goal.title}',
+                      );
+                      if (amount == null) return;
+                      final added = await actions.addToGoal(goal.id, amount);
+                      if (!context.mounted) return;
+                      if (added < amount) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              added > 0
+                                  ? "Target nearly reached! Added ₹${added.toInt()} only."
+                                  : 'Goal target already reached.',
+                            ),
+                          ),
+                        );
+                      }
+                      HapticFeedback.selectionClick();
+                    },
                   onQuickRemove: () async {
                     final amount = await _askAmount(
                       context,
@@ -278,6 +302,44 @@ class GoalsPage extends ConsumerWidget {
           _CreateGoalCard(
             onCreate: () => _openCreateGoalSheet(context, actions),
           ),
+          () {
+            final total = emergencyFunds.fold<double>(
+              0, (sum, f) => sum + f.currentAmount,
+            ) + goals.fold<double>(
+              0, (sum, g) => sum + g.savedAmount,
+            );
+            if (total <= 0) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0E0E0E),
+                  border: Border.all(color: const Color(0xFF242424)),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Total Invested',
+                      style: AppTypography.metadata(context).copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      Formatters.currency(total),
+                      style: const TextStyle(
+                        color: Color(0xFF8B5CF6),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }(),
         ],
       ),
     );
@@ -572,6 +634,7 @@ class _CreateGoalSheet extends StatefulWidget {
 }
 
 class _CreateGoalSheetState extends State<_CreateGoalSheet> {
+  bool _formAttempted = false;
   late final TextEditingController _titleController;
   late final TextEditingController _categoryController;
   late final TextEditingController _targetController;
@@ -623,7 +686,19 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
           children: [
             Text(widget.titleText, style: AppTypography.sectionTitle(context)),
             const SizedBox(height: 14),
-            _GoalTextField(controller: _titleController, label: 'Goal name'),
+            _GoalTextField(
+              controller: _titleController,
+              label: 'Goal name',
+              required: true,
+            ),
+            if (_formAttempted && _titleController.text.trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Goal name is required',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
             const SizedBox(height: 10),
             _GoalTextField(
               controller: _categoryController,
@@ -634,7 +709,16 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
               controller: _targetController,
               label: 'Target amount',
               numeric: true,
+              required: true,
             ),
+            if (_formAttempted && _targetController.text.trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Target amount is required',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ),
             const SizedBox(height: 10),
             _GoalTextField(
               controller: _savedController,
@@ -697,18 +781,15 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
   }
 
   void _submit() {
+    setState(() => _formAttempted = true);
+
     final title = _titleController.text.trim();
     final categoryInput = _categoryController.text.trim();
     final target = double.tryParse(_targetController.text.trim()) ?? 0;
     final saved = double.tryParse(_savedController.text.trim()) ?? 0;
     final monthlyInput = double.tryParse(_monthlyController.text.trim()) ?? 0;
 
-    if (title.isEmpty || target <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Goal name and target are required.')),
-      );
-      return;
-    }
+    if (title.isEmpty || target <= 0) return;
 
     final normalizedSaved = saved.clamp(0, target).toDouble();
     final daysLeft = _targetDate.difference(DateTime.now()).inDays;
@@ -747,6 +828,7 @@ class _CreateEmergencyFundSheet extends StatefulWidget {
 }
 
 class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
+  bool _formAttempted = false;
   late final TextEditingController _titleController;
   late final TextEditingController _targetController;
   late final TextEditingController _savedController;
@@ -794,13 +876,34 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
         children: [
           Text(widget.titleText, style: AppTypography.sectionTitle(context)),
           const SizedBox(height: 12),
-          _GoalTextField(controller: _titleController, label: 'Name'),
+          _GoalTextField(
+            controller: _titleController,
+            label: 'Name',
+            required: true,
+          ),
+          if (_formAttempted && _titleController.text.trim().isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                'Goal name is required',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ),
           const SizedBox(height: 10),
           _GoalTextField(
             controller: _targetController,
             label: 'Target amount',
             numeric: true,
+            required: true,
           ),
+          if (_formAttempted && _targetController.text.trim().isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                'Target amount is required',
+                style: TextStyle(color: Colors.red, fontSize: 12),
+              ),
+            ),
           const SizedBox(height: 10),
           _GoalTextField(
             controller: _savedController,
@@ -828,6 +931,8 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
   }
 
   void _submit() {
+    setState(() => _formAttempted = true);
+
     final title = _titleController.text.trim();
     final target = double.tryParse(_targetController.text.trim()) ?? 0;
     final saved = double.tryParse(_savedController.text.trim()) ?? 0;
@@ -1385,38 +1490,55 @@ class _GoalTextField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.numeric = false,
+    this.required = false,
   });
 
   final TextEditingController controller;
   final String label;
   final bool numeric;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      keyboardType: numeric
-          ? const TextInputType.numberWithOptions(decimal: true)
-          : TextInputType.text,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFFB2B2B2)),
-        filled: true,
-        fillColor: AppColors.darkSurface,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.borderDark),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(color: Color(0xFFB2B2B2), fontSize: 12),
+            ),
+            if (required)
+              const Text(' *', style: TextStyle(color: Colors.red)),
+          ],
         ),
-        enabledBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.borderDark),
+        const SizedBox(height: 4),
+        TextField(
+          controller: controller,
+          keyboardType: numeric
+              ? const TextInputType.numberWithOptions(decimal: true)
+              : TextInputType.text,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            isDense: true,
+            filled: true,
+            fillColor: AppColors.darkSurface,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: AppColors.borderDark),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: AppColors.borderDark),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.zero,
+              borderSide: BorderSide(color: AppColors.borderDark),
+            ),
+          ),
         ),
-        focusedBorder: const OutlineInputBorder(
-          borderRadius: BorderRadius.zero,
-          borderSide: BorderSide(color: AppColors.borderDark),
-        ),
-      ),
+      ],
     );
   }
 }

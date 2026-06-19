@@ -191,9 +191,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     if (category != null) {
       return AppIcons.getColorForCategory(category.name, type);
     }
-    return type == TransactionType.income
-        ? AppColors.income
-        : AppColors.expense;
+    switch (type) {
+      case TransactionType.income:
+        return AppColors.income;
+      case TransactionType.investment:
+        return const Color(0xFF8B5CF6);
+      case TransactionType.expense:
+        return AppColors.expense;
+    }
   }
 
   static List<DateTime> _buildVisibleDays(DateTime month) {

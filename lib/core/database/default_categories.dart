@@ -66,4 +66,40 @@ const defaultCategories = <DefaultCategorySeed>[
     color: '#14B8A6',
     type: TransactionType.expense,
   ),
+  // Investment
+  DefaultCategorySeed(
+    id: 'cat_stocks',
+    name: 'Stocks',
+    icon: 'trending_up',
+    color: '#8B5CF6',
+    type: TransactionType.investment,
+  ),
+  DefaultCategorySeed(
+    id: 'cat_mutual_funds',
+    name: 'Mutual Funds',
+    icon: 'account_balance',
+    color: '#7C3AED',
+    type: TransactionType.investment,
+  ),
+  DefaultCategorySeed(
+    id: 'cat_crypto',
+    name: 'Crypto',
+    icon: 'currency_bitcoin',
+    color: '#F59E0B',
+    type: TransactionType.investment,
+  ),
+  DefaultCategorySeed(
+    id: 'cat_fixed_deposit',
+    name: 'Fixed Deposit',
+    icon: 'lock',
+    color: '#06B6D4',
+    type: TransactionType.investment,
+  ),
+  DefaultCategorySeed(
+    id: 'cat_goal_transfer',
+    name: 'Goal Transfer',
+    icon: 'savings',
+    color: '#A855F7',
+    type: TransactionType.investment,
+  ),
 ];

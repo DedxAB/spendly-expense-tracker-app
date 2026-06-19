@@ -33,6 +33,8 @@ dependencies:
   timezone: ^0.9.4
   local_auth: ^3.0.1
   url_launcher: ^6.3.0
+  pdf: ^3.12.0
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

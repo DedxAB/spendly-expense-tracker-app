@@ -57,6 +57,8 @@ class RecurringPage extends ConsumerWidget {
         existing?.frequency ?? RecurringFrequency.monthly;
     DateTime selectedStartDate = existing?.startDate ?? DateTime.now();
 
+    bool formAttempted = false;
+
     await showDialog<void>(
       context: context,
       builder: (context) => Theme(
@@ -93,7 +95,7 @@ class RecurringPage extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const _ModalFieldLabel('Title'),
+                      const _ModalFieldLabel('Title', required: true),
                       const SizedBox(height: 6),
                       TextField(
                         controller: titleController,
@@ -101,8 +103,19 @@ class RecurringPage extends ConsumerWidget {
                           hintText: 'e.g. Netflix, Rent',
                         ),
                       ),
+                      if (formAttempted && titleController.text.trim().isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Title is required',
+                            style: TextStyle(
+                              color: const Color(0xFFFF7A7A),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: AppSpacing.sm),
-                      const _ModalFieldLabel('Amount'),
+                      const _ModalFieldLabel('Amount', required: true),
                       const SizedBox(height: 6),
                       TextField(
                         controller: amountController,
@@ -114,6 +127,21 @@ class RecurringPage extends ConsumerWidget {
                           hintText: '0.00',
                         ),
                       ),
+                      if (formAttempted &&
+                          (Money.tryParse(amountController.text.trim()) ==
+                                  null ||
+                              Money.tryParse(amountController.text.trim())! <=
+                                  0))
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Amount is required',
+                            style: TextStyle(
+                              color: const Color(0xFFFF7A7A),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: AppSpacing.sm),
                       const _ModalFieldLabel('Category'),
                       const SizedBox(height: 6),
@@ -213,6 +241,8 @@ class RecurringPage extends ConsumerWidget {
                   confirmText: existing == null ? 'Save' : 'Update',
                   onCancel: () => Navigator.pop(context),
                   onConfirm: () async {
+                    formAttempted = true;
+                    setState(() {});
                     final title = titleController.text.trim();
                     final amount = Money.tryParse(amountController.text.trim());
                     if (title.isEmpty || amount == null || amount <= 0) return;
@@ -453,61 +483,77 @@ class RecurringPage extends ConsumerWidget {
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
-                                              Text(
-                                                '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                                                style: const TextStyle(
-                                                  color: Color(0xFFB8B8B8),
-                                                  fontSize: 12,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  if (dueToday)
+                                                    Container(
+                                                      margin: const EdgeInsets.only(
+                                                          right: 8),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                          color: const Color(
+                                                              0xFFFFB3A8),
+                                                        ),
+                                                      ),
+                                                      child: const Text(
+                                                        'DUE',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xFFFFB3A8),
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          letterSpacing: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  Flexible(
+                                                    child: Text(
+                                                      '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
+                                                      style: const TextStyle(
+                                                        color: Color(0xFFB8B8B8),
+                                                        fontSize: 12,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
                                         ),
                                         const SizedBox(width: AppSpacing.sm),
-                                        Text(
-                                          Formatters.currency(item.amount),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Row(
-                                      children: [
-                                        if (dueToday)
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 10),
-                                            child: Text(
-                                              'DUE',
-                                              style: TextStyle(
-                                                color: Color(0xFFFFB3A8),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                                letterSpacing: 1,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              Formatters.currency(item.amount),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
-                                          ),
-                                        const Text(
-                                          'Active',
-                                          style: TextStyle(
-                                            color: Color(0xFF9A9A9A),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Switch(
-                                          value: item.isActive,
-                                          onChanged: (value) async {
-                                            await ref
-                                                .read(
-                                                  recurringRepositoryProvider,
-                                                )
-                                                .setActive(item.id, value);
-                                          },
+                                            Switch(
+                                              value: item.isActive,
+                                              onChanged: (value) async {
+                                                await ref
+                                                    .read(
+                                                      recurringRepositoryProvider,
+                                                    )
+                                                    .setActive(item.id, value);
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
@@ -587,19 +633,33 @@ class _PaymentModeSegment extends StatelessWidget {
 }
 
 class _ModalFieldLabel extends StatelessWidget {
-  const _ModalFieldLabel(this.label);
+  const _ModalFieldLabel(this.label, {this.required = false});
 
   final String label;
+  final bool required;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: const TextStyle(
-        color: Color(0xFFB3B3B3),
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFFB3B3B3),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        if (required)
+          Text(
+            ' *',
+            style: TextStyle(
+              color: const Color(0xFFFF7A7A),
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+      ],
     );
   }
 }

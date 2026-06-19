@@ -89,3 +89,25 @@ final saveMonthlyReflectionProvider =
             .saveMonthlyReflection(monthKey: monthKey, note: note);
       };
     });
+
+DateTime _previousPeriod(DateTime period, bool yearly) {
+  return yearly
+      ? DateTime(period.year - 1, 1, 1)
+      : DateTime(period.year, period.month - 1, 1);
+}
+
+final previousExpenseDistributionProvider = StreamProvider((ref) {
+  final period = ref.watch(insightsSelectedMonthProvider);
+  final yearly = ref.watch(insightsViewModeProvider) == InsightsViewMode.yearly;
+  return ref
+      .watch(insightsRepositoryProvider)
+      .watchExpenseDistribution(_previousPeriod(period, yearly), yearly: yearly);
+});
+
+final previousIncomeVsExpenseProvider = StreamProvider((ref) {
+  final period = ref.watch(insightsSelectedMonthProvider);
+  final yearly = ref.watch(insightsViewModeProvider) == InsightsViewMode.yearly;
+  return ref
+      .watch(insightsRepositoryProvider)
+      .watchIncomeVsExpense(_previousPeriod(period, yearly), yearly: yearly);
+});
