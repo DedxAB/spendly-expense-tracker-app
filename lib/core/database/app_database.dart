@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -186,6 +186,13 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(settings, settings.showAmountsEnabled);
         }
       }
+      if (from < 22) {
+        await customStatement(
+          "UPDATE transactions SET category_id = 'cat_goal_transfer' "
+          "WHERE category_id = 'cat_stocks' "
+          "AND (note LIKE '-> %' OR note LIKE '<- %');",
+        );
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -193,6 +200,45 @@ class AppDatabase extends _$AppDatabase {
           'UPDATE lend_entries SET settled_amount = 0 WHERE settled_amount IS NULL;',
         );
       }
+
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_transactions_active_date '
+        'ON transactions (is_deleted, date);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_transactions_type '
+        'ON transactions (type);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_transactions_category '
+        'ON transactions (category_id);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_categories_active_type '
+        'ON categories (is_deleted, type);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_goal_funds_active_emergency '
+        'ON goal_funds (is_deleted, is_emergency);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_goal_contributions_goal '
+        'ON goal_contributions (goal_id, is_deleted);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_recurring_rules_active '
+        'ON recurring_rules (is_deleted);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_lend_entries_person '
+        'ON lend_entries (person_id, is_deleted);',
+      );
+      await customStatement(
+        'CREATE INDEX IF NOT EXISTS idx_lend_people_active '
+        'ON lend_people (is_deleted);',
+      );
+
+      await seedDefaultCategoriesIfNeeded();
     },
   );
 
@@ -231,15 +277,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> seedDefaultCategoriesIfNeeded() async {
-    final countExpr = categories.id.count();
-    final countRow = await (selectOnly(
-      categories,
-    )..addColumns([countExpr])).getSingle();
-    final count = countRow.read(countExpr) ?? 0;
-    if (count > 0) return;
-
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final seed in defaultCategories) {
+      final existing = await (select(categories)
+            ..where((tbl) => tbl.id.equals(seed.id)))
+          .getSingleOrNull();
+      if (existing != null) continue;
       await into(categories).insert(
         CategoriesCompanion.insert(
           id: seed.id,

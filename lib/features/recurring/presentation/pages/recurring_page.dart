@@ -453,61 +453,77 @@ class RecurringPage extends ConsumerWidget {
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
-                                              Text(
-                                                '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                                                style: const TextStyle(
-                                                  color: Color(0xFFB8B8B8),
-                                                  fontSize: 12,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  if (dueToday)
+                                                    Container(
+                                                      margin: const EdgeInsets.only(
+                                                          right: 8),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                      decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                          color: const Color(
+                                                              0xFFFFB3A8),
+                                                        ),
+                                                      ),
+                                                      child: const Text(
+                                                        'DUE',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Color(0xFFFFB3A8),
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          letterSpacing: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  Flexible(
+                                                    child: Text(
+                                                      '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
+                                                      style: const TextStyle(
+                                                        color: Color(0xFFB8B8B8),
+                                                        fontSize: 12,
+                                                      ),
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
                                         ),
                                         const SizedBox(width: AppSpacing.sm),
-                                        Text(
-                                          Formatters.currency(item.amount),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Row(
-                                      children: [
-                                        if (dueToday)
-                                          const Padding(
-                                            padding: EdgeInsets.only(right: 10),
-                                            child: Text(
-                                              'DUE',
-                                              style: TextStyle(
-                                                color: Color(0xFFFFB3A8),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w800,
-                                                letterSpacing: 1,
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              Formatters.currency(item.amount),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w700,
                                               ),
                                             ),
-                                          ),
-                                        const Text(
-                                          'Active',
-                                          style: TextStyle(
-                                            color: Color(0xFF9A9A9A),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Switch(
-                                          value: item.isActive,
-                                          onChanged: (value) async {
-                                            await ref
-                                                .read(
-                                                  recurringRepositoryProvider,
-                                                )
-                                                .setActive(item.id, value);
-                                          },
+                                            Switch(
+                                              value: item.isActive,
+                                              onChanged: (value) async {
+                                                await ref
+                                                    .read(
+                                                      recurringRepositoryProvider,
+                                                    )
+                                                    .setActive(item.id, value);
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),

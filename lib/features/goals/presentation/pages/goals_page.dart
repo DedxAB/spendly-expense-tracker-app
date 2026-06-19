@@ -302,6 +302,44 @@ class GoalsPage extends ConsumerWidget {
           _CreateGoalCard(
             onCreate: () => _openCreateGoalSheet(context, actions),
           ),
+          () {
+            final total = emergencyFunds.fold<double>(
+              0, (sum, f) => sum + f.currentAmount,
+            ) + goals.fold<double>(
+              0, (sum, g) => sum + g.savedAmount,
+            );
+            if (total <= 0) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0E0E0E),
+                  border: Border.all(color: const Color(0xFF242424)),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      'Total Invested',
+                      style: AppTypography.metadata(context).copyWith(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      Formatters.currency(total),
+                      style: const TextStyle(
+                        color: Color(0xFF8B5CF6),
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }(),
         ],
       ),
     );

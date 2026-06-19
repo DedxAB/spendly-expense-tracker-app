@@ -102,43 +102,75 @@ class HomePage extends ConsumerWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: summary.when(
-                  data: (data) => _StatTile(
-                    title: 'REMAINING',
-                    amount: Formatters.currency(data.remainingBudget),
-                    note:
-                        'of ${Formatters.currency(data.remainingBudget + data.monthlyExpense)} limit',
-                    active: true,
-                    noteColor: const Color(0xFF57F28F),
-                  ),
-                  loading: () => const _StatTile(
-                    title: 'REMAINING',
-                    amount: '...',
-                    note: '',
-                    active: true,
-                  ),
-                  error: (_, __) => const _StatTile(
-                    title: 'REMAINING',
-                    amount: '--',
-                    note: '',
-                    active: true,
-                  ),
+                child: _StatTile(
+                  title: 'REMAINING',
+                  amount: Formatters.currency(
+                      summary.valueOrNull?.remainingBudget ?? 0),
+                  note: () {
+                    final data = summary.valueOrNull;
+                    if (data == null) return '';
+                    return 'of ${Formatters.currency(data.remainingBudget + data.monthlyExpense)} limit';
+                  }(),
+                  active: true,
+                  noteColor: const Color(0xFF57F28F),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          summary.when(
-            data: (data) => _StatTile(
-              title: 'INVESTED THIS MONTH',
-              amount: Formatters.currency(data.monthlyInvestment),
-              note: '${((data.monthlyInvestment / (data.monthlyIncome > 0 ? data.monthlyIncome : 1)) * 100).toStringAsFixed(0)}% of income invested',
-              noteColor: const Color(0xFF8B5CF6),
-            ),
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-          const SizedBox(height: 28),
+          () {
+            final data = summary.valueOrNull;
+            if (data == null || data.monthlyInvestment <= 0) return const SizedBox(height: 28);
+            final income = data.monthlyIncome > 0 ? data.monthlyIncome : 1;
+            final pct = (data.monthlyInvestment / income * 100).toStringAsFixed(0);
+            return Column(
+              children: [
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0E0E0E),
+                    border: Border.all(color: const Color(0xFF242424)),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'INVESTED',
+                        style: AppTypography.metadata(context).copyWith(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        Formatters.currency(data.monthlyInvestment),
+                        style: const TextStyle(
+                          color: Color(0xFF8B5CF6),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '$pct% of income',
+                          style: const TextStyle(
+                            color: Color(0xFF8B5CF6),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+              ],
+            );
+          }(),
           lendOverview.when(
             data: (lend) => _LendQuickCard(
               toReceive: lend.totalToReceive,
