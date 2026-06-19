@@ -8,6 +8,7 @@ class DashboardSummary with _$DashboardSummary {
     required double currentBalance,
     required double monthlyIncome,
     required double monthlyExpense,
+    required double monthlyInvestment,
     required double remainingBudget,
   }) = _DashboardSummary;
 }

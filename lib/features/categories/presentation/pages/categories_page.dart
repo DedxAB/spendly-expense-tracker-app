@@ -147,6 +147,9 @@ class CategoriesPage extends ConsumerWidget {
           final incomes =
               items.where((e) => e.type == TransactionType.income).toList()
                 ..sort((a, b) => a.name.compareTo(b.name));
+          final investments =
+              items.where((e) => e.type == TransactionType.investment).toList()
+                ..sort((a, b) => a.name.compareTo(b.name));
 
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(
@@ -155,12 +158,14 @@ class CategoriesPage extends ConsumerWidget {
               AppSpacing.smPlus,
               96,
             ),
-            itemCount: expenses.length + incomes.length + 2,
+            itemCount: expenses.length + incomes.length + investments.length + 3,
             itemBuilder: (context, index) {
               final expenseHeaderIndex = 0;
               final expenseStart = 1;
               final incomeHeaderIndex = expenseStart + expenses.length;
               final incomeStart = incomeHeaderIndex + 1;
+              final investmentHeaderIndex = incomeStart + incomes.length;
+              final investmentStart = investmentHeaderIndex + 1;
 
               if (index == expenseHeaderIndex) {
                 return Padding(
@@ -190,10 +195,26 @@ class CategoriesPage extends ConsumerWidget {
                   ),
                 );
               }
+              if (index == investmentHeaderIndex) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 12, bottom: 10),
+                  child: Text(
+                    'INVESTMENT',
+                    style: TextStyle(
+                      color: secondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.3,
+                    ),
+                  ),
+                );
+              }
 
               final category = index < incomeHeaderIndex
                   ? expenses[index - expenseStart]
-                  : incomes[index - incomeStart];
+                  : index < investmentHeaderIndex
+                      ? incomes[index - incomeStart]
+                      : investments[index - investmentStart];
               final icon = _iconForCategory(category.name, category.type);
 
               return Container(
@@ -314,6 +335,7 @@ class _CategoryTypeSegment extends StatelessWidget {
     final items = const [
       (TransactionType.income, 'Income'),
       (TransactionType.expense, 'Expense'),
+      (TransactionType.investment, 'Investment'),
     ];
 
     return Container(

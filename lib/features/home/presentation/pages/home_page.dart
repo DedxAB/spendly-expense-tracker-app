@@ -127,6 +127,17 @@ class HomePage extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          summary.when(
+            data: (data) => _StatTile(
+              title: 'INVESTED THIS MONTH',
+              amount: Formatters.currency(data.monthlyInvestment),
+              note: '${((data.monthlyInvestment / (data.monthlyIncome > 0 ? data.monthlyIncome : 1)) * 100).toStringAsFixed(0)}% of income invested',
+              noteColor: const Color(0xFF8B5CF6),
+            ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           const SizedBox(height: 28),
           lendOverview.when(
             data: (lend) => _LendQuickCard(
@@ -211,7 +222,7 @@ class HomePage extends ConsumerWidget {
                             categoryById[tx.categoryId]?.name ?? tx.categoryId,
                         subtitle: _subtitle(tx),
                         amount: tx.amount,
-                        isIncome: tx.type == TransactionType.income,
+                        type: tx.type,
                         icon: _iconFor(
                           categoryById[tx.categoryId]?.name ?? tx.categoryId,
                         ),
@@ -246,9 +257,14 @@ class HomePage extends ConsumerWidget {
     if (category != null) {
       return AppIcons.getColorForCategory(category.name, type);
     }
-    return type == TransactionType.income
-        ? AppColors.income
-        : AppColors.expense;
+    switch (type) {
+      case TransactionType.income:
+        return AppColors.income;
+      case TransactionType.investment:
+        return const Color(0xFF8B5CF6);
+      case TransactionType.expense:
+        return AppColors.expense;
+    }
   }
 
   static String _subtitle(dynamic tx) {
@@ -364,7 +380,7 @@ class _TransactionRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.amount,
-    required this.isIncome,
+    required this.type,
     required this.icon,
     required this.iconColor,
   });
@@ -372,7 +388,7 @@ class _TransactionRow extends StatelessWidget {
   final String title;
   final String subtitle;
   final double amount;
-  final bool isIncome;
+  final TransactionType type;
   final IconData icon;
   final Color iconColor;
 
@@ -412,11 +428,15 @@ class _TransactionRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${isIncome ? '+' : '-'}${Formatters.currency(amount)}',
+            _amountWithSign(amount, type),
             style: AppTypography.amount(
               context,
               fontSize: 20,
-              color: isIncome ? const Color(0xFF57F28F) : Colors.white,
+              color: type == TransactionType.income
+                  ? const Color(0xFF57F28F)
+                  : type == TransactionType.investment
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.white,
             ),
           ),
         ],
@@ -537,4 +557,14 @@ class _LendMetric extends StatelessWidget {
       ),
     );
   }
+}
+
+String _amountWithSign(double amount, TransactionType type) {
+  if (type == TransactionType.income) {
+    return '+${Formatters.currency(amount)}';
+  }
+  if (type == TransactionType.investment && amount < 0) {
+    return '+${Formatters.currency(amount.abs())}';
+  }
+  return '-${Formatters.currency(amount.abs())}';
 }

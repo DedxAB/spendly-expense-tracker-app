@@ -13,12 +13,14 @@ final dashboardSummaryProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
     final budget = settings.valueOrNull?.monthlyBudget ?? 0;
     final income = map['income'] ?? 0;
     final expense = map['expense'] ?? 0;
+    final investment = map['grossInvestment'] ?? map['investment'] ?? 0;
     final balance = map['balance'] ?? 0;
 
     return DashboardSummary(
       currentBalance: balance,
       monthlyIncome: income,
       monthlyExpense: expense,
+      monthlyInvestment: investment,
       remainingBudget: budget - expense,
     );
   });

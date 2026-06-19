@@ -124,10 +124,22 @@ class GoalsPage extends ConsumerWidget {
                       confirmText: 'Add',
                     );
                     if (amount == null) return;
-                    await actions.addToEmergencyFund(
+                    final added = await actions.addToEmergencyFund(
                       amount,
                       fundId: entry.value.id,
                     );
+                    if (!context.mounted) return;
+                    if (added < amount) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            added > 0
+                                ? "Target nearly reached! Added ₹${added.toInt()} only."
+                                : 'Emergency fund target already reached.',
+                          ),
+                        ),
+                      );
+                    }
                     HapticFeedback.selectionClick();
                   },
                   onRemoveFunds: () async {
@@ -241,15 +253,27 @@ class GoalsPage extends ConsumerWidget {
                 ),
                 child: _GoalCard(
                   goal: goal,
-                  onQuickAdd: () async {
-                    final amount = await _askAmount(
-                      context,
-                      title: 'Add funds to ${goal.title}',
-                    );
-                    if (amount == null) return;
-                    await actions.addToGoal(goal.id, amount);
-                    HapticFeedback.selectionClick();
-                  },
+                    onQuickAdd: () async {
+                      final amount = await _askAmount(
+                        context,
+                        title: 'Add funds to ${goal.title}',
+                      );
+                      if (amount == null) return;
+                      final added = await actions.addToGoal(goal.id, amount);
+                      if (!context.mounted) return;
+                      if (added < amount) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              added > 0
+                                  ? "Target nearly reached! Added ₹${added.toInt()} only."
+                                  : 'Goal target already reached.',
+                            ),
+                          ),
+                        );
+                      }
+                      HapticFeedback.selectionClick();
+                    },
                   onQuickRemove: () async {
                     final amount = await _askAmount(
                       context,

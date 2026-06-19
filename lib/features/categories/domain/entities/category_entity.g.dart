@@ -34,4 +34,5 @@ Map<String, dynamic> _$$CategoryEntityImplToJson(
 const _$TransactionTypeEnumMap = {
   TransactionType.income: 'income',
   TransactionType.expense: 'expense',
+  TransactionType.investment: 'investment',
 };

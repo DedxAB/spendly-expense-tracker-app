@@ -1,8 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/features/transactions/data/repositories/transactions_repository_impl.dart';
+import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:uuid/uuid.dart';
 
 class GoalItem {
@@ -184,6 +187,41 @@ class GoalsActions {
 
   final Ref _ref;
 
+  Future<String?> _resolveInvestmentCategoryId() async {
+    final categories =
+        await _ref.read(appDatabaseProvider).getCategories();
+    for (final c in categories) {
+      if (c.id == 'cat_goal_transfer') return c.id;
+    }
+    for (final c in categories) {
+      if (c.type == 'investment') return c.id;
+    }
+    return null;
+  }
+
+  Future<void> _createTransferTransaction({
+    required double amount,
+    required bool isAdding,
+    required String note,
+  }) async {
+    final categoryId = await _resolveInvestmentCategoryId();
+    if (categoryId == null) return;
+
+    final now = DateTime.now();
+    final entity = TransactionEntity(
+      id: const Uuid().v4(),
+      type: TransactionType.investment,
+      amount: isAdding ? amount : -amount,
+      categoryId: categoryId,
+      paymentMode: PaymentMode.cash,
+      note: note,
+      date: now,
+      createdAt: now,
+      updatedAt: now,
+    );
+    await _ref.read(transactionsRepositoryProvider).add(entity);
+  }
+
   Future<void> addGoal({
     required String title,
     required String category,
@@ -230,6 +268,11 @@ class GoalsActions {
         goalId: goalId,
         amount: normalizedSaved,
         note: 'Initial balance',
+      );
+      await _createTransferTransaction(
+        amount: normalizedSaved,
+        isAdding: true,
+        note: '→ $title (initial)',
       );
     }
   }
@@ -281,30 +324,65 @@ class GoalsActions {
         amount: delta,
         note: 'Balance adjustment',
       );
+      await _createTransferTransaction(
+        amount: delta.abs(),
+        isAdding: delta > 0,
+        note: delta > 0 ? '→ $title' : '← $title',
+      );
     }
   }
 
-  Future<void> addToEmergencyFund(
+  Future<GoalFund?> _getGoalFundById(String goalId) async {
+    final funds = await _ref.read(appDatabaseProvider).getGoalFunds();
+    for (final f in funds) {
+      if (f.id == goalId) return f;
+    }
+    return null;
+  }
+
+  Future<double> addToEmergencyFund(
     double amount, {
     String fundId = 'emergency',
   }) async {
     final normalized = Money.normalize(amount);
-    if (normalized <= 0) return;
+    if (normalized <= 0) return 0;
+
+    final fund = await _getGoalFundById(fundId);
+    if (fund == null) return 0;
+    final remaining = Money.normalize(fund.targetAmount - fund.savedAmount);
+    if (remaining <= 0) return 0;
+    final clamped = normalized > remaining ? remaining : normalized;
+
     await _ref
         .read(appDatabaseProvider)
-        .addGoalContribution(goalId: fundId, amount: normalized);
+        .addGoalContribution(goalId: fundId, amount: clamped);
+    await _createTransferTransaction(
+      amount: clamped,
+      isAdding: true,
+      note: '→ ${fund.title}',
+    );
+    return clamped;
   }
 
   Future<bool> removeFromEmergencyFund(String fundId, double amount) async {
     final normalized = Money.normalize(amount);
     if (normalized <= 0) return false;
-    return _ref
+    final ok = await _ref
         .read(appDatabaseProvider)
         .addGoalContribution(
           goalId: fundId,
           amount: -normalized,
           note: 'Withdrawn',
         );
+    if (ok) {
+      final fund = await _getGoalFundById(fundId);
+      await _createTransferTransaction(
+        amount: normalized,
+        isAdding: false,
+        note: '← ${fund?.title ?? "Emergency Fund"}',
+      );
+    }
+    return ok;
   }
 
   Future<void> addEmergencyFund({
@@ -347,6 +425,11 @@ class GoalsActions {
         goalId: goalId,
         amount: saved,
         note: 'Initial balance',
+      );
+      await _createTransferTransaction(
+        amount: saved,
+        isAdding: true,
+        note: '→ $title (initial)',
       );
     }
   }
@@ -395,37 +478,90 @@ class GoalsActions {
         amount: delta,
         note: 'Balance adjustment',
       );
+      await _createTransferTransaction(
+        amount: delta.abs(),
+        isAdding: delta > 0,
+        note: delta > 0 ? '→ $title' : '← $title',
+      );
     }
   }
 
-  Future<void> addToGoal(String goalId, double amount) async {
+  Future<double> addToGoal(String goalId, double amount) async {
     final normalized = Money.normalize(amount);
-    if (normalized <= 0) return;
+    if (normalized <= 0) return 0;
+
+    final goal = await _getGoalFundById(goalId);
+    if (goal == null) return 0;
+    final remaining = Money.normalize(goal.targetAmount - goal.savedAmount);
+    if (remaining <= 0) return 0;
+    final clamped = normalized > remaining ? remaining : normalized;
+
     await _ref
         .read(appDatabaseProvider)
-        .addGoalContribution(goalId: goalId, amount: normalized);
+        .addGoalContribution(goalId: goalId, amount: clamped);
+    await _createTransferTransaction(
+      amount: clamped,
+      isAdding: true,
+      note: '→ ${goal.title}',
+    );
+    return clamped;
   }
 
   Future<bool> removeFromGoal(String goalId, double amount) async {
     final normalized = Money.normalize(amount);
     if (normalized <= 0) return false;
-    return _ref
+    final goal = await _getGoalFundById(goalId);
+    final ok = await _ref
         .read(appDatabaseProvider)
         .addGoalContribution(
           goalId: goalId,
           amount: -normalized,
           note: 'Withdrawn',
         );
+    if (ok) {
+      await _createTransferTransaction(
+        amount: normalized,
+        isAdding: false,
+        note: '← ${goal?.title ?? goalId}',
+      );
+    }
+    return ok;
   }
 
   Future<void> deleteGoal(String goalId) async {
+    final goal = await _getGoalFundById(goalId);
     await _ref.read(appDatabaseProvider).softDeleteGoalFund(goalId);
+    if (goal != null && goal.savedAmount > 0) {
+      await _createTransferTransaction(
+        amount: goal.savedAmount,
+        isAdding: false,
+        note: '← ${goal.title} (goal deleted)',
+      );
+    }
   }
 
   Future<void> deleteContribution(String contributionId) async {
-    await _ref
-        .read(appDatabaseProvider)
-        .softDeleteGoalContribution(contributionId);
+    final db = _ref.read(appDatabaseProvider);
+    final contribs = await db.getGoalContributions();
+    GoalContribution? match;
+    for (final c in contribs) {
+      if (c.id == contributionId) {
+        match = c;
+        break;
+      }
+    }
+    await db.softDeleteGoalContribution(contributionId);
+    if (match != null && match.amount != 0) {
+      final goal = await _getGoalFundById(match.goalId);
+      final label = goal?.title ?? match.goalId;
+      await _createTransferTransaction(
+        amount: match.amount.abs(),
+        isAdding: match.amount < 0,
+        note: match.amount > 0
+            ? '← $label (reversed)'
+            : '→ $label (restored)',
+      );
+    }
   }
 }
 

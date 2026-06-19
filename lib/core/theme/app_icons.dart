@@ -109,6 +109,8 @@ class AppIcons {
       return LucideIcons.arrowDownLeft;
     } else if (type == TransactionType.expense) {
       return LucideIcons.arrowUpRight;
+    } else if (type == TransactionType.investment) {
+      return LucideIcons.trendingUp;
     }
     return AppIcons.receipt;
   }
@@ -236,6 +238,9 @@ class AppIcons {
     }
     if (type == TransactionType.expense) {
       return AppColors.expense;
+    }
+    if (type == TransactionType.investment) {
+      return const Color(0xFF8B5CF6);
     }
     return const Color(0xFFCFCFCF);
   }

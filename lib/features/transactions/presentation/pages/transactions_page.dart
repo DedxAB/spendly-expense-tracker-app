@@ -399,7 +399,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                                   cardType: tx.cardType,
                                 ),
                                 amount: tx.amount,
-                                income: tx.type == TransactionType.income,
+                                type: tx.type,
                                 icon: _iconFor(
                                   categoryById[tx.categoryId]?.name ??
                                       tx.categoryId,
@@ -459,9 +459,14 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     if (category != null) {
       return AppIcons.getColorForCategory(category.name, type);
     }
-    return type == TransactionType.income
-        ? AppColors.income
-        : AppColors.expense;
+    switch (type) {
+      case TransactionType.income:
+        return AppColors.income;
+      case TransactionType.investment:
+        return const Color(0xFF8B5CF6);
+      case TransactionType.expense:
+        return AppColors.expense;
+    }
   }
 
   Future<void> _openFilters(
@@ -674,14 +679,20 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           ? 0
                           : selectedType == 'income'
                           ? 1
-                          : 2,
-                      labels: const ['All', 'Income', 'Expense'],
+                          : selectedType == 'expense'
+                          ? 2
+                          : 3,
+                      labels: const ['All', 'Income', 'Expense', 'Investment'],
                       onChanged: (index) {
                         setState(() {
                           if (index == 0) {
                             selectedType = null;
+                          } else if (index == 1) {
+                            selectedType = 'income';
+                          } else if (index == 2) {
+                            selectedType = 'expense';
                           } else {
-                            selectedType = index == 1 ? 'income' : 'expense';
+                            selectedType = 'investment';
                           }
                         });
                       },
@@ -1028,7 +1039,7 @@ class _ActiveFilterBar extends StatelessWidget {
     if (filters.type != null) {
       chips.add(
         _SummaryChip(
-          label: 'Type: ${filters.type == 'income' ? 'Income' : 'Expense'}',
+          label: 'Type: ${_typeLabel(filters.type!)}',
           onRemove: onClearType,
         ),
       );
@@ -1246,7 +1257,7 @@ class _HistoryRow extends StatelessWidget {
     required this.subtitle,
     required this.paymentModeLabel,
     required this.amount,
-    required this.income,
+    required this.type,
     required this.icon,
     required this.iconColor,
   });
@@ -1255,7 +1266,7 @@ class _HistoryRow extends StatelessWidget {
   final String subtitle;
   final String paymentModeLabel;
   final double amount;
-  final bool income;
+  final TransactionType type;
   final IconData icon;
   final Color iconColor;
 
@@ -1321,11 +1332,17 @@ class _HistoryRow extends StatelessWidget {
             ),
           ),
           Text(
-            '${income ? '+' : '-'}${Formatters.currency(amount)}',
+            _amountWithSign(amount, type),
             style: AppTypography.amount(
               context,
               fontSize: 16,
-            ).copyWith(color: income ? const Color(0xFF5DF393) : Colors.white),
+            ).copyWith(
+              color: type == TransactionType.income
+                  ? const Color(0xFF5DF393)
+                  : type == TransactionType.investment
+                      ? const Color(0xFF8B5CF6)
+                      : Colors.white,
+            ),
           ),
         ],
       ),
@@ -1373,4 +1390,27 @@ class _AccountBreakupCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _typeLabel(String type) {
+  switch (type) {
+    case 'income':
+      return 'Income';
+    case 'expense':
+      return 'Expense';
+    case 'investment':
+      return 'Investment';
+    default:
+      return type;
+  }
+}
+
+String _amountWithSign(double amount, TransactionType type) {
+  if (type == TransactionType.income) {
+    return '+${Formatters.currency(amount)}';
+  }
+  if (type == TransactionType.investment && amount < 0) {
+    return '+${Formatters.currency(amount.abs())}';
+  }
+  return '-${Formatters.currency(amount.abs())}';
 }

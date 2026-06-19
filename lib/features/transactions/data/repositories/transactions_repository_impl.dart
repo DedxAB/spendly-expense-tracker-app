@@ -115,10 +115,18 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
       final expense = rows
           .where((row) => row.type == 'expense')
           .fold<double>(0, (sum, row) => sum + row.amount);
+      final netInvestment = rows
+          .where((row) => row.type == 'investment')
+          .fold<double>(0, (sum, row) => sum + row.amount);
+      final grossInvestment = rows
+          .where((row) => row.type == 'investment' && row.amount > 0)
+          .fold<double>(0, (sum, row) => sum + row.amount);
       return {
         'income': income,
         'expense': expense,
-        'balance': income - expense,
+        'investment': netInvestment,
+        'grossInvestment': grossInvestment,
+        'balance': income - expense - netInvestment,
       };
     });
   }

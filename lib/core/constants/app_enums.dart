@@ -1,4 +1,4 @@
-enum TransactionType { income, expense }
+enum TransactionType { income, expense, investment }
 
 enum PaymentMode { cash, upi, card }
 
@@ -17,6 +17,8 @@ extension TransactionTypeX on TransactionType {
         return 'income';
       case TransactionType.expense:
         return 'expense';
+      case TransactionType.investment:
+        return 'investment';
     }
   }
 
@@ -25,6 +27,9 @@ extension TransactionTypeX on TransactionType {
       case 'income':
         return TransactionType.income;
       case 'expense':
+        return TransactionType.expense;
+      case 'investment':
+        return TransactionType.investment;
       default:
         return TransactionType.expense;
     }
@@ -106,7 +111,7 @@ String transactionPaymentLabel({
     return paymentMode.label;
   }
 
-  if (type == TransactionType.expense && cardType != null) {
+  if ((type == TransactionType.expense || type == TransactionType.investment) && cardType != null) {
     return 'Card · ${cardType.label}';
   }
 
