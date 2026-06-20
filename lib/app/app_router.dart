@@ -288,7 +288,7 @@ class _ShellNavTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.circular(AppRadii.md),
       onTap: onTap,
       child: Stack(
         alignment: Alignment.topCenter,

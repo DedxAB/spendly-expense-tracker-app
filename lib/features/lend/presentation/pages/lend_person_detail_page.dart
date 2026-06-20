@@ -59,16 +59,16 @@ class LendPersonDetailPage extends ConsumerWidget {
               surface: Color(0xFF0E0E0E),
               onSurface: Colors.white,
             ),
-            dialogTheme: const DialogThemeData(
+            dialogTheme: DialogThemeData(
               backgroundColor: Color(0xFF0E0E0E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             ),
             datePickerTheme: AppDatePickerTheme.darkBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
               ),
             ),
@@ -101,23 +101,23 @@ class LendPersonDetailPage extends ConsumerWidget {
             surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
-          inputDecorationTheme: const InputDecorationTheme(
+          inputDecorationTheme: InputDecorationTheme(
             filled: false,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: Color(0xFF2E2E2E)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: Color(0xFF2E2E2E)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: Color(0xFFE0E0E0)),
             ),
           ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
@@ -223,23 +223,23 @@ class LendPersonDetailPage extends ConsumerWidget {
               surface: Color(0xFF0E0E0E),
               onSurface: Colors.white,
             ),
-            inputDecorationTheme: const InputDecorationTheme(
+            inputDecorationTheme: InputDecorationTheme(
               filled: false,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(AppRadii.md),
                 borderSide: BorderSide(color: Color(0xFF2E2E2E)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(AppRadii.md),
                 borderSide: BorderSide(color: Color(0xFF2E2E2E)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(AppRadii.md),
                 borderSide: BorderSide(color: Color(0xFFBDBDBD)),
               ),
             ),
-            dialogTheme: const DialogThemeData(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            dialogTheme: DialogThemeData(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
               backgroundColor: Color(0xFF0E0E0E),
             ),
             segmentedButtonTheme: SegmentedButtonThemeData(
@@ -247,8 +247,8 @@ class LendPersonDetailPage extends ConsumerWidget {
                 side: const WidgetStatePropertyAll(
                   BorderSide(color: Color(0xFF4A4A4A)),
                 ),
-                shape: const WidgetStatePropertyAll(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
                 ),
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.selected)) {
@@ -353,10 +353,10 @@ class LendPersonDetailPage extends ConsumerWidget {
                                     surface: Color(0xFF0E0E0E),
                                     onSurface: Colors.white,
                                   ),
-                                  dialogTheme: const DialogThemeData(
+                                  dialogTheme: DialogThemeData(
                                     backgroundColor: Color(0xFF0E0E0E),
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.zero,
+                                      borderRadius: BorderRadius.circular(AppRadii.lg),
                                     ),
                                   ),
                                   datePickerTheme:
@@ -364,8 +364,8 @@ class LendPersonDetailPage extends ConsumerWidget {
                                   textButtonTheme: TextButtonThemeData(
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.white,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.zero,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(AppRadii.md),
                                       ),
                                     ),
                                   ),
@@ -516,6 +516,7 @@ class LendPersonDetailPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF0E0E0E),
               border: Border.all(color: AppColors.borderDark),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -569,6 +570,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFF0E0E0E),
                     border: Border.all(color: AppColors.borderDark),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Text('No entries yet. Add your first entry.'),
                 );
@@ -692,7 +694,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               InkWell(
-                                borderRadius: BorderRadius.zero,
+                                borderRadius: BorderRadius.circular(AppRadii.md),
                                 onTap: () async {
                                   await _showSettleDialog(
                                     context,
@@ -828,7 +830,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                                   color: entry.isSettled
                                       ? Colors.white.withValues(alpha: 0.12)
                                       : color.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.zero,
+                                  borderRadius: BorderRadius.circular(AppRadii.sm),
                                 ),
                                 child: Text(
                                   entry.settledAt == null
@@ -845,7 +847,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                               ),
                               const SizedBox(width: 6),
                               InkWell(
-                                borderRadius: BorderRadius.zero,
+                                borderRadius: BorderRadius.circular(AppRadii.md),
                                 onTap: () async {
                                   await ref
                                       .read(lendRepositoryProvider)
@@ -923,7 +925,7 @@ List<Widget> _buildEventChips(List<dynamic> entryEvents) {
           decoration: BoxDecoration(
             border: Border.all(color: const Color(0xFF303030)),
             color: const Color(0xFF0E0E0E),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           child: Text(
             '${DateFormat('dd MMM').format(event.date)} ${Formatters.currency(event.amount)}',
@@ -970,6 +972,7 @@ class _EntryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0E0E0E),
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

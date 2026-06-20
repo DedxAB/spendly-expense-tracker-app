@@ -96,6 +96,7 @@ class BudgetPage extends ConsumerWidget {
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderDark),
               color: const Color(0xFF0E0E0E),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,6 +187,7 @@ class BudgetPage extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFF797979)),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
                         remaining >= 0 ? 'ON TRACK' : 'OVER BUDGET',
@@ -527,6 +529,7 @@ class _BudgetCategoryCard extends StatelessWidget {
         border: Border.all(
           color: overBudget ? const Color(0xFFFFB3A8) : AppColors.borderDark,
         ),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/utils/formatters.dart';
 
@@ -27,6 +28,7 @@ class SpendlyBlackCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF0E0E0E),
             border: Border.all(color: const Color(0xFF282828)),
+            borderRadius: BorderRadius.circular(AppRadii.premiumCard),
           ),
           child: Stack(
             children: [

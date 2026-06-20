@@ -137,6 +137,7 @@ class _SwipeHintRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: [
@@ -147,6 +148,7 @@ class _SwipeHintRow extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.16),
               border: Border.all(color: color.withValues(alpha: 0.35)),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
             ),
             child: Icon(icon, color: color, size: 18),
           ),

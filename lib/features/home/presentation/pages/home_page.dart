@@ -53,7 +53,7 @@ class HomePage extends ConsumerWidget {
         onPressed: () => showAddExpenseSheet(context),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
         child: const Icon(AppIcons.plus, size: 28),
       ),
       body: ListView(
@@ -126,15 +126,16 @@ class HomePage extends ConsumerWidget {
               children: [
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0E0E0E),
-                    border: Border.all(color: const Color(0xFF242424)),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'INVESTED',
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0E0E0E),
+                      border: Border.all(color: const Color(0xFF242424)),
+                      borderRadius: BorderRadius.circular(AppRadii.md),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                          'INVESTED',
                         style: AppTypography.metadata(context).copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
@@ -150,13 +151,14 @@ class HomePage extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.4)),
-                        ),
-                        child: Text(
-                          '$pct% of income',
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.4)),
+                            borderRadius: BorderRadius.circular(AppRadii.sm),
+                          ),
+                          child: Text(
+                            '$pct% of income',
                           style: const TextStyle(
                             color: Color(0xFF8B5CF6),
                             fontSize: 11,
@@ -195,6 +197,7 @@ class HomePage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0E0E0E),
                   border: Border.all(color: const Color(0xFF242424)),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Row(
                   children: [
@@ -383,6 +386,7 @@ class _StatTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF242424)),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -499,6 +503,7 @@ class _LendQuickCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF0E0E0E),
           border: Border.all(color: const Color(0xFF242424)),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -568,6 +573,7 @@ class _LendMetric extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF2B2B2B)),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

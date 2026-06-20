@@ -138,11 +138,11 @@ class AppTheme {
           ).labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         elevation: AppElevation.fab,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       ),
     );
   }
@@ -281,11 +281,11 @@ class AppTheme {
           ).labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.onPrimary,
         foregroundColor: AppColors.darkBackground,
         elevation: AppElevation.fab,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       ),
     );
   }
