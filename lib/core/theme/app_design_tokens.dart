@@ -36,11 +36,12 @@ class AppSpacing {
 }
 
 class AppRadii {
-  static const sm = 0.0;
-  static const md = 0.0;
-  static const lg = 0.0;
-  static const xl = 0.0;
-  static const premiumCard = 0.0;
+  static const sm = 6.0;
+  static const md = 10.0;
+  static const lg = 14.0;
+  static const xl = 20.0;
+  static const premiumCard = 16.0;
+  static const pill = 999.0;
 }
 
 class AppModalSizes {

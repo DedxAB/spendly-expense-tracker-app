@@ -188,16 +188,16 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               surface: Color(0xFF0E0E0E),
               onSurface: Colors.white,
             ),
-            dialogTheme: const DialogThemeData(
+            dialogTheme: DialogThemeData(
               backgroundColor: Color(0xFF0E0E0E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             ),
             datePickerTheme: AppDatePickerTheme.darkBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
               ),
             ),
@@ -242,7 +242,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       height: 5,
                       decoration: BoxDecoration(
                         color: const Color(0xFF5B5B5B),
-                        borderRadius: BorderRadius.zero,
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                     ),
                   ),
@@ -397,6 +397,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       height: 48,
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFF4A4A4A)),
+                        borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Row(
@@ -428,7 +429,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                   Container(
                     height: 48,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(AppRadii.md),
                       border: Border.all(color: const Color(0xFF4A4A4A)),
                     ),
                     alignment: Alignment.center,
@@ -463,8 +464,8 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
                       ),
                       onPressed: () => _save(categories),
@@ -709,6 +710,7 @@ class _TypeSegment extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF4A4A4A)),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: List.generate(items.length, (index) {

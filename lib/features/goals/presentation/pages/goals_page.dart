@@ -316,6 +316,7 @@ class GoalsPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0E0E0E),
                   border: Border.all(color: const Color(0xFF242424)),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Row(
                   children: [
@@ -353,7 +354,7 @@ class GoalsPage extends ConsumerWidget {
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => const _CreateGoalSheet(),
     );
 
@@ -377,7 +378,7 @@ class GoalsPage extends ConsumerWidget {
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => _CreateGoalSheet(
         initialDraft: _GoalDraft(
           title: goal.title,
@@ -412,7 +413,7 @@ class GoalsPage extends ConsumerWidget {
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => const _CreateEmergencyFundSheet(),
     );
 
@@ -434,7 +435,7 @@ class GoalsPage extends ConsumerWidget {
       context: context,
       backgroundColor: AppColors.darkSurface,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => _CreateEmergencyFundSheet(
         initialDraft: _EmergencyFundDraft(
           title: fund.title,
@@ -512,7 +513,7 @@ class GoalsPage extends ConsumerWidget {
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: AppColors.darkSurface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) {
         return Consumer(
           builder: (context, ref, _) {
@@ -751,6 +752,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 decoration: BoxDecoration(
                   color: AppColors.darkSurface,
                   border: Border.all(color: AppColors.borderDark),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Text(
                   'Target date: ${DateFormat('d MMM yyyy').format(_targetDate)}',
@@ -767,8 +769,8 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                 ),
                 child: Text(widget.submitText),
@@ -981,6 +983,7 @@ class _EmergencyFundCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFE8E8E8),
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1059,7 +1062,7 @@ class _EmergencyFundCard extends StatelessWidget {
             backgroundColor: const Color(0xFFD2D2D2),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
             minHeight: 14,
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 16),
           Text(
@@ -1096,8 +1099,8 @@ class _EmergencyFundCard extends StatelessWidget {
                     ),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.black87),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                     ),
                   ),
@@ -1116,8 +1119,8 @@ class _EmergencyFundCard extends StatelessWidget {
                     ),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.black87),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                     ),
                   ),
@@ -1168,6 +1171,7 @@ class _AggregateInsightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1194,7 +1198,7 @@ class _AggregateInsightCard extends StatelessWidget {
             minHeight: 8,
             backgroundColor: const Color(0xFF181818),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1259,6 +1263,7 @@ class _UrgencyStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: [
@@ -1301,6 +1306,7 @@ class _GoalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.darkSurface,
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1330,6 +1336,7 @@ class _GoalCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.borderDark),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Icon(AppIcons.plus, color: Colors.white),
                 ),
@@ -1342,6 +1349,7 @@ class _GoalCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.borderDark),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Icon(Icons.remove, color: Colors.white),
                 ),
@@ -1374,7 +1382,7 @@ class _GoalCard extends StatelessWidget {
             minHeight: 6,
             backgroundColor: const Color(0xFF181818),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1427,6 +1435,7 @@ class _CreateGoalCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.darkSurface,
           border: Border.all(color: AppColors.borderDark),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -1520,20 +1529,20 @@ class _GoalTextField extends StatelessWidget {
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             isDense: true,
             filled: true,
             fillColor: AppColors.darkSurface,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: AppColors.borderDark),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: AppColors.borderDark),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: AppColors.borderDark),
             ),
           ),

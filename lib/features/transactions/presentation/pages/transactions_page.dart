@@ -551,16 +551,16 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 surface: Color(0xFF0E0E0E),
                 onSurface: Colors.white,
               ),
-              dialogTheme: const DialogThemeData(
+              dialogTheme: DialogThemeData(
                 backgroundColor: Color(0xFF0E0E0E),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
               ),
               datePickerTheme: AppDatePickerTheme.darkBoxy(),
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                 ),
               ),
@@ -945,6 +945,7 @@ class _FilterSegment extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF4A4A4A)),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: List.generate(labels.length, (index) {
@@ -1005,6 +1006,7 @@ class _FilterChip extends StatelessWidget {
           border: Border.all(
             color: selected ? Colors.white : const Color(0xFF4A4A4A),
           ),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
         ),
         child: Text(
           label,
@@ -1126,6 +1128,7 @@ class _ActiveFilterBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0E0E0E),
         border: Border.all(color: AppColors.borderDark),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1219,6 +1222,7 @@ class _SummaryChip extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF4A4A4A)),
         color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1265,6 +1269,7 @@ class _DateRangeButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF0E0E0E),
           border: Border.all(color: const Color(0xFF4A4A4A)),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Text(
           label,
@@ -1345,7 +1350,7 @@ class _HistoryRow extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         border: Border.all(color: const Color(0xFF333333)),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
                         paymentModeLabel.toUpperCase(),

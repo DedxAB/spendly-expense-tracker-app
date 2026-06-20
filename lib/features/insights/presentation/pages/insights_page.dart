@@ -65,27 +65,28 @@ class InsightsPage extends ConsumerWidget {
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
               onTap: () => context.push('/settings'),
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadii.md),
               child: Consumer(builder: (context, ref, _) {
                 final profile = ref.watch(userProfileProvider).valueOrNull;
                 final imageUrl = (profile?.imageUrl?.trim().isNotEmpty ?? false)
                     ? profile!.imageUrl!.trim()
                     : null;
-                return Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    border: Border.all(color: AppColors.borderDark),
+                return ClipOval(
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.borderDark),
+                    ),
+                    child: imageUrl == null
+                        ? const Icon(Icons.person, size: 18, color: Color(0xFFABABAB))
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.person, size: 18, color: Color(0xFFABABAB)),
+                          ),
                   ),
-                  child: imageUrl == null
-                      ? const Icon(Icons.person, size: 18, color: Color(0xFFABABAB))
-                      : Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              const Icon(Icons.person, size: 18, color: Color(0xFFABABAB)),
-                        ),
                 );
               }),
             ),
@@ -356,7 +357,7 @@ class _PeriodNavigator extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.borderDark),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -384,7 +385,7 @@ class _ViewModeChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: isSelected ? Colors.white : Colors.transparent,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Text(
         label,
@@ -559,7 +560,7 @@ class _BudgetBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           child: LinearProgressIndicator(
             value: pct,
             minHeight: 8,
@@ -608,6 +609,10 @@ class _SummaryStrip extends StatelessWidget {
     required this.prevExpense,
   });
 
+  static const _incomeColor = Color(0xFF5BE39A);
+  static const _expenseColor = Color(0xFFFF7A7A);
+  static const _warningColor = Color(0xFFFFC857);
+
   final double income;
   final double expense;
   final double prevExpense;
@@ -620,41 +625,68 @@ class _SummaryStrip extends StatelessWidget {
         ? '${expense > prevExpense ? '+' : ''}${((expense - prevExpense) / prevExpense * 100).toStringAsFixed(1)}% vs last'
         : null;
 
+    final savedColor = savingsRate >= 20
+        ? _incomeColor
+        : savingsRate > 0
+            ? _warningColor
+            : _expenseColor;
+
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.borderDark),
         color: const Color(0xFF0E0E0E),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: _StatItem(
-              label: 'Income',
-              value: Formatters.currency(income),
-              color: const Color(0xFF5BE39A),
-            ),
+          Row(
+            children: [
+              Expanded(child: Container(height: 3, color: _incomeColor)),
+              Container(width: 1, height: 3, color: AppColors.borderDark),
+              Expanded(child: Container(height: 3, color: _expenseColor)),
+              Container(width: 1, height: 3, color: AppColors.borderDark),
+              Expanded(child: Container(height: 3, color: savedColor)),
+            ],
           ),
-          _VertDivider(),
-          Expanded(
-            child: _StatItem(
-              label: 'Expense',
-              value: Formatters.currency(expense),
-              color: const Color(0xFFFF7A7A),
-              subtitle: changeText,
-            ),
-          ),
-          _VertDivider(),
-          Expanded(
-            child: _StatItem(
-              label: 'Saved',
-              value: '${savingsRate.toStringAsFixed(0)}%',
-              color: savingsRate >= 20
-                  ? const Color(0xFF5BE39A)
-                  : savingsRate > 0
-                      ? const Color(0xFFFFC857)
-                      : const Color(0xFFFF7A7A),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _SummaryCardSection(
+                      label: 'Income',
+                      value: Formatters.currency(income),
+                      valueColor: _incomeColor,
+                      icon: Icons.trending_up,
+                      accentColor: _incomeColor,
+                    ),
+                  ),
+                  _VertDivider(),
+                  Expanded(
+                    child: _SummaryCardSection(
+                      label: 'Expense',
+                      value: Formatters.currency(expense),
+                      valueColor: _expenseColor,
+                      icon: Icons.trending_down,
+                      accentColor: _expenseColor,
+                      subtitle: changeText,
+                    ),
+                  ),
+                  _VertDivider(),
+                  Expanded(
+                    child: _SummaryCardSection(
+                      label: 'Saved',
+                      value: '${savingsRate.toStringAsFixed(0)}%',
+                      valueColor: savedColor,
+                      icon: Icons.savings,
+                      accentColor: savedColor,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -663,42 +695,54 @@ class _SummaryStrip extends StatelessWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  const _StatItem({
+class _SummaryCardSection extends StatelessWidget {
+  const _SummaryCardSection({
     required this.label,
     required this.value,
-    required this.color,
+    required this.valueColor,
+    required this.icon,
+    required this.accentColor,
     this.subtitle,
   });
 
   final String label;
   final String value;
-  final Color color;
+  final Color valueColor;
+  final IconData icon;
+  final Color accentColor;
   final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(0xFF8A8A8A),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Icon(icon, size: 13, color: accentColor),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF8A8A8A),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         Text(
           value,
           style: TextStyle(
-            color: color,
-            fontSize: 18,
+            color: valueColor,
+            fontSize: 20,
             fontWeight: FontWeight.w700,
+            height: 1.1,
           ),
         ),
         if (subtitle != null) ...[
-          const SizedBox(height: 2),
+          const SizedBox(height: 6),
           Text(
             subtitle!,
             style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 10),
@@ -710,11 +754,12 @@ class _StatItem extends StatelessWidget {
 }
 
 class _VertDivider extends StatelessWidget {
+  const _VertDivider();
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 1,
-      height: 48,
       color: AppColors.borderDark,
     );
   }
@@ -788,7 +833,7 @@ class _CategoryWatch extends StatelessWidget {
                         color: delta > 0
                             ? const Color(0xFFFF7A7A).withValues(alpha: 0.15)
                             : const Color(0xFF5BE39A).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
                         '${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}%',

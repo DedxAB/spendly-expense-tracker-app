@@ -69,8 +69,8 @@ class RecurringPage extends ConsumerWidget {
             surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
@@ -439,6 +439,7 @@ class RecurringPage extends ConsumerWidget {
                                   border: Border.all(
                                     color: AppColors.borderDark,
                                   ),
+                                  borderRadius: BorderRadius.circular(AppRadii.md),
                                 ),
                                 padding: const EdgeInsets.all(AppSpacing.sm),
                                 child: Column(
@@ -499,6 +500,7 @@ class RecurringPage extends ConsumerWidget {
                                                           color: const Color(
                                                               0xFFFFB3A8),
                                                         ),
+                                                        borderRadius: BorderRadius.circular(AppRadii.sm),
                                                       ),
                                                       child: const Text(
                                                         'DUE',

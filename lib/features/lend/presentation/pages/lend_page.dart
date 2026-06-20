@@ -109,6 +109,7 @@ class LendPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0E0E0E),
                   border: Border.all(color: AppColors.borderDark),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,6 +147,7 @@ class LendPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xFF0E0E0E),
                     border: Border.all(color: AppColors.borderDark),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Text(
                     'No people added yet. Tap + to add your first person.',
@@ -231,6 +233,7 @@ class LendPage extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF0E0E0E),
                           border: Border.all(color: AppColors.borderDark),
+                          borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
                         child: Row(
                           children: [

@@ -120,7 +120,7 @@ class _ScreenTimeCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF0E2B1B),
                   border: Border.all(color: const Color(0xFF166E3C)),
-                  borderRadius: BorderRadius.circular(999),
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
                 ),
                 child: const Text(
                   'LIVE',
@@ -257,7 +257,7 @@ class _ActivityEventRow extends StatelessWidget {
               height: 10,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(99),
+                borderRadius: BorderRadius.circular(AppRadii.pill),
                 border: Border.all(color: const Color(0xFF4A4A4A)),
               ),
             ),

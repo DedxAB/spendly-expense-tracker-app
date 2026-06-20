@@ -62,29 +62,30 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                 padding: const EdgeInsets.only(right: 12),
                 child: InkWell(
                   onTap: onProfileTap ?? () => context.push('/settings'),
-                  borderRadius: BorderRadius.zero,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      border: Border.all(color: AppColors.borderDark),
-                    ),
-                    child: imageUrl == null
-                        ? Icon(
-                            Icons.person,
-                            size: 18,
-                            color: AppIcons.getColorForIcon(Icons.person),
-                          )
-                        : Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Icon(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  child: ClipOval(
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.borderDark),
+                      ),
+                      child: imageUrl == null
+                          ? Icon(
                               Icons.person,
                               size: 18,
                               color: AppIcons.getColorForIcon(Icons.person),
+                            )
+                          : Image.network(
+                              imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Icon(
+                                Icons.person,
+                                size: 18,
+                                color: AppIcons.getColorForIcon(Icons.person),
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
               ),

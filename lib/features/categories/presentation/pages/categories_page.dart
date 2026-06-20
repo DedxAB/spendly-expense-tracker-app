@@ -32,8 +32,8 @@ class CategoriesPage extends ConsumerWidget {
             surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
@@ -119,7 +119,7 @@ class CategoriesPage extends ConsumerWidget {
           onPressed: () => _showCategoryDialog(context, ref),
           backgroundColor: primary,
           foregroundColor: Colors.black,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
           icon: const Icon(AppIcons.plus, size: 18),
           label: const Text(
             'Add Category',
@@ -222,6 +222,7 @@ class CategoriesPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: surface,
                   border: Border.all(color: border),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
@@ -280,6 +281,7 @@ class CategoriesPage extends ConsumerWidget {
                       decoration: BoxDecoration(
                         border: Border.all(color: destructiveBorder),
                         color: const Color(0x221B0000),
+                        borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                       child: const Icon(
                         AppIcons.trash,
@@ -341,6 +343,7 @@ class _CategoryTypeSegment extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: const Color(0xFF4A4A4A)),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: List.generate(items.length, (index) {

@@ -505,8 +505,8 @@ class SettingsPage extends ConsumerWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: primary,
                 foregroundColor: bg,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
               ),
               onPressed: () async {
@@ -728,8 +728,8 @@ class SettingsPage extends ConsumerWidget {
             surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
@@ -770,8 +770,8 @@ class SettingsPage extends ConsumerWidget {
             surface: Color(0xFF0E0E0E),
             onSurface: Colors.white,
           ),
-          dialogTheme: const DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          dialogTheme: DialogThemeData(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             backgroundColor: Color(0xFF0E0E0E),
           ),
         ),
@@ -860,18 +860,20 @@ class _ProfilePhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 76,
-      height: 76,
-      color: backgroundColor,
-      child: imageUrl != null
-          ? Image.network(
-              imageUrl!,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Icon(Icons.account_box, size: 44, color: iconColor),
-            )
-          : Icon(Icons.account_box, size: 44, color: iconColor),
+    return ClipOval(
+      child: Container(
+        width: 76,
+        height: 76,
+        color: backgroundColor,
+        child: imageUrl != null
+            ? Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) =>
+                    Icon(Icons.account_box, size: 44, color: iconColor),
+              )
+            : Icon(Icons.account_box, size: 44, color: iconColor),
+      ),
     );
   }
 }
@@ -957,7 +959,7 @@ class _TransactionCountPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF303030)),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1000,7 +1002,7 @@ class _TrackingSincePill extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF0E0E0E),
         border: Border.all(color: const Color(0xFF292929)),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
