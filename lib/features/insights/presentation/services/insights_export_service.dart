@@ -23,6 +23,8 @@ class InsightsExportService {
     required double projected,
     required List<InsightPoint> trend,
     required List<IncomeExpenseBar> yearlyBars,
+    pw.Font? lucideFont,
+    pw.Font? baseFont,
   }) async {
     final pdf = pw.Document();
 
@@ -30,32 +32,45 @@ class InsightsExportService {
         ? 'Year ${month.year}'
         : DateFormat('MMMM yyyy').format(month);
 
-    final titleStyle = pw.TextStyle(
+    pw.TextStyle style({
+      double? fontSize,
+      pw.FontWeight? fontWeight,
+      PdfColor? color,
+      pw.Font? font,
+    }) =>
+        pw.TextStyle(
+          fontSize: fontSize,
+          fontWeight: fontWeight,
+          color: color,
+          font: font ?? baseFont,
+        );
+
+    final titleStyle = style(
       fontSize: 24,
       fontWeight: pw.FontWeight.bold,
       color: PdfColors.black,
     );
-    final subtitleStyle = pw.TextStyle(
+    final subtitleStyle = style(
       fontSize: 14,
       color: PdfColors.grey600,
     );
-    final sectionTitleStyle = pw.TextStyle(
+    final sectionTitleStyle = style(
       fontSize: 16,
       fontWeight: pw.FontWeight.bold,
       color: PdfColors.black,
     );
-    final bodyStyle = pw.TextStyle(fontSize: 11, color: PdfColors.black);
-    final valueStyle = pw.TextStyle(
+    final bodyStyle = style(fontSize: 11, color: PdfColors.black);
+    final valueStyle = style(
       fontSize: 14,
       fontWeight: pw.FontWeight.bold,
       color: PdfColors.black,
     );
-    final headerCellStyle = pw.TextStyle(
+    final headerCellStyle = style(
       fontSize: 10,
       fontWeight: pw.FontWeight.bold,
       color: PdfColors.white,
     );
-    final cellStyle = pw.TextStyle(fontSize: 10, color: PdfColors.black);
+    final cellStyle = style(fontSize: 10, color: PdfColors.black);
 
     pdf.addPage(
       pw.MultiPage(
@@ -72,7 +87,7 @@ class InsightsExportService {
           pw.SizedBox(height: 24),
           _buildSectionTitle('Category Breakdown', sectionTitleStyle),
           pw.SizedBox(height: 8),
-          _buildCategoryTable(distribution, bodyStyle, headerCellStyle, cellStyle, valueStyle),
+          _buildCategoryTable(distribution, bodyStyle, headerCellStyle, cellStyle, valueStyle, lucideFont),
           pw.SizedBox(height: 24),
           _buildSectionTitle('Spending Trend', sectionTitleStyle),
           pw.SizedBox(height: 8),
@@ -290,6 +305,7 @@ class InsightsExportService {
     pw.TextStyle headerCellStyle,
     pw.TextStyle cellStyle,
     pw.TextStyle valueStyle,
+    pw.Font? lucideFont,
   ) {
     final sorted = [...distribution]..sort((a, b) => b.total.compareTo(a.total));
     final total = sorted.fold<double>(0, (s, e) => s + e.total);
@@ -315,7 +331,7 @@ class InsightsExportService {
             final pct = total <= 0 ? 0.0 : (slice.total / total) * 100;
             return pw.TableRow(
               children: [
-                _tableCell(slice.category, cellStyle, pw.TextAlign.left),
+                _categoryCell(slice, cellStyle, lucideFont),
                 _tableCell(
                   Formatters.rawCurrency(slice.total),
                   cellStyle.copyWith(fontWeight: pw.FontWeight.bold),
@@ -348,6 +364,114 @@ class InsightsExportService {
         ),
       ],
     );
+  }
+
+  pw.Widget _categoryCell(
+    ExpenseSlice slice,
+    pw.TextStyle textStyle,
+    pw.Font? lucideFont,
+  ) {
+    if (lucideFont == null) {
+      return _tableCell(slice.category, textStyle, pw.TextAlign.left);
+    }
+
+    final iconChar = _iconForCategory(slice.category);
+    final iconPdfColor = _parsePdfColor(slice.color);
+
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(8),
+      child: pw.Row(
+        children: [
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(right: 6),
+            child: pw.Text(
+              iconChar,
+              style: pw.TextStyle(
+                font: lucideFont,
+                fontSize: 13,
+                color: iconPdfColor,
+              ),
+            ),
+          ),
+          pw.Text(slice.category, style: textStyle),
+        ],
+      ),
+    );
+  }
+
+  PdfColor _parsePdfColor(String hex) {
+    try {
+      final normalized = hex.replaceFirst('#', '');
+      final value = int.parse(normalized, radix: 16);
+      return PdfColor(
+        ((value >> 16) & 0xFF) / 255.0,
+        ((value >> 8) & 0xFF) / 255.0,
+        (value & 0xFF) / 255.0,
+      );
+    } catch (_) {
+      return PdfColors.black;
+    }
+  }
+
+  String _iconForCategory(String categoryName) {
+    final name = categoryName.toLowerCase();
+    if (name.contains('food') ||
+        name.contains('dining') ||
+        name.contains('restaurant')) {
+      return String.fromCharCode(58102); // utensils
+    }
+    if (name.contains('transport') ||
+        name.contains('uber') ||
+        name.contains('taxi') ||
+        name.contains('car') ||
+        name.contains('bus')) {
+      return String.fromCharCode(57813); // car
+    }
+    if (name.contains('shopping') ||
+        name.contains('shop') ||
+        name.contains('store') ||
+        name.contains('bag') ||
+        name.contains('grocery')) {
+      return String.fromCharCode(57691); // shoppingBag
+    }
+    if (name.contains('bill') ||
+        name.contains('utility') ||
+        name.contains('electric') ||
+        name.contains('receipt') ||
+        name.contains('util')) {
+      return String.fromCharCode(58323); // receipt
+    }
+    if (name.contains('health') ||
+        name.contains('medical') ||
+        name.contains('hospital')) {
+      return String.fromCharCode(58222); // heartPulse
+    }
+    if (name.contains('gym') ||
+        name.contains('workout') ||
+        name.contains('fitness') ||
+        name.contains('dumbbell')) {
+      return String.fromCharCode(58273); // dumbbell
+    }
+    if (name.contains('travel') ||
+        name.contains('flight') ||
+        name.contains('air') ||
+        name.contains('trip')) {
+      return String.fromCharCode(57822); // plane
+    }
+    if (name.contains('salary') ||
+        name.contains('income') ||
+        name.contains('transfer') ||
+        name.contains('freelance') ||
+        name.contains('business') ||
+        name.contains('work')) {
+      return String.fromCharCode(58808); // handCoins
+    }
+    if (name.contains('rent') ||
+        name.contains('home') ||
+        name.contains('house')) {
+      return String.fromCharCode(57589); // house
+    }
+    return String.fromCharCode(58323); // receipt fallback
   }
 
   pw.Widget _buildPaymentModeTable(

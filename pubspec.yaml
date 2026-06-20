@@ -64,6 +64,7 @@ flutter:
   assets:
     - assets/images/spendly_splash.png
     - assets/icons/ic_launcher_round.png
+    - assets/fonts/lucide/
 
 flutter_launcher_icons:
   android: true

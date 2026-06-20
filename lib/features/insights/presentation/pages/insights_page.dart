@@ -2,9 +2,11 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -211,8 +213,16 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
   final yearlyBars =
       ref.read(yearlyIncomeVsExpenseProvider).valueOrNull ?? const [];
 
-  final service = InsightsExportService();
+    final service = InsightsExportService();
   try {
+    final lucideData = await rootBundle.load('assets/fonts/lucide/Lucide.ttf');
+    final lucideFont = pw.Font.ttf(lucideData);
+
+    final baseFontData = await rootBundle.load(
+      'assets/fonts/general_sans/GeneralSans-Regular.ttf',
+    );
+    final baseFont = pw.Font.ttf(baseFontData);
+
     await service.exportPdf(
       month: month,
       isYearly: isYearly,
@@ -225,6 +235,8 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
       projected: projected,
       trend: trend,
       yearlyBars: yearlyBars,
+      lucideFont: lucideFont,
+      baseFont: baseFont,
     );
     if (context.mounted) {
       Navigator.of(context).pop();
