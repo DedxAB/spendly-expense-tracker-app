@@ -14,8 +14,10 @@ class InsightsExportService {
   Future<void> exportPdf({
     required DateTime month,
     required bool isYearly,
+    String? userName,
     required double income,
     required double expense,
+    double prevExpense = 0,
     required double? changePercent,
     required List<ExpenseSlice> distribution,
     Map<String, double> paymentMode = const {},
@@ -77,13 +79,16 @@ class InsightsExportService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(40),
         build: (context) => [
-          _buildHeader(periodLabel, month, isYearly, titleStyle, subtitleStyle),
+          _buildHeader(periodLabel, userName, titleStyle, subtitleStyle),
           pw.SizedBox(height: 24),
           _buildSummaryRow(income, expense, valueStyle, bodyStyle),
           pw.SizedBox(height: 24),
-          _buildSectionTitle('Daily Burn Rate', sectionTitleStyle),
+          _buildSectionTitle(
+            isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate',
+            sectionTitleStyle,
+          ),
           pw.SizedBox(height: 8),
-          _buildBurnRateSection(expense, projected, valueStyle, bodyStyle),
+          _buildBurnRateSection(expense, projected, month, isYearly, valueStyle, bodyStyle),
           pw.SizedBox(height: 24),
           _buildSectionTitle('Category Breakdown', sectionTitleStyle),
           pw.SizedBox(height: 8),
@@ -106,6 +111,8 @@ class InsightsExportService {
           ],
           pw.SizedBox(height: 24),
           _buildChangePercent(changePercent, bodyStyle),
+          pw.SizedBox(height: 24),
+          _buildSummaryText(income, expense, prevExpense, changePercent, budget, projected, bodyStyle),
           pw.SizedBox(height: 32),
           _buildFooter(bodyStyle),
         ],
@@ -128,19 +135,32 @@ class InsightsExportService {
 
   pw.Widget _buildHeader(
     String periodLabel,
-    DateTime month,
-    bool isYearly,
+    String? userName,
     pw.TextStyle titleStyle,
     pw.TextStyle subtitleStyle,
   ) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        pw.Text('Spendly', style: titleStyle.copyWith(fontSize: 28)),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          'Analytics Report',
-          style: subtitleStyle.copyWith(fontSize: 18, color: PdfColors.grey700),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Spendly', style: titleStyle.copyWith(fontSize: 28)),
+                if (userName != null) ...[
+                  pw.SizedBox(height: 2),
+                  pw.Text(userName, style: subtitleStyle.copyWith(fontSize: 12)),
+                ],
+              ],
+            ),
+            pw.Text(
+              'Analytics Report',
+              style: subtitleStyle.copyWith(fontSize: 16, color: PdfColors.grey700),
+            ),
+          ],
         ),
         pw.Divider(thickness: 2, color: PdfColors.black),
         pw.SizedBox(height: 12),
@@ -209,24 +229,175 @@ class InsightsExportService {
     );
   }
 
+  pw.Widget _buildSummaryText(
+    double income,
+    double expense,
+    double prevExpense,
+    double? changePercent,
+    double budget,
+    double projected,
+    pw.TextStyle bodyStyle,
+  ) {
+    final parts = <String>[];
+
+    if (expense > 0) {
+      final change = changePercent ?? (prevExpense > 0
+          ? ((expense - prevExpense) / prevExpense * 100)
+          : null);
+      if (change != null) {
+        final dir = change >= 0 ? 'increased' : 'decreased';
+        parts.add(
+          'Spending $dir by ${change.abs().toStringAsFixed(1)}% '
+          'compared to the previous period.',
+        );
+      }
+    }
+
+    if (income > 0) {
+      final savingsRate = ((income - expense) / income * 100).clamp(0, 100);
+      if (savingsRate > 0) {
+        final adj = savingsRate >= 20
+            ? 'strong'
+            : savingsRate >= 10
+                ? 'moderate'
+                : 'modest';
+        parts.add(
+          'You saved $adj ${savingsRate.toStringAsFixed(0)}% of your income.',
+        );
+      } else if (expense > income) {
+        parts.add('Expenses exceeded income this period.');
+      }
+    }
+
+    if (budget > 0 && expense > 0) {
+      final pct = (expense / budget * 100).clamp(0, 100);
+      final remaining = budget - expense;
+      if (remaining > 0) {
+        parts.add(
+          'You have used ${pct.toStringAsFixed(0)}% of your budget '
+          '(${Formatters.rawCurrency(remaining)} remaining).',
+        );
+      } else {
+        parts.add(
+          'You exceeded your budget by '
+          '${Formatters.rawCurrency(remaining.abs())}.',
+        );
+      }
+    }
+
+    if (expense <= 0) {
+      parts.add('No spending recorded for this period.');
+    }
+
+    if (parts.isEmpty) return pw.SizedBox.shrink();
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(14),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        border: pw.Border.all(color: PdfColors.grey300),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text('Summary', style: bodyStyle.copyWith(
+            fontWeight: pw.FontWeight.bold,
+            fontSize: 13,
+          )),
+          pw.SizedBox(height: 6),
+          ...parts.map((p) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 4),
+            child: pw.Text('\u2022 $p', style: bodyStyle),
+          )),
+        ],
+      ),
+    );
+  }
+
   pw.Widget _buildBurnRateSection(
     double expense,
     double projected,
+    DateTime month,
+    bool isYearly,
     pw.TextStyle valueStyle,
     pw.TextStyle bodyStyle,
   ) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
+    final now = DateTime.now();
+    final isCurrentYear = month.year == now.year;
+    final isCurrentMonth = isCurrentYear && month.month == now.month;
+
+    String avgLabel;
+    double avgValue;
+    String title;
+    String projectedLabel;
+    double displayProjected;
+
+    if (isYearly) {
+      final monthsElapsed = isCurrentYear ? now.month : 12;
+      avgValue = monthsElapsed <= 0 ? 0.0 : expense / monthsElapsed;
+      avgLabel = 'Avg / Month';
+      title = 'Total Year';
+      displayProjected = monthsElapsed <= 0 ? 0.0 : (expense / monthsElapsed) * 12;
+      projectedLabel = 'Projected EoY';
+    } else {
+      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+      final daysElapsed = isCurrentMonth ? now.day : daysInMonth;
+      avgValue = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
+      avgLabel = 'Avg / Day';
+      title = 'Total Month';
+      displayProjected = projected;
+      projectedLabel = 'Projected';
+    }
+
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
       children: [
-        pw.Text('Total spent: ${Formatters.rawCurrency(expense)}', style: bodyStyle),
-        pw.SizedBox(height: 4),
-        if (projected > 0)
-          pw.Text(
-            'Projected month end: ${Formatters.rawCurrency(projected)}',
-            style: bodyStyle,
-          ),
+        _summaryCard(title, Formatters.rawCurrency(expense), valueStyle, bodyStyle),
+        _summaryCard(avgLabel, Formatters.rawCurrency(avgValue), valueStyle, bodyStyle),
+        if (displayProjected > 0)
+          _summaryCard(projectedLabel, Formatters.rawCurrency(displayProjected), valueStyle, bodyStyle),
       ],
     );
+  }
+
+  List<_AggregatedPoint> _aggregateTrend(
+    List<InsightPoint> trend,
+    bool isYearly,
+  ) {
+    if (trend.isEmpty) return const [];
+
+    if (isYearly) {
+      return [
+        for (final point in trend)
+          if (point.value > 0)
+            _AggregatedPoint(
+              label: DateFormat('MMM').format(point.date),
+              value: point.value,
+            ),
+      ];
+    }
+
+    final month = trend.first.date;
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final weekCount = ((daysInMonth - 1) ~/ 7) + 1;
+    final totals = List<double>.filled(weekCount, 0);
+
+    for (final point in trend) {
+      final weekIndex = (point.date.day - 1) ~/ 7;
+      if (weekIndex >= 0 && weekIndex < totals.length) {
+        totals[weekIndex] += point.value;
+      }
+    }
+
+    return [
+      for (var i = 0; i < totals.length; i++)
+        if (totals[i] > 0)
+          _AggregatedPoint(
+            label: 'w${i + 1}',
+            value: totals[i],
+          ),
+    ];
   }
 
   pw.Widget _buildTrendSnapshot(
@@ -235,14 +406,15 @@ class InsightsExportService {
     pw.TextStyle bodyStyle,
     pw.TextStyle valueStyle,
   ) {
-    if (trend.isEmpty) {
+    final aggregated = _aggregateTrend(trend, isYearly);
+    if (aggregated.isEmpty) {
       return pw.Text('No trend data available.', style: bodyStyle);
     }
 
-    final activeBuckets = trend.where((p) => p.value > 0).length;
-    final total = trend.fold<double>(0, (s, e) => s + e.value);
-    final peak = trend.fold<InsightPoint>(
-      trend.first,
+    final activeBuckets = aggregated.length;
+    final total = aggregated.fold<double>(0, (s, e) => s + e.value);
+    final peak = aggregated.fold<_AggregatedPoint>(
+      aggregated.first,
       (a, b) => a.value >= b.value ? a : b,
     );
     final avgBase = isYearly ? DateTime.now().month : DateTime(
@@ -269,7 +441,7 @@ class InsightsExportService {
         ),
         _snapshotTile(
           isYearly ? 'Peak Month' : 'Peak Week',
-          Formatters.rawCurrency(peak.value),
+          '${Formatters.rawCurrency(peak.value)} (${peak.label})',
           bodyStyle,
           valueStyle,
         ),
@@ -603,4 +775,10 @@ class InsightsExportService {
       child: pw.Text(text, style: style, textAlign: align),
     );
   }
+}
+
+class _AggregatedPoint {
+  const _AggregatedPoint({required this.label, required this.value});
+  final String label;
+  final double value;
 }

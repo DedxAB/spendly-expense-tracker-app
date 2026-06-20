@@ -145,13 +145,29 @@ class InsightsPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Trend', style: AppTypography.sectionTitle(context)),
-                const SizedBox(height: AppSpacing.smPlus),
+                Row(
+                  children: [
+                    Text('Trend', style: AppTypography.sectionTitle(context)),
+                    const Spacer(),
+                    trend.when(
+                      data: (points) => _TrendArrow(
+                        points: points,
+                        isYearly: isYearly,
+                      ),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   height: 200,
                   child: trend.when(
-                    data: (points) =>
-                        _TrendChart(points: points, isYearly: isYearly),
+                    data: (points) => _TrendChart(
+                      points: points,
+                      isYearly: isYearly,
+                      budget: monthlyBudget,
+                    ),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (_, __) =>
@@ -214,6 +230,11 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
   final yearlyBars =
       ref.read(yearlyIncomeVsExpenseProvider).valueOrNull ?? const [];
 
+  final userProfile = ref.read(userProfileProvider).valueOrNull;
+  final userName = userProfile != null && userProfile.name.trim().isNotEmpty
+      ? userProfile.name.trim()
+      : null;
+
     final service = InsightsExportService();
   try {
     final lucideData = await rootBundle.load('assets/fonts/lucide/Lucide.ttf');
@@ -224,11 +245,20 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
     );
     final baseFont = pw.Font.ttf(baseFontData);
 
+    final incomeVal = (incomeExpense['income'] ?? 0).toDouble();
+    final expenseVal = (incomeExpense['expense'] ?? 0).toDouble();
+    final prevExpenseVal =
+        (ref.read(previousIncomeVsExpenseProvider).valueOrNull?['expense'] ??
+                0.0)
+            .toDouble();
+
     await service.exportPdf(
       month: month,
       isYearly: isYearly,
-      income: (incomeExpense['income'] ?? 0).toDouble(),
-      expense: (incomeExpense['expense'] ?? 0).toDouble(),
+      userName: userName,
+      income: incomeVal,
+      expense: expenseVal,
+      prevExpense: prevExpenseVal,
       changePercent: change,
       distribution: distribution,
       paymentMode: const {},
@@ -337,7 +367,7 @@ class _PeriodNavigator extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                  fontSize: 18,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -471,17 +501,26 @@ class _BurnRateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final daysInPeriod = isYearly
-        ? DateTime(month.year + 1, 1, 1).difference(DateTime(month.year, 1, 1)).inDays
-        : DateTime(month.year, month.month + 1, 0).day;
-    final daysElapsed = isYearly
-        ? (month.year == now.year
-            ? now.difference(DateTime(month.year, 1, 1)).inDays + 1
-            : daysInPeriod)
-        : (month.year == now.year && month.month == now.month
-            ? now.day
-            : daysInPeriod);
-    final dailyAvg = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
+
+    final isCurrentYear = month.year == now.year;
+    final isCurrentMonth = isCurrentYear && month.month == now.month;
+
+    String rateLabel;
+    double rateValue;
+    double displayProjected;
+
+    if (isYearly) {
+      final monthsElapsed = isCurrentYear ? now.month : 12;
+      rateValue = monthsElapsed <= 0 ? 0.0 : expense / monthsElapsed;
+      rateLabel = '/ month';
+      displayProjected = monthsElapsed <= 0 ? 0.0 : (expense / monthsElapsed) * 12;
+    } else {
+      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+      final daysElapsed = isCurrentMonth ? now.day : daysInMonth;
+      rateValue = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
+      rateLabel = '/ day';
+      displayProjected = projected;
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -497,7 +536,7 @@ class _BurnRateCard extends StatelessWidget {
             children: [
               const Icon(Icons.speed, color: Color(0xFFFFC857), size: 18),
               const SizedBox(width: 8),
-              Text('Daily Burn Rate', style: AppTypography.sectionTitle(context)),
+              Text(isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate', style: AppTypography.sectionTitle(context)),
             ],
           ),
           const SizedBox(height: 12),
@@ -505,7 +544,7 @@ class _BurnRateCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${AppConstants.currencySymbol}${_formatCompact(dailyAvg)}',
+                '${AppConstants.currencySymbol}${_formatCompact(rateValue)}',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
@@ -513,24 +552,24 @@ class _BurnRateCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  '/ day',
-                  style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                  rateLabel,
+                  style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
                 ),
               ),
               const Spacer(),
-              if (projected > 0)
+              if (displayProjected > 0)
                 Text(
-                  'On track ${Formatters.currency(projected)}',
+                  isYearly ? 'Projected EoY ${Formatters.currency(displayProjected)}' : 'Projected ${Formatters.currency(displayProjected)}',
                   style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
                 ),
             ],
           ),
           if (budget > 0) ...[
             const SizedBox(height: 14),
-            _BudgetBar(expense: expense, budget: budget, projected: projected),
+            _BudgetBar(expense: expense, budget: budget, projected: displayProjected),
           ],
         ],
       ),
@@ -637,130 +676,99 @@ class _SummaryStrip extends StatelessWidget {
         color: const Color(0xFF0E0E0E),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Container(height: 3, color: _incomeColor)),
-              Container(width: 1, height: 3, color: AppColors.borderDark),
-              Expanded(child: Container(height: 3, color: _expenseColor)),
-              Container(width: 1, height: 3, color: AppColors.borderDark),
-              Expanded(child: Container(height: 3, color: savedColor)),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Income',
-                      value: Formatters.currency(income),
-                      valueColor: _incomeColor,
-                      icon: Icons.trending_up,
-                      accentColor: _incomeColor,
-                    ),
-                  ),
-                  _VertDivider(),
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Expense',
-                      value: Formatters.currency(expense),
-                      valueColor: _expenseColor,
-                      icon: Icons.trending_down,
-                      accentColor: _expenseColor,
-                      subtitle: changeText,
-                    ),
-                  ),
-                  _VertDivider(),
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Saved',
-                      value: '${savingsRate.toStringAsFixed(0)}%',
-                      valueColor: savedColor,
-                      icon: Icons.savings,
-                      accentColor: savedColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        child: Column(
+              children: [
+                _SummaryRow(
+                  icon: Icons.trending_up,
+                  label: 'Income',
+                  value: Formatters.currency(income),
+                  valueColor: _incomeColor,
+                  accentColor: _incomeColor,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.trending_down,
+                  label: 'Expense',
+                  value: Formatters.currency(expense),
+                  valueColor: _expenseColor,
+                  accentColor: _expenseColor,
+                  subtitle: changeText,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.savings,
+                  label: 'Saved',
+                  value: '${savingsRate.toStringAsFixed(0)}%',
+                  valueColor: savedColor,
+                  accentColor: savedColor,
+                ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _SummaryCardSection extends StatelessWidget {
-  const _SummaryCardSection({
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.icon,
     required this.label,
     required this.value,
     required this.valueColor,
-    required this.icon,
     required this.accentColor,
     this.subtitle,
   });
 
+  final IconData icon;
   final String label;
   final String value;
   final Color valueColor;
-  final IconData icon;
   final Color accentColor;
   final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
+        Icon(icon, size: 13, color: accentColor),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Color(0xFF8A8A8A),
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const Spacer(),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Icon(icon, size: 13, color: accentColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF8A8A8A),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: valueColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
               ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 10),
+              ),
+            ],
           ],
         ),
-        const SizedBox(height: 10),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            height: 1.1,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            subtitle!,
-            style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 10),
-          ),
-        ],
       ],
-    );
-  }
-}
-
-class _VertDivider extends StatelessWidget {
-  const _VertDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      color: AppColors.borderDark,
     );
   }
 }
@@ -1043,9 +1051,15 @@ class _WhatsChanged extends StatelessWidget {
 // ── Trend Chart ───────────────────────────────────────────────
 
 class _TrendChart extends StatelessWidget {
-  const _TrendChart({required this.points, required this.isYearly});
+  const _TrendChart({
+    required this.points,
+    required this.isYearly,
+    this.budget = 0,
+  });
+
   final List<InsightPoint> points;
   final bool isYearly;
+  final double budget;
 
   @override
   Widget build(BuildContext context) {
@@ -1055,100 +1069,143 @@ class _TrendChart extends StatelessWidget {
     }
 
     final maxY = chartPoints.map((e) => e.value).fold<double>(0, math.max);
-    final safeMaxY = maxY <= 0 ? 1.0 : maxY * 1.2;
+    final budgetPerPeriod = isYearly ? budget : (budget / 4);
+    final overallMax = [
+      maxY,
+      if (budgetPerPeriod > 0) budgetPerPeriod,
+    ].fold<double>(0, math.max);
+    final safeMaxY = overallMax <= 0 ? 1.0 : overallMax * 1.2;
 
     return LineChart(
       LineChartData(
-        minX: 0,
-        maxX: math.max(0, chartPoints.length - 1).toDouble(),
-        minY: 0,
-        maxY: safeMaxY,
-        gridData: FlGridData(
-          show: true,
-          horizontalInterval: safeMaxY / 4,
-          getDrawingHorizontalLine: (_) =>
-              const FlLine(color: Color(0xFF252525), strokeWidth: 0.8),
-          drawVerticalLine: false,
-        ),
-        borderData: FlBorderData(
-          show: true,
-          border: const Border(
-            bottom: BorderSide(color: Colors.white),
-            left: BorderSide(color: AppColors.borderDark),
-          ),
-        ),
-        lineTouchData: LineTouchData(
-          enabled: true,
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => const Color(0xFFF4F4F4),
-            tooltipRoundedRadius: 8,
-            tooltipPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
+            minX: 0,
+            maxX: math.max(0, chartPoints.length - 1).toDouble(),
+            minY: 0,
+            maxY: safeMaxY,
+            gridData: FlGridData(
+              show: true,
+              horizontalInterval: safeMaxY / 4,
+              getDrawingHorizontalLine: (_) =>
+                  const FlLine(color: Color(0xFF252525), strokeWidth: 0.8),
+              drawVerticalLine: false,
             ),
-            tooltipMargin: 12,
-            maxContentWidth: 180,
-            fitInsideHorizontally: true,
-            fitInsideVertically: true,
-            getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
-              final index = spot.x.round();
-              if (index < 0 || index >= chartPoints.length) return null;
-              return _tooltipItem(chartPoints, index);
-            }).toList(),
-          ),
-        ),
-        titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: safeMaxY / 4,
-              reservedSize: 54,
-              getTitlesWidget: (value, _) => Text(
-                _formatAxisAmount(value),
-                style: const TextStyle(fontSize: 11, color: Color(0xFFA6A6A6)),
+            borderData: FlBorderData(
+              show: true,
+              border: const Border(
+                bottom: BorderSide(color: Colors.white),
+                left: BorderSide(color: AppColors.borderDark),
               ),
             ),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: 1,
-              reservedSize: 28,
-              getTitlesWidget: (value, _) {
-                final i = value.round();
-                if (i < 0 || i >= chartPoints.length || value != i) {
-                  return const SizedBox.shrink();
-                }
-                return Text(
-                  chartPoints[i].label,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFFA6A6A6),
+            extraLinesData: ExtraLinesData(
+              horizontalLines: [
+                if (budgetPerPeriod > 0)
+                  HorizontalLine(
+                    y: budgetPerPeriod,
+                    color: const Color(0xFFFFC857),
+                    strokeWidth: 1.5,
+                    dashArray: [6, 4],
+                    label: HorizontalLineLabel(
+                      show: true,
+                      alignment: Alignment.topRight,
+                      style: const TextStyle(
+                        color: Color(0xFFFFC857),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      labelResolver: (_) => 'Budget',
+                    ),
                   ),
-                );
-              },
+              ],
             ),
-          ),
-        ),
-        lineBarsData: [
-          LineChartBarData(
-            spots: [
-              for (var i = 0; i < chartPoints.length; i++)
-                FlSpot(i.toDouble(), chartPoints[i].value),
-            ],
-            isCurved: true,
-            color: Colors.white,
-            barWidth: 3,
-            dotData: FlDotData(
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => const Color(0xFFF4F4F4),
+                tooltipRoundedRadius: 8,
+                tooltipPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                tooltipMargin: 12,
+                maxContentWidth: 180,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
+                getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                  final index = spot.x.round();
+                  if (index < 0 || index >= chartPoints.length) return null;
+                  return _tooltipItem(chartPoints, index);
+                }).toList(),
+              ),
+            ),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: safeMaxY / 4,
+                  reservedSize: 54,
+                  getTitlesWidget: (value, _) => Text(
+                    _formatAxisAmount(value),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFA6A6A6),
+                    ),
+                  ),
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  reservedSize: 28,
+                  getTitlesWidget: (value, _) {
+                    final i = value.round();
+                    if (i < 0 || i >= chartPoints.length || value != i) {
+                      return const SizedBox.shrink();
+                    }
+                    return Text(
+                      chartPoints[i].label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA6A6A6),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            lineBarsData: [
+              LineChartBarData(
+                spots: [
+                  for (var i = 0; i < chartPoints.length; i++)
+                    FlSpot(i.toDouble(), chartPoints[i].value),
+                ],
+                isCurved: true,
+                color: Colors.white,
+                barWidth: 3,
+                dotData: FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, barData, index) {
+                    final isMax = index < chartPoints.length &&
+                        chartPoints[index].value == maxY;
+                    return FlDotCirclePainter(
+                      radius: isMax ? 5 : 3.5,
+                      color: Colors.white,
+                      strokeWidth: isMax ? 2 : 0,
+                      strokeColor: const Color(0xFF252525),
+                    );
+                  },
+                ),
+            belowBarData: BarAreaData(
               show: true,
-              getDotPainter: (_, __, ___, ____) =>
-                  FlDotCirclePainter(radius: 4.5, color: Colors.white),
+              color: Colors.white.withValues(alpha: 0.06),
+              cutOffY: 0,
+              applyCutOffY: true,
             ),
           ),
         ],
@@ -1156,7 +1213,10 @@ class _TrendChart extends StatelessWidget {
     );
   }
 
-  LineTooltipItem _tooltipItem(List<_TrendChartPoint> chartPoints, int index) {
+  LineTooltipItem _tooltipItem(
+    List<_TrendChartPoint> chartPoints,
+    int index,
+  ) {
     final point = chartPoints[index];
     final average = point.daysInPeriod <= 0
         ? 0.0
@@ -1209,7 +1269,10 @@ class _TrendChart extends StatelessWidget {
     );
   }
 
-  _TrendComparison? _comparison(List<_TrendChartPoint> chartPoints, int index) {
+  _TrendComparison? _comparison(
+    List<_TrendChartPoint> chartPoints,
+    int index,
+  ) {
     if (index == 0) return null;
 
     final current = chartPoints[index].value;
@@ -1237,7 +1300,8 @@ class _TrendChart extends StatelessWidget {
     }
     final direction = chg > 0 ? '\u25B2' : '\u25BC';
     return _TrendComparison(
-      text: '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
+      text:
+          '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
       color: chg > 0 ? const Color(0xFFFF6F61) : const Color(0xFF19C37D),
     );
   }
@@ -1248,6 +1312,48 @@ class _TrendChart extends StatelessWidget {
       return '${AppConstants.currencySymbol}${value.toStringAsFixed(0)}';
     }
     return '${AppConstants.currencySymbol}${(value / 1000).toStringAsFixed(1)}k';
+  }
+}
+
+class _TrendArrow extends StatelessWidget {
+  const _TrendArrow({required this.points, required this.isYearly});
+
+  final List<InsightPoint> points;
+  final bool isYearly;
+
+  @override
+  Widget build(BuildContext context) {
+    final chartPoints = _buildTrendChartPoints(points, isYearly);
+    if (chartPoints.length < 2) return const SizedBox.shrink();
+
+    final first = chartPoints.first.value;
+    final last = chartPoints.last.value;
+    final diff = last - first;
+
+    if (diff.abs() < 0.01) return const SizedBox.shrink();
+
+    final isUp = diff > 0;
+    final pct = first > 0 ? (diff / first * 100).abs() : 100;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isUp ? Icons.trending_up : Icons.trending_down,
+          size: 16,
+          color: isUp ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}%',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isUp ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1267,12 +1373,7 @@ class _TrendSnapshot extends StatelessWidget {
     final chartPoints = _buildTrendChartPoints(points, isYearly);
     if (chartPoints.isEmpty) return const SizedBox.shrink();
 
-    final total = chartPoints.fold<double>(0, (sum, e) => sum + e.value);
     final peak = chartPoints.reduce((a, b) => a.value >= b.value ? a : b);
-    final averageBase = isYearly
-        ? _elapsedMonthsInYear(period)
-        : _elapsedDaysInMonth(period);
-    final average = averageBase <= 0 ? 0.0 : total / averageBase;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.smPlus),
@@ -1283,14 +1384,6 @@ class _TrendSnapshot extends StatelessWidget {
               label: isYearly ? 'ACTIVE MONTHS' : 'ACTIVE WEEKS',
               value: chartPoints.length.toString(),
               caption: 'with spend',
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _SnapshotTile(
-              label: isYearly ? 'AVG / MONTH' : 'AVG / DAY',
-              value: Formatters.currency(average),
-              caption: isYearly ? 'this year' : 'this period',
             ),
           ),
           const SizedBox(width: 8),
@@ -1429,21 +1522,6 @@ int _daysInWeekBucket(int daysInMonth, int weekIndex) {
   final startDay = (weekIndex * 7) + 1;
   final endDay = math.min(startDay + 6, daysInMonth);
   return math.max(0, endDay - startDay + 1);
-}
-
-int _elapsedDaysInMonth(DateTime period) {
-  final now = DateTime.now();
-  final daysInMonth = DateTime(period.year, period.month + 1, 0).day;
-  if (period.year == now.year && period.month == now.month) {
-    return math.min(now.day, daysInMonth);
-  }
-  return daysInMonth;
-}
-
-int _elapsedMonthsInYear(DateTime period) {
-  final now = DateTime.now();
-  if (period.year == now.year) return now.month;
-  return 12;
 }
 
 // ── Data Classes ──────────────────────────────────────────────
