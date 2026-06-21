@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -38,6 +39,12 @@ class AppTheme {
         titleTextStyle: AppTypography.textTheme(
           Brightness.light,
         ).titleLarge?.copyWith(color: AppColors.lightTextPrimary),
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
       ),
       dividerColor: AppColors.borderLight,
       dialogTheme: DialogThemeData(
@@ -181,6 +188,12 @@ class AppTheme {
         titleTextStyle: AppTypography.textTheme(
           Brightness.dark,
         ).titleLarge?.copyWith(color: AppColors.darkTextPrimary),
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
       ),
       dividerColor: AppColors.borderDark,
       dialogTheme: DialogThemeData(

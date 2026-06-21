@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:spendly/app/app_router.dart';
@@ -67,7 +68,25 @@ class SpendlyApp extends ConsumerWidget {
           themeMode: themeMode,
           routerConfig: router,
           builder: (context, child) {
-            return PrivacyLockGate(child: child ?? const SizedBox.shrink());
+            final brightness = Theme.of(context).brightness;
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: brightness == Brightness.dark
+                  ? const SystemUiOverlayStyle(
+                      statusBarColor: Colors.transparent,
+                      statusBarIconBrightness: Brightness.light,
+                      systemNavigationBarColor: Colors.transparent,
+                      systemNavigationBarIconBrightness: Brightness.light,
+                    )
+                  : const SystemUiOverlayStyle(
+                      statusBarColor: Colors.transparent,
+                      statusBarIconBrightness: Brightness.dark,
+                      systemNavigationBarColor: Colors.transparent,
+                      systemNavigationBarIconBrightness: Brightness.dark,
+                    ),
+              child: PrivacyLockGate(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
           },
         );
       },

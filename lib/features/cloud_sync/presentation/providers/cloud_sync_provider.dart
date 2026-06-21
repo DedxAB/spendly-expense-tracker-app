@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/features/cloud_sync/data/repositories/cloud_sync_repository_impl.dart';
 import 'package:spendly/features/cloud_sync/domain/entities/cloud_sync_state.dart';
+import 'package:spendly/features/cloud_sync/domain/entities/drive_backup_info.dart';
 import 'package:spendly/features/cloud_sync/domain/entities/google_profile_entity.dart';
 import 'package:spendly/features/user/data/repositories/user_profile_repository_impl.dart';
 import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
@@ -48,6 +49,16 @@ class CloudSyncController extends AsyncNotifier<CloudSyncState> {
       state = AsyncData(current.copyWith(isProcessing: false));
       rethrow;
     }
+  }
+
+  Future<DriveBackupInfo?> getBackupInfo() async {
+    final repository = ref.read(cloudSyncRepositoryProvider);
+    return repository.getBackupInfo();
+  }
+
+  Future<String?> getDeviceId() async {
+    final repository = ref.read(cloudSyncRepositoryProvider);
+    return repository.getDeviceId();
   }
 
   Future<GoogleProfileEntity?> fetchGoogleProfile() async {
