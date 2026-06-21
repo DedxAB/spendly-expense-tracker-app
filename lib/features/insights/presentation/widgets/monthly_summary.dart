@@ -56,7 +56,7 @@ class MonthlySummaryCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFFFFC857), size: 18),
+              const Icon(Icons.auto_awesome, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
               Text(
                 isYearly ? 'Year in Review' : 'Monthly Insights',

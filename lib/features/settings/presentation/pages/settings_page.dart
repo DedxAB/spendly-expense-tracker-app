@@ -959,7 +959,7 @@ class _ThemeToggleTile extends StatelessWidget {
                 color: context.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: const Icon(Icons.brightness_6, color: Color(0xFFFFC857), size: 20),
+            child: const Icon(Icons.brightness_6, color: Color(0xFFE8B830), size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -978,42 +978,49 @@ class _ThemeToggleTile extends StatelessWidget {
               ],
             ),
           ),
-          SegmentedButton<AppThemeMode>(
-            segments: const [
-              ButtonSegment(
-                value: AppThemeMode.system,
-                label: Text('Sys', style: TextStyle(fontSize: 11)),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: context.border),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _seg(context, 'Sys', currentMode == AppThemeMode.system, true, () => onChanged(AppThemeMode.system)),
+                  _seg(context, 'Light', currentMode == AppThemeMode.light, true, () => onChanged(AppThemeMode.light)),
+                  _seg(context, 'Dark', currentMode == AppThemeMode.dark, false, () => onChanged(AppThemeMode.dark)),
+                ],
               ),
-              ButtonSegment(
-                value: AppThemeMode.light,
-                label: Text('Light', style: TextStyle(fontSize: 11)),
-              ),
-              ButtonSegment(
-                value: AppThemeMode.dark,
-                label: Text('Dark', style: TextStyle(fontSize: 11)),
-              ),
-            ],
-            selected: {currentMode},
-            onSelectionChanged: (selected) => onChanged(selected.first),
-            selectedIcon: const SizedBox.shrink(),
-            style: ButtonStyle(
-              visualDensity: VisualDensity.compact,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              foregroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return Theme.of(context).colorScheme.onPrimary;
-                }
-                return context.textPrimary;
-              }),
-              backgroundColor: WidgetStateProperty.resolveWith((states) {
-                if (states.contains(WidgetState.selected)) {
-                  return Theme.of(context).colorScheme.primary;
-                }
-                return Colors.transparent;
-              }),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _seg(BuildContext ctx, String label, bool selected, bool showRightBorder, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: selected ? ctx.textPrimary : ctx.surface,
+          border: Border(
+            right: BorderSide(color: showRightBorder ? ctx.border : Colors.transparent),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? ctx.surface : ctx.textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }

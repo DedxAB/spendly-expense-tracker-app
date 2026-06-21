@@ -33,8 +33,8 @@ class AppButtonStyles {
   static ButtonStyle danger(BuildContext context) {
     return OutlinedButton.styleFrom(
       minimumSize: const Size(0, 48),
-      foregroundColor: const Color(0xFFFF9A9A),
-      side: const BorderSide(color: Color(0xFF7A2A2A)),
+      foregroundColor: const Color(0xFFF55C5C),
+      side: const BorderSide(color: Color(0xFFB83030)),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),

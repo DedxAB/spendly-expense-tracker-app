@@ -103,8 +103,6 @@ class CategoriesPage extends ConsumerWidget {
         height: 54,
         child: FloatingActionButton.extended(
           onPressed: () => _showCategoryDialog(context, ref),
-          backgroundColor: primary,
-          foregroundColor: context.textPrimary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
           icon: const Icon(AppIcons.plus, size: 18),
           label: const Text(
@@ -331,8 +329,10 @@ class _CategoryTypeSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           final isSelected = selected == item.$1;
           return Expanded(
@@ -364,6 +364,7 @@ class _CategoryTypeSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }

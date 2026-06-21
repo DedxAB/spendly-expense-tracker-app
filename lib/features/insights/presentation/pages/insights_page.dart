@@ -56,7 +56,7 @@ class InsightsPage extends ConsumerWidget {
           ),
         ),
         leading: IconButton(
-          icon: Icon(AppIcons.bell, size: 22, color: const Color(0xFFFFC857)),
+          icon: Icon(AppIcons.bell, size: 22, color: const Color(0xFFE8B830)),
           onPressed: () => context.push('/notifications'),
         ),
         leadingWidth: 56,
@@ -534,7 +534,7 @@ class _BurnRateCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.speed, color: Color(0xFFFFC857), size: 18),
+              const Icon(Icons.speed, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
               Text(isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate', style: AppTypography.sectionTitle(context)),
             ],
@@ -603,7 +603,7 @@ class _BudgetBar extends StatelessWidget {
           child: LinearProgressIndicator(
             value: pct,
             minHeight: 8,
-            color: isOver ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+            color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
             backgroundColor: context.surfaceAlt,
           ),
         ),
@@ -620,7 +620,7 @@ class _BudgetBar extends StatelessWidget {
                   ? '${Formatters.currency(remaining.abs())} over'
                   : '${Formatters.currency(remaining)} left',
               style: TextStyle(
-                color: isOver ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+                color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -631,7 +631,7 @@ class _BudgetBar extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Projected to exceed by ${Formatters.currency(projected - budget)}',
-            style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+            style: const TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
           ),
         ],
       ],
@@ -648,9 +648,9 @@ class _SummaryStrip extends StatelessWidget {
     required this.prevExpense,
   });
 
-  static const _incomeColor = Color(0xFF5BE39A);
-  static const _expenseColor = Color(0xFFFF7A7A);
-  static const _warningColor = Color(0xFFFFC857);
+  static const _incomeColor = Color(0xFF3DD07B);
+  static const _expenseColor = Color(0xFFF55C5C);
+  static const _warningColor = Color(0xFFE8B830);
 
   final double income;
   final double expense;
@@ -839,8 +839,8 @@ class _CategoryWatch extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: delta > 0
-                            ? const Color(0xFFFF7A7A).withValues(alpha: 0.15)
-                            : const Color(0xFF5BE39A).withValues(alpha: 0.15),
+                            ? const Color(0xFFF55C5C).withValues(alpha: 0.15)
+                            : const Color(0xFF3DD07B).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
@@ -849,8 +849,8 @@ class _CategoryWatch extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: delta > 0
-                              ? const Color(0xFFFF7A7A)
-                              : const Color(0xFF5BE39A),
+                              ? const Color(0xFFF55C5C)
+                              : const Color(0xFF3DD07B),
                         ),
                       ),
                     ),
@@ -917,7 +917,7 @@ class _ExportButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: const Icon(AppIcons.download, size: 18, color: Color(0xFFFFC857)),
+        icon: const Icon(AppIcons.download, size: 18, color: Color(0xFFE8B830)),
         label: Text(
           'Export PDF Report',
           style: TextStyle(
@@ -1101,14 +1101,14 @@ class _TrendChart extends StatelessWidget {
                 if (budgetPerPeriod > 0)
                   HorizontalLine(
                     y: budgetPerPeriod,
-                    color: const Color(0xFFFFC857),
+                    color: const Color(0xFFE8B830),
                     strokeWidth: 1.5,
                     dashArray: [6, 4],
                     label: HorizontalLineLabel(
                       show: true,
                       alignment: Alignment.topRight,
                       style: const TextStyle(
-                        color: Color(0xFFFFC857),
+                        color: Color(0xFFE8B830),
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1289,7 +1289,7 @@ class _TrendChart extends StatelessWidget {
     if (previous <= 0) {
       return _TrendComparison(
         text: '\u25B2 from no spend in $previousLabel',
-        color: const Color(0xFFFF6F61),
+        color: const Color(0xFFF55C5C),
       );
     }
 
@@ -1304,7 +1304,7 @@ class _TrendChart extends StatelessWidget {
     return _TrendComparison(
       text:
           '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
-      color: chg > 0 ? const Color(0xFFFF6F61) : const Color(0xFF19C37D),
+      color: chg > 0 ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
     );
   }
 
@@ -1343,7 +1343,7 @@ class _TrendArrow extends StatelessWidget {
         Icon(
           isUp ? Icons.trending_up : Icons.trending_down,
           size: 16,
-          color: isUp ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+          color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
         ),
         const SizedBox(width: 4),
         Text(
@@ -1351,7 +1351,7 @@ class _TrendArrow extends StatelessWidget {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isUp ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+            color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
           ),
         ),
       ],

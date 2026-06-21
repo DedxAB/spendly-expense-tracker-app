@@ -47,14 +47,14 @@ class NotificationsPage extends ConsumerWidget {
               title: 'Budget exceeded',
               message:
                   'You are over budget by ${Formatters.currency(summary.remainingBudget.abs())} this month.',
-              color: const Color(0xFFFF6B6B),
+              color: const Color(0xFFF55C5C),
             ),
           if (recent.isNotEmpty)
             _NoticeTile(
               title: 'Latest transaction',
               message:
                   '${recent.first.type.name == 'income' ? 'Income' : 'Expense'} of ${Formatters.currency(recent.first.amount)} added.',
-              color: const Color(0xFF57F28F),
+              color: const Color(0xFF3DD07B),
             ),
           _NoticeTile(
             title: 'Push notifications',

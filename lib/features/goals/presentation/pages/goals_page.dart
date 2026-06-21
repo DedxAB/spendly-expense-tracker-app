@@ -47,7 +47,7 @@ class GoalsPage extends ConsumerWidget {
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.bell,
-        leadingIconColor: const Color(0xFFFFC857),
+        leadingIconColor: const Color(0xFFE8B830),
         onLeadingTap: () => context.push('/notifications'),
       ),
       body: ListView(
@@ -564,7 +564,7 @@ class GoalsPage extends ConsumerWidget {
                                   },
                                   icon: const Icon(
                                     AppIcons.trash,
-                                    color: Color(0xFFFFB3A8),
+                                    color: Color(0xFFFF8A7A),
                                   ),
                                 ),
                               ],
@@ -766,13 +766,6 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
               height: 52,
               child: FilledButton(
                 onPressed: _submit,
-                style: FilledButton.styleFrom(
-                  backgroundColor: context.surface,
-                  foregroundColor: context.textPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadii.md),
-                  ),
-                ),
                 child: Text(widget.submitText),
               ),
             ),
@@ -1397,8 +1390,8 @@ style: TextStyle(
                 'Need ${Formatters.currency(requiredPerMonth)}/mo',
                 style: TextStyle(
                   color: requiredPerMonth <= goal.monthlyContribution
-                      ? const Color(0xFF57F28F)
-                      : const Color(0xFFFFB3A8),
+                      ? const Color(0xFF3DD07B)
+                      : const Color(0xFFFF8A7A),
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),

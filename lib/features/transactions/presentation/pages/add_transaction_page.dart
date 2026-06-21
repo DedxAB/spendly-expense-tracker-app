@@ -308,7 +308,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Enter a valid amount',
-                        style: TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
                       ),
                     ),
                   const SizedBox(height: 14),
@@ -361,7 +361,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Select a category',
-                        style: TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
                       ),
                     ),
                   const SizedBox(height: 22),
@@ -460,14 +460,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 54,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.surface,
-                        foregroundColor: context.textPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                        ),
-                      ),
+                    child: FilledButton(
                       onPressed: () => _save(categories),
                       child: Text(
                         widget.existing == null
@@ -525,7 +518,7 @@ class _SheetLabel extends StatelessWidget {
             child: Text(
               '*',
               style: TextStyle(
-                color: Color(0xFFFF7A7A),
+                color: Color(0xFFF55C5C),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -600,8 +593,10 @@ class _AccountSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           return Expanded(
             child: InkWell(
@@ -632,6 +627,7 @@ class _AccountSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
@@ -655,8 +651,10 @@ class _CardTypeSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           final isSelected = selected == item.$1;
           return Expanded(
@@ -688,6 +686,7 @@ class _CardTypeSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
@@ -712,8 +711,10 @@ class _TypeSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           return Expanded(
             child: InkWell(
@@ -744,6 +745,7 @@ class _TypeSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }

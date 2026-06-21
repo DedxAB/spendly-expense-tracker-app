@@ -421,7 +421,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF8AF0A0),
+                            color: Color(0xFF5DD48C),
                           ),
                         ),
                       ],
@@ -947,8 +947,10 @@ class _FilterSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(labels.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(labels.length, (index) {
           final isSelected = selectedIndex == index;
           return Expanded(
             child: InkWell(
@@ -979,6 +981,7 @@ class _FilterSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
@@ -1383,7 +1386,7 @@ class _HistoryRow extends StatelessWidget {
               fontSize: 16,
             ).copyWith(
               color: type == TransactionType.income
-                  ? const Color(0xFF5DF393)
+                  ? const Color(0xFF3DD07B)
                   : type == TransactionType.investment
                       ? const Color(0xFF8B5CF6)
                       : context.textPrimary,
@@ -1428,7 +1431,7 @@ class _AccountBreakupCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFFFB3A8),
+              color: Color(0xFFFF8A7A),
             ),
           ),
         ],

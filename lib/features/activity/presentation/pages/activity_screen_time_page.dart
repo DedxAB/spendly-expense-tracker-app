@@ -125,7 +125,7 @@ class _ScreenTimeCard extends StatelessWidget {
                 child: const Text(
                   'LIVE',
                   style: TextStyle(
-                    color: Color(0xFF57F28F),
+                    color: Color(0xFF3DD07B),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),

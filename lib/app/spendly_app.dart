@@ -285,7 +285,7 @@ class _PrivacyLockScreen extends StatelessWidget {
                 ),
                 child: const Icon(
                   AppIcons.shield,
-                  color: Color(0xFF57F28F),
+                  color: Color(0xFF3DD07B),
                   size: 34,
                 ),
               ),

@@ -71,7 +71,7 @@ class BudgetPage extends ConsumerWidget {
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.bell,
-        leadingIconColor: const Color(0xFFFFC857),
+        leadingIconColor: const Color(0xFFE8B830),
         onLeadingTap: () => context.push('/notifications'),
       ),
       body: ListView(
@@ -172,8 +172,8 @@ class BudgetPage extends ConsumerWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: safePerDay >= 0
-                                  ? const Color(0xFF59F28F)
-                                  : const Color(0xFFFFB3A8),
+                                  ? const Color(0xFF3DD07B)
+                                  : const Color(0xFFFF8A7A),
                               height: 1,
                             ),
                           ),
@@ -445,7 +445,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 Text(
                   'Total category budgets (${Formatters.currency(totalCategoryBudget)}) cannot exceed monthly budget (${Formatters.currency(monthlyBudgetValue)}).',
                   style: const TextStyle(
-                    color: Color(0xFFFFB3A8),
+                    color: Color(0xFFFF8A7A),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -527,7 +527,7 @@ class _BudgetCategoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(
-          color: overBudget ? const Color(0xFFFFB3A8) : context.border,
+          color: overBudget ? const Color(0xFFFF8A7A) : context.border,
         ),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
@@ -540,7 +540,7 @@ class _BudgetCategoryCard extends StatelessWidget {
                 child: Text(
                   name,
                   style: AppTypography.sectionTitle(context).copyWith(
-                    color: overBudget ? const Color(0xFFFFB3A8) : context.textPrimary,
+                    color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
                   ),
                 ),
               ),
@@ -550,14 +550,14 @@ class _BudgetCategoryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     letterSpacing: 1.2,
-                    color: Color(0xFFFFB3A8),
+                    color: Color(0xFFFF8A7A),
                   ),
                 ),
               const SizedBox(width: 8),
               Icon(
                 icon,
                 size: 17,
-                color: overBudget ? const Color(0xFFFFB3A8) : context.textPrimary,
+                color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
               ),
             ],
           ),
@@ -566,7 +566,7 @@ class _BudgetCategoryCard extends StatelessWidget {
             '${Formatters.currency(spend)} / ${Formatters.currency(allocated)}',
             style: TextStyle(
               color: overBudget
-                  ? const Color(0xFFFFB3A8)
+                  ? const Color(0xFFFF8A7A)
                   : context.textPrimary,
             ),
           ),
@@ -574,7 +574,7 @@ class _BudgetCategoryCard extends StatelessWidget {
           LinearProgressIndicator(
             value: ratio.clamp(0, 1.6),
             minHeight: 4,
-            color: overBudget ? const Color(0xFFFFB3A8) : context.textPrimary,
+            color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
             backgroundColor: context.border,
           ),
           const SizedBox(height: 6),
@@ -586,7 +586,7 @@ class _BudgetCategoryCard extends StatelessWidget {
                 '${remaining >= 0 ? Formatters.currency(remaining) : '-${Formatters.currency(remaining.abs())}'} ${remaining >= 0 ? 'Left' : 'Over'}',
                 style: TextStyle(
                   color: overBudget
-                      ? const Color(0xFFFFB3A8)
+                      ? const Color(0xFFFF8A7A)
                       : context.textSecondary,
                 ),
               ),

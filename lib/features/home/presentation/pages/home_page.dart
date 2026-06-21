@@ -51,8 +51,6 @@ class HomePage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
-        backgroundColor: context.surface,
-        foregroundColor: context.textPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
         child: const Icon(AppIcons.plus, size: 28),
       ),
@@ -112,7 +110,7 @@ class HomePage extends ConsumerWidget {
                     return 'of ${Formatters.currency(data.remainingBudget + data.monthlyExpense)} limit';
                   }(),
                   active: true,
-                  noteColor: const Color(0xFF57F28F),
+                  noteColor: const Color(0xFF3DD07B),
                 ),
               ),
             ],
@@ -329,13 +327,13 @@ class HomePage extends ConsumerWidget {
     if (today <= 0) {
       return const _SpendComparison(
         label: 'No spend today',
-        color: Color(0xFF57F28F),
+        color: Color(0xFF3DD07B),
       );
     }
     if (yesterday <= 0) {
       return const _SpendComparison(
         label: 'No spend yesterday',
-        color: Color(0xFFFF6B6B),
+        color: Color(0xFFF55C5C),
       );
     }
 
@@ -351,7 +349,7 @@ class HomePage extends ConsumerWidget {
     return _SpendComparison(
       label:
           '${isHigher ? '+' : '-'}${change.abs().toStringAsFixed(0)}% vs yesterday',
-      color: isHigher ? const Color(0xFFFF6B6B) : const Color(0xFF57F28F),
+      color: isHigher ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
     );
   }
 }
@@ -469,7 +467,7 @@ class _TransactionRow extends StatelessWidget {
               context,
               fontSize: 20,
               color: type == TransactionType.income
-                  ? const Color(0xFF57F28F)
+                  ? const Color(0xFF3DD07B)
                   : type == TransactionType.investment
                       ? const Color(0xFF8B5CF6)
                       : context.textPrimary,
@@ -531,7 +529,7 @@ class _LendQuickCard extends StatelessWidget {
                   child: _LendMetric(
                     label: 'You Receive',
                     value: Formatters.currency(toReceive),
-                    valueColor: const Color(0xFF57F28F),
+                    valueColor: const Color(0xFF3DD07B),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -539,7 +537,7 @@ class _LendQuickCard extends StatelessWidget {
                   child: _LendMetric(
                     label: 'You Owe',
                     value: Formatters.currency(toPay),
-                    valueColor: const Color(0xFFFF6B6B),
+                    valueColor: const Color(0xFFF55C5C),
                   ),
                 ),
               ],

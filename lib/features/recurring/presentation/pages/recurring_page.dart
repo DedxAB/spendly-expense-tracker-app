@@ -96,7 +96,7 @@ class RecurringPage extends ConsumerWidget {
                           child: Text(
                             'Title is required',
                             style: TextStyle(
-                              color: const Color(0xFFFF7A7A),
+                              color: const Color(0xFFF55C5C),
                               fontSize: 11,
                             ),
                           ),
@@ -124,7 +124,7 @@ class RecurringPage extends ConsumerWidget {
                           child: Text(
                             'Amount is required',
                             style: TextStyle(
-                              color: const Color(0xFFFF7A7A),
+                              color: const Color(0xFFF55C5C),
                               fontSize: 11,
                             ),
                           ),
@@ -484,7 +484,7 @@ class RecurringPage extends ConsumerWidget {
                                                       decoration: BoxDecoration(
                                                         border: Border.all(
                                                           color: const Color(
-                                                              0xFFFFB3A8),
+                                                              0xFFFF8A7A),
                                                         ),
                                                         borderRadius: BorderRadius.circular(AppRadii.sm),
                                                       ),
@@ -492,7 +492,7 @@ class RecurringPage extends ConsumerWidget {
                                                         'DUE',
                                                         style: TextStyle(
                                                           color:
-                                                              Color(0xFFFFB3A8),
+                                                              Color(0xFFFF8A7A),
                                                           fontSize: 10,
                                                           fontWeight:
                                                               FontWeight.w800,
@@ -582,8 +582,10 @@ class _PaymentModeSegment extends StatelessWidget {
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           final isSelected = selected == item.$1;
           return Expanded(
@@ -615,6 +617,7 @@ class _PaymentModeSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
@@ -642,7 +645,7 @@ class _ModalFieldLabel extends StatelessWidget {
           Text(
             ' *',
             style: TextStyle(
-              color: const Color(0xFFFF7A7A),
+              color: const Color(0xFFF55C5C),
               fontSize: 14,
               fontWeight: FontWeight.w700,
             ),

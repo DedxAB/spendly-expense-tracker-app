@@ -147,10 +147,10 @@ class AppIcons {
     final name = label?.toLowerCase() ?? '';
 
     if (icon == AppIcons.bell || name.contains('notification')) {
-      return _iconFor(brightness, const Color(0xFFD4A017), const Color(0xFFFFC857));
+      return _iconFor(brightness, const Color(0xFFD4A017), const Color(0xFFE8B830));
     }
     if (icon == AppIcons.shield) {
-      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF3DD07B));
     }
     if (icon == AppIcons.money ||
         name.contains('salary') ||
@@ -159,7 +159,7 @@ class AppIcons {
         name.contains('business') ||
         name.contains('transfer') ||
         name.contains('work')) {
-      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF3DD07B));
     }
     if (icon == AppIcons.health ||
         name.contains('health') ||
@@ -168,7 +168,7 @@ class AppIcons {
         name.contains('gym') ||
         name.contains('workout') ||
         name.contains('fitness')) {
-      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFFF7A7A));
+      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFFF5C5C));
     }
     if (icon == AppIcons.car ||
         icon == AppIcons.flight ||
@@ -180,13 +180,13 @@ class AppIcons {
         name.contains('travel') ||
         name.contains('flight') ||
         name.contains('trip')) {
-      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFF5C35C));
+      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFE8A830));
     }
     if (icon == AppIcons.food ||
         name.contains('food') ||
         name.contains('dining') ||
         name.contains('restaurant')) {
-      return _iconFor(brightness, const Color(0xFFE6732A), const Color(0xFFFF9A57));
+      return _iconFor(brightness, const Color(0xFFE6732A), const Color(0xFFF5873A));
     }
     if (icon == AppIcons.bag ||
         name.contains('shopping') ||
@@ -194,7 +194,7 @@ class AppIcons {
         name.contains('store') ||
         name.contains('bag') ||
         name.contains('grocery')) {
-      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFFB58CFF));
+      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFF9C6ADE));
     }
     if (icon == AppIcons.receipt ||
         name.contains('bill') ||
@@ -202,46 +202,46 @@ class AppIcons {
         name.contains('electric') ||
         name.contains('receipt') ||
         name.contains('util')) {
-      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF6B7FD4));
     }
     if (icon == AppIcons.home ||
         name.contains('rent') ||
         name.contains('home') ||
         name.contains('house')) {
-      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF8BC8FF));
+      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF5A9FDB));
     }
     if (icon == AppIcons.categories) {
-      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF82B1FF));
+      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF5A91E6));
     }
     if (icon == AppIcons.history) {
       return _iconHistory(brightness);
     }
     if (icon == AppIcons.analytics) {
-      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF6B7FD4));
     }
     if (icon == AppIcons.budget) {
-      return _iconFor(brightness, const Color(0xFF1FB85F), const Color(0xFF57F28F));
+      return _iconFor(brightness, const Color(0xFF1FB85F), const Color(0xFF3DD07B));
     }
     if (icon == AppIcons.goals) {
-      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFFB58CFF));
+      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFF9C6ADE));
     }
     if (icon == AppIcons.repeat) {
-      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF6B7FD4));
     }
     if (icon == AppIcons.download) {
-      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF8BC8FF));
+      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF5A9FDB));
     }
     if (icon == AppIcons.upload) {
-      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFF5C35C));
+      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFE8A830));
     }
     if (icon == AppIcons.personAdd || icon == AppIcons.user) {
-      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF82B1FF));
+      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF5A91E6));
     }
     if (icon == AppIcons.edit) {
-      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF3DD07B));
     }
     if (icon == AppIcons.trash) {
-      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFFF8D8D));
+      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFF56B6B));
     }
     if (icon == AppIcons.chevronLeft || icon == AppIcons.chevronRight) {
       return _iconChevron(brightness);
