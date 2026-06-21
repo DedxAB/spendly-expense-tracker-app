@@ -4,6 +4,16 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 
+Color _iconDefault(Brightness b) =>
+    b == Brightness.dark ? const Color(0xFFE0E0E0) : const Color(0xFF333333);
+Color _iconChevron(Brightness b) =>
+    b == Brightness.dark ? const Color(0xFFE8E8E8) : const Color(0xFF222222);
+Color _iconHistory(Brightness b) =>
+    b == Brightness.dark ? const Color(0xFFD4D4D4) : const Color(0xFF444444);
+
+Color _iconFor(Brightness b, Color light, Color dark) =>
+    b == Brightness.light ? light : dark;
+
 class AppIcons {
   const AppIcons._();
 
@@ -118,11 +128,13 @@ class AppIcons {
   static Color getColorForCategory(
     String categoryName, [
     TransactionType? type,
+    Brightness brightness = Brightness.dark,
   ]) {
     return getColorForIcon(
       getIconForCategory(categoryName, type),
       label: categoryName,
       type: type,
+      brightness: brightness,
     );
   }
 
@@ -130,14 +142,15 @@ class AppIcons {
     IconData icon, {
     String? label,
     TransactionType? type,
+    Brightness brightness = Brightness.dark,
   }) {
     final name = label?.toLowerCase() ?? '';
 
     if (icon == AppIcons.bell || name.contains('notification')) {
-      return const Color(0xFFFFC857);
+      return _iconFor(brightness, const Color(0xFFD4A017), const Color(0xFFFFC857));
     }
     if (icon == AppIcons.shield) {
-      return const Color(0xFF57C98B);
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
     }
     if (icon == AppIcons.money ||
         name.contains('salary') ||
@@ -146,7 +159,7 @@ class AppIcons {
         name.contains('business') ||
         name.contains('transfer') ||
         name.contains('work')) {
-      return const Color(0xFF57C98B);
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
     }
     if (icon == AppIcons.health ||
         name.contains('health') ||
@@ -155,7 +168,7 @@ class AppIcons {
         name.contains('gym') ||
         name.contains('workout') ||
         name.contains('fitness')) {
-      return const Color(0xFFFF7A7A);
+      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFFF7A7A));
     }
     if (icon == AppIcons.car ||
         icon == AppIcons.flight ||
@@ -167,13 +180,13 @@ class AppIcons {
         name.contains('travel') ||
         name.contains('flight') ||
         name.contains('trip')) {
-      return const Color(0xFFF5C35C);
+      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFF5C35C));
     }
     if (icon == AppIcons.food ||
         name.contains('food') ||
         name.contains('dining') ||
         name.contains('restaurant')) {
-      return const Color(0xFFFF9A57);
+      return _iconFor(brightness, const Color(0xFFE6732A), const Color(0xFFFF9A57));
     }
     if (icon == AppIcons.bag ||
         name.contains('shopping') ||
@@ -181,7 +194,7 @@ class AppIcons {
         name.contains('store') ||
         name.contains('bag') ||
         name.contains('grocery')) {
-      return const Color(0xFFB58CFF);
+      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFFB58CFF));
     }
     if (icon == AppIcons.receipt ||
         name.contains('bill') ||
@@ -189,49 +202,49 @@ class AppIcons {
         name.contains('electric') ||
         name.contains('receipt') ||
         name.contains('util')) {
-      return const Color(0xFF8EA0FF);
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
     }
     if (icon == AppIcons.home ||
         name.contains('rent') ||
         name.contains('home') ||
         name.contains('house')) {
-      return const Color(0xFF8BC8FF);
+      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF8BC8FF));
     }
     if (icon == AppIcons.categories) {
-      return const Color(0xFF82B1FF);
+      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF82B1FF));
     }
     if (icon == AppIcons.history) {
-      return const Color(0xFFBDBDBD);
+      return _iconHistory(brightness);
     }
     if (icon == AppIcons.analytics) {
-      return const Color(0xFF8EA0FF);
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
     }
     if (icon == AppIcons.budget) {
-      return const Color(0xFF57F28F);
+      return _iconFor(brightness, const Color(0xFF1FB85F), const Color(0xFF57F28F));
     }
     if (icon == AppIcons.goals) {
-      return const Color(0xFFB58CFF);
+      return _iconFor(brightness, const Color(0xFF8853D6), const Color(0xFFB58CFF));
     }
     if (icon == AppIcons.repeat) {
-      return const Color(0xFF8EA0FF);
+      return _iconFor(brightness, const Color(0xFF5566C4), const Color(0xFF8EA0FF));
     }
     if (icon == AppIcons.download) {
-      return const Color(0xFF8BC8FF);
+      return _iconFor(brightness, const Color(0xFF3D8BC4), const Color(0xFF8BC8FF));
     }
     if (icon == AppIcons.upload) {
-      return const Color(0xFFF5C35C);
+      return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFF5C35C));
     }
     if (icon == AppIcons.personAdd || icon == AppIcons.user) {
-      return const Color(0xFF82B1FF);
+      return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF82B1FF));
     }
     if (icon == AppIcons.edit) {
-      return const Color(0xFF57C98B);
+      return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF57C98B));
     }
     if (icon == AppIcons.trash) {
-      return const Color(0xFFFF8D8D);
+      return _iconFor(brightness, const Color(0xFFD94545), const Color(0xFFFF8D8D));
     }
     if (icon == AppIcons.chevronLeft || icon == AppIcons.chevronRight) {
-      return const Color(0xFFD0D0D0);
+      return _iconChevron(brightness);
     }
     if (type == TransactionType.income) {
       return AppColors.income;
@@ -242,6 +255,6 @@ class AppIcons {
     if (type == TransactionType.investment) {
       return const Color(0xFF8B5CF6);
     }
-    return const Color(0xFFCFCFCF);
+    return _iconDefault(brightness);
   }
 }

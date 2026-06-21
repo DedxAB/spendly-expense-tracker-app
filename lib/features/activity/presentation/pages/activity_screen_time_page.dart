@@ -36,9 +36,9 @@ class ActivityScreenTimePage extends ConsumerWidget {
             style: AppTypography.screenTitle(context),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Audit logs and app usage for your recent Spendly activity.',
-            style: TextStyle(color: Color(0xFFB5B5B5), fontSize: 14),
+            style: TextStyle(color: context.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: AppSpacing.md),
           usage.when(
@@ -58,11 +58,11 @@ class ActivityScreenTimePage extends ConsumerWidget {
           events.when(
             data: (items) {
               if (items.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.only(top: 24),
+                return Padding(
+                  padding: const EdgeInsets.only(top: 24),
                   child: Text(
                     'No recent activity yet',
-                    style: TextStyle(color: Color(0xFF8F8F8F)),
+                    style: TextStyle(color: context.textSecondary),
                   ),
                 );
               }
@@ -101,8 +101,8 @@ class _ScreenTimeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -179,13 +179,13 @@ class _ScreenTimeMetricCard extends StatelessWidget {
     required this.label,
     required this.value,
     required this.caption,
-    this.valueColor = Colors.white,
+    this.valueColor,
   });
 
   final String label;
   final String value;
   final String caption;
-  final Color valueColor;
+  final Color? valueColor;
 
   @override
   Widget build(BuildContext context) {
@@ -193,8 +193,8 @@ class _ScreenTimeMetricCard extends StatelessWidget {
       height: 118,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF090909),
-        border: Border.all(color: const Color(0xFF252525)),
+        color: context.surfaceAlt,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -202,8 +202,8 @@ class _ScreenTimeMetricCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF9D9D9D),
+            style: TextStyle(
+              color: context.textSecondary,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.8,
@@ -215,7 +215,7 @@ class _ScreenTimeMetricCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: valueColor,
+              color: valueColor ?? context.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -225,7 +225,7 @@ class _ScreenTimeMetricCard extends StatelessWidget {
             caption.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF9D9D9D), fontSize: 10),
+            style: TextStyle(color: context.textSecondary, fontSize: 10),
           ),
         ],
       ),
@@ -242,8 +242,8 @@ class _ActivityEventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.borderDark)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.border)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,9 +256,9 @@ class _ActivityEventRow extends StatelessWidget {
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.textPrimary,
                 borderRadius: BorderRadius.circular(AppRadii.pill),
-                border: Border.all(color: const Color(0xFF4A4A4A)),
+                border: Border.all(color: context.border),
               ),
             ),
           ),
@@ -269,8 +269,8 @@ class _ActivityEventRow extends StatelessWidget {
               children: [
                 Text(
                   event.title.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                   ),
@@ -278,8 +278,8 @@ class _ActivityEventRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   event.description,
-                  style: const TextStyle(
-                    color: Color(0xFFBDBDBD),
+                  style: TextStyle(
+                    color: context.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -290,8 +290,8 @@ class _ActivityEventRow extends StatelessWidget {
           Text(
             _timeLabel(event.occurredAt),
             textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Color(0xFF777777),
+            style: TextStyle(
+              color: context.textSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w700,
             ),

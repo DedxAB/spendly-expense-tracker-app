@@ -53,7 +53,7 @@ class LendPage extends ConsumerWidget {
     final overview = ref.watch(lendOverviewProvider);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.chevronLeft,
@@ -107,8 +107,8 @@ class LendPage extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0E0E0E),
-                  border: Border.all(color: AppColors.borderDark),
+                  color: context.surface,
+                  border: Border.all(color: context.border),
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Column(
@@ -145,8 +145,8 @@ class LendPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0E0E0E),
-                    border: Border.all(color: AppColors.borderDark),
+                    color: context.surface,
+                    border: Border.all(color: context.border),
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Text(
@@ -231,8 +231,8 @@ class LendPage extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0E0E0E),
-                          border: Border.all(color: AppColors.borderDark),
+                          color: context.surface,
+                          border: Border.all(color: context.border),
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
                         child: Row(
@@ -242,7 +242,7 @@ class LendPage extends ConsumerWidget {
                               height: 44,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A1A),
+                                color: context.surfaceAlt,
                                 borderRadius: BorderRadius.circular(
                                   AppRadii.md,
                                 ),
@@ -276,10 +276,10 @@ class LendPage extends ConsumerWidget {
                                   const SizedBox(height: 4),
                                   Text(
                                     '${item.activeEntryCount} active entries',
-                                    style: const TextStyle(
-                                      color: Color(0xFFB5B5B5),
-                                      fontSize: 12,
-                                    ),
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 12,
+                  ),
                                   ),
                                 ],
                               ),
@@ -296,10 +296,10 @@ class LendPage extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(
+                            Icon(
                               AppIcons.chevronRight,
                               size: 20,
-                              color: Color(0xFF8E8E8E),
+                              color: context.textSecondary,
                             ),
                           ],
                         ),

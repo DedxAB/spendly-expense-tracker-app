@@ -28,9 +28,9 @@ class GoalsPage extends ConsumerWidget {
     final goals = goalsAsync.valueOrNull ?? const <GoalItem>[];
     final hasAnyGoalData = emergencyFunds.isNotEmpty || goals.isNotEmpty;
     if (emergency == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: context.background,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
     final emergencyCards = emergencyFunds;
@@ -43,7 +43,7 @@ class GoalsPage extends ConsumerWidget {
         : goals.reduce((a, b) => a.targetDate.isBefore(b.targetDate) ? a : b);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.bell,
@@ -75,7 +75,7 @@ class GoalsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Divider(color: AppColors.borderDark, height: 1),
+          Divider(color: context.border, height: 1),
           const SizedBox(height: 12),
           ...emergencyCards.asMap().entries.map(
             (entry) => Padding(
@@ -104,15 +104,15 @@ class GoalsPage extends ConsumerWidget {
                 },
                 background: Container(
                   alignment: Alignment.centerLeft,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.surfaceAlt,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Icon(AppIcons.edit, color: Colors.white),
+                  child: Icon(AppIcons.edit, color: context.textPrimary),
                 ),
                 secondaryBackground: Container(
                   alignment: Alignment.centerRight,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.surfaceAlt,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Icon(AppIcons.trash, color: Colors.white),
+                  child: Icon(AppIcons.trash, color: context.textPrimary),
                 ),
                 child: _EmergencyFundCard(
                   emergency: entry.value,
@@ -211,7 +211,7 @@ class GoalsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Divider(color: AppColors.borderDark, height: 1),
+          Divider(color: context.border, height: 1),
           const SizedBox(height: 14),
           if (urgentGoal != null)
             _UrgencyStrip(goal: urgentGoal)
@@ -241,15 +241,15 @@ class GoalsPage extends ConsumerWidget {
                 },
                 background: Container(
                   alignment: Alignment.centerLeft,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.surfaceAlt,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Icon(AppIcons.edit, color: Colors.white),
+                  child: Icon(AppIcons.edit, color: context.textPrimary),
                 ),
                 secondaryBackground: Container(
                   alignment: Alignment.centerRight,
-                  color: const Color(0xFF1A1A1A),
+                  color: context.surfaceAlt,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Icon(AppIcons.trash, color: Colors.white),
+                  child: Icon(AppIcons.trash, color: context.textPrimary),
                 ),
                 child: _GoalCard(
                   goal: goal,
@@ -314,8 +314,8 @@ class GoalsPage extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0E0E0E),
-                  border: Border.all(color: const Color(0xFF242424)),
+                  color: context.surface,
+                  border: Border.all(color: context.border),
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Row(
@@ -352,7 +352,7 @@ class GoalsPage extends ConsumerWidget {
   ) async {
     final draft = await showModalBottomSheet<_GoalDraft>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: context.surface,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => const _CreateGoalSheet(),
@@ -376,7 +376,7 @@ class GoalsPage extends ConsumerWidget {
   ) async {
     final draft = await showModalBottomSheet<_GoalDraft>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: context.surface,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => _CreateGoalSheet(
@@ -411,7 +411,7 @@ class GoalsPage extends ConsumerWidget {
   ) async {
     final draft = await showModalBottomSheet<_EmergencyFundDraft>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: context.surface,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => const _CreateEmergencyFundSheet(),
@@ -433,7 +433,7 @@ class GoalsPage extends ConsumerWidget {
   ) async {
     final draft = await showModalBottomSheet<_EmergencyFundDraft>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: context.surface,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) => _CreateEmergencyFundSheet(
@@ -512,7 +512,7 @@ class GoalsPage extends ConsumerWidget {
   ) async {
     await showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.darkSurface,
+      backgroundColor: context.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
       builder: (ctx) {
         return Consumer(
@@ -540,7 +540,7 @@ class GoalsPage extends ConsumerWidget {
                         return ListView.separated(
                           itemCount: items.length,
                           separatorBuilder: (_, __) =>
-                              const Divider(color: AppColors.borderDark),
+                              Divider(color: context.border),
                           itemBuilder: (_, index) {
                             final item = items[index];
                             return Row(
@@ -548,7 +548,7 @@ class GoalsPage extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     '${Formatters.currency(item.amount)} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
-                                    style: const TextStyle(color: Colors.white),
+                                    style: TextStyle(color: context.textPrimary),
                                   ),
                                 ),
                                 IconButton(
@@ -750,13 +750,13 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 alignment: Alignment.centerLeft,
                 decoration: BoxDecoration(
-                  color: AppColors.darkSurface,
-                  border: Border.all(color: AppColors.borderDark),
+                  color: context.surface,
+                  border: Border.all(color: context.border),
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Text(
                   'Target date: ${DateFormat('d MMM yyyy').format(_targetDate)}',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: context.textPrimary),
                 ),
               ),
             ),
@@ -767,8 +767,8 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
               child: FilledButton(
                 onPressed: _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
+                  backgroundColor: context.surface,
+                  foregroundColor: context.textPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
@@ -981,8 +981,8 @@ class _EmergencyFundCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8E8E8),
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -990,8 +990,8 @@ class _EmergencyFundCard extends StatelessWidget {
         children: [
           Text(
             'PRIMARY LIQUIDITY / ${liquidityIndex.toString().padLeft(2, '0')}',
-            style: const TextStyle(
-              color: Colors.black54,
+            style: TextStyle(
+              color: context.textPrimary.withValues(alpha: 0.54),
               fontSize: 11,
               letterSpacing: 4,
               fontWeight: FontWeight.w700,
@@ -1002,18 +1002,18 @@ class _EmergencyFundCard extends StatelessWidget {
             emergency.title.trim().isEmpty ? 'EMERGENCY FUND' : emergency.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.black,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 50,
               height: 0.9,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'CURRENT STATUS',
             style: TextStyle(
-              color: Colors.black54,
+              color: context.textPrimary.withValues(alpha: 0.54),
               fontSize: 11,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w700,
@@ -1031,8 +1031,8 @@ class _EmergencyFundCard extends StatelessWidget {
                     child: Text(
                       Formatters.currency(emergency.currentAmount),
                       maxLines: 1,
-                      style: const TextStyle(
-                        color: Colors.black,
+                      style: TextStyle(
+                        color: context.textPrimary,
                         fontSize: 40,
                         fontWeight: FontWeight.w900,
                         height: 1,
@@ -1046,8 +1046,8 @@ class _EmergencyFundCard extends StatelessWidget {
                   child: Text(
                     '${(progress * 100).toStringAsFixed(1)}%',
                     maxLines: 1,
-                    style: const TextStyle(
-                      color: Colors.black87,
+                    style: TextStyle(
+                      color: context.textPrimary.withValues(alpha: 0.87),
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1059,24 +1059,24 @@ class _EmergencyFundCard extends StatelessWidget {
           const SizedBox(height: 16),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: const Color(0xFFD2D2D2),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
+            backgroundColor: context.textSecondary,
+            valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
             minHeight: 14,
             borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 16),
           Text(
             'Coverage: ${emergency.monthsCovered.toStringAsFixed(1)} months | Updated ${DateFormat('d MMM, HH:mm').format(emergency.lastUpdated)}',
-            style: const TextStyle(
-              color: Colors.black87,
+            style: TextStyle(
+              color: context.textPrimary.withValues(alpha: 0.87),
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             'Target: ${Formatters.currency(emergency.targetAmount)}',
-            style: const TextStyle(
-              color: Colors.black54,
+            style: TextStyle(
+              color: context.textPrimary.withValues(alpha: 0.54),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -1089,16 +1089,16 @@ class _EmergencyFundCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onAddFunds,
-                    icon: const Icon(AppIcons.plus, color: Colors.black),
-                    label: const Text(
+                    icon: Icon(AppIcons.plus, color: context.textPrimary),
+                    label: Text(
                       'Add Funds',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: context.textPrimary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.black87),
+                      side: BorderSide(color: context.textPrimary.withValues(alpha: 0.87)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
@@ -1109,16 +1109,16 @@ class _EmergencyFundCard extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: onRemoveFunds,
-                    icon: const Icon(Icons.remove, color: Colors.black),
-                    label: const Text(
+                    icon: Icon(Icons.remove, color: context.textPrimary),
+                    label: Text(
                       'Remove',
                       style: TextStyle(
-                        color: Colors.black,
+                        color: context.textPrimary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.black87),
+                      side: BorderSide(color: context.textPrimary.withValues(alpha: 0.87)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
@@ -1135,7 +1135,7 @@ class _EmergencyFundCard extends StatelessWidget {
                 const Spacer(),
                 TextButton(
                   onPressed: onHistory,
-                  style: TextButton.styleFrom(foregroundColor: Colors.black),
+                  style: TextButton.styleFrom(foregroundColor: context.textPrimary),
                   child: const Text('History'),
                 ),
               ],
@@ -1169,8 +1169,8 @@ class _AggregateInsightCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1190,24 +1190,25 @@ class _AggregateInsightCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Target ${Formatters.currency(totalTarget)}',
-            style: const TextStyle(color: Color(0xFFB0B0B0)),
+            style: TextStyle(color: context.textSecondary),
           ),
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: progress,
             minHeight: 8,
-            backgroundColor: const Color(0xFF181818),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            backgroundColor: context.surfaceAlt,
+            valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
             borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: _tinyMetric('On Track', '$onTrackCount / $goalCount'),
+                child: _tinyMetric(context, 'On Track', '$onTrackCount / $goalCount'),
               ),
               Expanded(
                 child: _tinyMetric(
+                  context,
                   'Monthly Commit',
                   Formatters.currency(monthlyCommitment),
                 ),
@@ -1215,23 +1216,23 @@ class _AggregateInsightCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Aggregate performance = combined progress across all emergency funds and goals.',
-            style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+            style: TextStyle(color: context.textSecondary, fontSize: 12),
           ),
         ],
       ),
     );
   }
 
-  Widget _tinyMetric(String label, String value) {
+  Widget _tinyMetric(BuildContext context, String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF8F8F8F),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 11,
             letterSpacing: 1.1,
           ),
@@ -1239,8 +1240,8 @@ class _AggregateInsightCard extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.textPrimary,
             fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
@@ -1261,19 +1262,19 @@ class _UrgencyStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         children: [
-          const Icon(AppIcons.calendar, color: Colors.white, size: 16),
+          Icon(AppIcons.calendar, color: context.textPrimary, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Nearest deadline: ${goal.title} in ${daysLeft <= 0 ? '0' : daysLeft} days',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: context.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1304,8 +1305,8 @@ class _GoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.darkSurface,
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1313,12 +1314,12 @@ class _GoalCard extends StatelessWidget {
         children: [
           Text(
             goal.category.toUpperCase(),
-            style: const TextStyle(
-              color: Color(0xFF868686),
-              letterSpacing: 3,
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-            ),
+  style: TextStyle(
+    color: context.textSecondary,
+    letterSpacing: 3,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+  ),
           ),
           const SizedBox(height: 8),
           Row(
@@ -1329,16 +1330,16 @@ class _GoalCard extends StatelessWidget {
                   style: AppTypography.sectionTitle(context),
                 ),
               ),
-              InkWell(
+                  InkWell(
                 onTap: onQuickAdd,
                 child: Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderDark),
+                    border: Border.all(color: context.border),
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
-                  child: const Icon(AppIcons.plus, color: Colors.white),
+                  child: Icon(AppIcons.plus, color: context.textPrimary),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1348,10 +1349,10 @@ class _GoalCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.borderDark),
+                    border: Border.all(color: context.border),
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
-                  child: const Icon(Icons.remove, color: Colors.white),
+                  child: Icon(Icons.remove, color: context.textPrimary),
                 ),
               ),
             ],
@@ -1361,18 +1362,18 @@ class _GoalCard extends StatelessWidget {
             children: [
               Text(
                 '${Formatters.currency(goal.savedAmount)} / ${Formatters.currency(goal.targetAmount)}',
-                style: const TextStyle(
-                  color: Color(0xFFD8D8D8),
-                  fontWeight: FontWeight.w700,
-                ),
+style: TextStyle(
+  color: context.textSecondary,
+  fontWeight: FontWeight.w700,
+),
               ),
               const Spacer(),
               Text(
                 '${(goal.progress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(
-                  color: Color(0xFFBDBDBD),
-                  fontWeight: FontWeight.w700,
-                ),
+    style: TextStyle(
+      color: context.textSecondary,
+      fontWeight: FontWeight.w700,
+    ),
               ),
             ],
           ),
@@ -1380,8 +1381,8 @@ class _GoalCard extends StatelessWidget {
           LinearProgressIndicator(
             value: goal.progress,
             minHeight: 6,
-            backgroundColor: const Color(0xFF181818),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            backgroundColor: context.surfaceAlt,
+            valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
             borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
@@ -1389,7 +1390,7 @@ class _GoalCard extends StatelessWidget {
             children: [
               Text(
                 _formatTimeline(remainingDays),
-                style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+                style: TextStyle(color: context.textSecondary, fontSize: 12),
               ),
               const Spacer(),
               Text(
@@ -1433,33 +1434,33 @@ class _CreateGoalCard extends StatelessWidget {
       child: Container(
         height: 220,
         decoration: BoxDecoration(
-          color: AppColors.darkSurface,
-          border: Border.all(color: AppColors.borderDark),
+          color: context.surface,
+          border: Border.all(color: context.border),
           borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Stack(
           fit: StackFit.expand,
-          children: const [
-            CustomPaint(painter: _DotGridPainter()),
+          children: [
+            CustomPaint(painter: _DotGridPainter(color: context.border)),
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(AppIcons.plus, size: 46, color: Color(0xFF5A5A5A)),
-                  SizedBox(height: 12),
+                  Icon(AppIcons.plus, size: 46, color: context.textSecondary),
+                  const SizedBox(height: 12),
                   Text(
                     'CREATE GOAL',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.textPrimary,
                       fontSize: 34,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Expand your financial infrastructure',
                     style: TextStyle(
-                      color: Color(0xFF787878),
+                      color: context.textSecondary,
                       letterSpacing: 2.2,
                       fontSize: 11,
                     ),
@@ -1475,13 +1476,15 @@ class _CreateGoalCard extends StatelessWidget {
 }
 
 class _DotGridPainter extends CustomPainter {
-  const _DotGridPainter();
+  const _DotGridPainter({required this.color});
+
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     const spacing = 16.0;
     const radius = 2.0;
-    final paint = Paint()..color = const Color(0xFF1B1B1B);
+    final paint = Paint()..color = color;
 
     for (double y = spacing / 2; y < size.height; y += spacing) {
       for (double x = spacing / 2; x < size.width; x += spacing) {
@@ -1516,7 +1519,7 @@ class _GoalTextField extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(color: Color(0xFFB2B2B2), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
             if (required)
               const Text(' *', style: TextStyle(color: Colors.red)),
@@ -1528,22 +1531,22 @@ class _GoalTextField extends StatelessWidget {
           keyboardType: numeric
               ? const TextInputType.numberWithOptions(decimal: true)
               : TextInputType.text,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: context.textPrimary),
           decoration: InputDecoration(
             isDense: true,
             filled: true,
-            fillColor: AppColors.darkSurface,
+            fillColor: context.surfaceAlt,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: AppColors.borderDark),
+              borderSide: BorderSide(color: context.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: AppColors.borderDark),
+              borderSide: BorderSide(color: context.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: AppColors.borderDark),
+              borderSide: BorderSide(color: context.border),
             ),
           ),
         ),

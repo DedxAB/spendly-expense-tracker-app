@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/theme/app_icons.dart';
-import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
@@ -49,33 +48,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       initialDate: initialDate,
       firstDate: DateTime(2000),
       lastDate: DateTime.now().add(const Duration(days: 3650)),
-      builder: (context, child) {
-        final base = Theme.of(context);
-        return Theme(
-          data: base.copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.white,
-              onPrimary: Colors.black,
-              surface: Color(0xFF0E0E0E),
-              onSurface: Colors.white,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: Color(0xFF0E0E0E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            ),
-            datePickerTheme: AppDatePickerTheme.darkBoxy(),
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                ),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      builder: (context, child) => child!,
     );
   }
 
@@ -93,35 +66,7 @@ class LendPersonDetailPage extends ConsumerWidget {
 
     await showDialog<void>(
       context: context,
-      builder: (_) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            filled: false,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: Color(0xFF2E2E2E)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: Color(0xFF2E2E2E)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide(color: Color(0xFFE0E0E0)),
-            ),
-          ),
-          dialogTheme: DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
-        ),
-        child: StatefulBuilder(
+      builder: (_) => StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: const Text('Settle Amount'),
             content: SizedBox(
@@ -194,7 +139,6 @@ class LendPersonDetailPage extends ConsumerWidget {
             ],
           ),
         ),
-      ),
     );
   }
 
@@ -215,57 +159,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     try {
       await showDialog<void>(
         context: context,
-        builder: (_) => Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.white,
-              onPrimary: Colors.black,
-              surface: Color(0xFF0E0E0E),
-              onSurface: Colors.white,
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: false,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.md),
-                borderSide: BorderSide(color: Color(0xFF2E2E2E)),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.md),
-                borderSide: BorderSide(color: Color(0xFF2E2E2E)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadii.md),
-                borderSide: BorderSide(color: Color(0xFFBDBDBD)),
-              ),
-            ),
-            dialogTheme: DialogThemeData(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-              backgroundColor: Color(0xFF0E0E0E),
-            ),
-            segmentedButtonTheme: SegmentedButtonThemeData(
-              style: ButtonStyle(
-                side: const WidgetStatePropertyAll(
-                  BorderSide(color: Color(0xFF4A4A4A)),
-                ),
-                shape: WidgetStatePropertyAll(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
-                ),
-                foregroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return Colors.black;
-                  }
-                  return Colors.white;
-                }),
-                backgroundColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return Colors.white;
-                  }
-                  return Colors.black;
-                }),
-              ),
-            ),
-          ),
-          child: StatefulBuilder(
+        builder: (_) => StatefulBuilder(
             builder: (context, setState) => AlertDialog(
               title: Text(
                 isEditing ? 'Edit Entry' : 'Add Entry',
@@ -343,36 +237,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                             lastDate: DateTime.now().add(
                               const Duration(days: 3650),
                             ),
-                            builder: (context, child) {
-                              final base = Theme.of(context);
-                              return Theme(
-                                data: base.copyWith(
-                                  colorScheme: const ColorScheme.dark(
-                                    primary: Colors.white,
-                                    onPrimary: Colors.black,
-                                    surface: Color(0xFF0E0E0E),
-                                    onSurface: Colors.white,
-                                  ),
-                                  dialogTheme: DialogThemeData(
-                                    backgroundColor: Color(0xFF0E0E0E),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(AppRadii.lg),
-                                    ),
-                                  ),
-                                  datePickerTheme:
-                                      AppDatePickerTheme.darkBoxy(),
-                                  textButtonTheme: TextButtonThemeData(
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(AppRadii.md),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                child: child!,
-                              );
-                            },
+                            builder: (context, child) => child!,
                           );
                           if (picked != null) {
                             setState(() => selectedDate = picked);
@@ -418,7 +283,6 @@ class LendPersonDetailPage extends ConsumerWidget {
               ],
             ),
           ),
-        ),
       );
     } finally {
       amountController.dispose();
@@ -466,7 +330,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     });
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: Icons.arrow_back,
@@ -514,8 +378,8 @@ class LendPersonDetailPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: const Color(0xFF0E0E0E),
-              border: Border.all(color: AppColors.borderDark),
+              color: context.surface,
+              border: Border.all(color: context.border),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Column(
@@ -528,9 +392,9 @@ class LendPersonDetailPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   'Net Balance',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFFB0B0B0),
+                    color: context.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -568,8 +432,8 @@ class LendPersonDetailPage extends ConsumerWidget {
                 return Container(
                   padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0E0E0E),
-                    border: Border.all(color: AppColors.borderDark),
+                    color: context.surface,
+                    border: Border.all(color: context.border),
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                   child: const Text('No entries yet. Add your first entry.'),
@@ -589,12 +453,12 @@ class LendPersonDetailPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (active.isNotEmpty) ...[
-                    const Text(
+                    Text(
                       'ACTIVE',
                       style: TextStyle(
                         fontSize: 12,
                         letterSpacing: 1.2,
-                        color: Color(0xFFB0B0B0),
+                        color: context.textSecondary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -685,7 +549,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                           eventCount: entryEvents.isEmpty
                               ? null
                               : entryEvents.length,
-                          eventChips: _buildEventChips(entryEvents),
+                          eventChips: _buildEventChips(context, entryEvents),
                           leadingIcon: isLent
                               ? AppIcons.download
                               : AppIcons.upload,
@@ -722,12 +586,12 @@ class LendPersonDetailPage extends ConsumerWidget {
                   }),
                   if (settled.isNotEmpty) ...[
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'SETTLED',
                       style: TextStyle(
                         fontSize: 12,
                         letterSpacing: 1.2,
-                        color: Color(0xFFB0B0B0),
+                        color: context.textSecondary,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -813,7 +677,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                           eventCount: entryEvents.isEmpty
                               ? null
                               : entryEvents.length,
-                          eventChips: _buildEventChips(entryEvents),
+                          eventChips: _buildEventChips(context, entryEvents),
                           leadingIcon: isLent
                               ? AppIcons.download
                               : AppIcons.upload,
@@ -828,7 +692,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: entry.isSettled
-                                      ? Colors.white.withValues(alpha: 0.12)
+                                      ? context.textPrimary.withValues(alpha: 0.12)
                                       : color.withValues(alpha: 0.14),
                                   borderRadius: BorderRadius.circular(AppRadii.sm),
                                 ),
@@ -838,7 +702,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                                       : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
                                   style: TextStyle(
                                     color: entry.isSettled
-                                        ? Colors.white
+                                        ? context.textPrimary
                                         : color,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 10,
@@ -898,8 +762,8 @@ class _ModalFieldLabel extends StatelessWidget {
     return Text.rich(
       TextSpan(
         text: label,
-        style: const TextStyle(
-          color: Color(0xFFB3B3B3),
+        style: TextStyle(
+          color: context.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
@@ -916,23 +780,23 @@ class _ModalFieldLabel extends StatelessWidget {
   }
 }
 
-List<Widget> _buildEventChips(List<dynamic> entryEvents) {
+List<Widget> _buildEventChips(BuildContext context, List<dynamic> entryEvents) {
   if (entryEvents.isEmpty) return const [];
   return entryEvents
       .map(
         (event) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFF303030)),
-            color: const Color(0xFF0E0E0E),
+            border: Border.all(color: context.border),
+            color: context.surface,
             borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           child: Text(
             '${DateFormat('dd MMM').format(event.date)} ${Formatters.currency(event.amount)}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFE0E0E0),
+              color: context.textSecondary,
             ),
           ),
         ),
@@ -970,8 +834,8 @@ class _EntryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -982,7 +846,7 @@ class _EntryCard extends StatelessWidget {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
+              color: context.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(leadingIcon, size: 20, color: leadingIconColor),
@@ -1018,8 +882,8 @@ class _EntryCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   dateLabel,
-                  style: const TextStyle(
-                    color: Color(0xFFB5B5B5),
+                  style: TextStyle(
+                    color: context.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -1031,10 +895,10 @@ class _EntryCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Settlements ($eventCount)',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFBDBDBD),
+                      color: context.textSecondary,
                     ),
                   ),
                 ],

@@ -15,6 +15,9 @@ _$SettingsEntityImpl _$$SettingsEntityImplFromJson(Map<String, dynamic> json) =>
       dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? false,
       privacyLockEnabled: json['privacyLockEnabled'] as bool? ?? false,
       showAmountsEnabled: json['showAmountsEnabled'] as bool? ?? true,
+      themeMode:
+          $enumDecodeNullable(_$AppThemeModeEnumMap, json['themeMode']) ??
+          AppThemeMode.system,
       lastBudgetAlertAt: json['lastBudgetAlertAt'] == null
           ? null
           : DateTime.parse(json['lastBudgetAlertAt'] as String),
@@ -31,6 +34,13 @@ Map<String, dynamic> _$$SettingsEntityImplToJson(
   'dailyReminderEnabled': instance.dailyReminderEnabled,
   'privacyLockEnabled': instance.privacyLockEnabled,
   'showAmountsEnabled': instance.showAmountsEnabled,
+  'themeMode': _$AppThemeModeEnumMap[instance.themeMode]!,
   'lastBudgetAlertAt': instance.lastBudgetAlertAt?.toIso8601String(),
   'updatedAt': instance.updatedAt.toIso8601String(),
+};
+
+const _$AppThemeModeEnumMap = {
+  AppThemeMode.system: 'system',
+  AppThemeMode.light: 'light',
+  AppThemeMode.dark: 'dark',
 };

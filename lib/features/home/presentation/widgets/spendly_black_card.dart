@@ -26,14 +26,20 @@ class SpendlyBlackCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF0E0E0E),
-            border: Border.all(color: const Color(0xFF282828)),
+            color: context.surface,
+            border: Border.all(color: context.border),
             borderRadius: BorderRadius.circular(AppRadii.premiumCard),
           ),
           child: Stack(
             children: [
-              const Positioned.fill(
-                child: CustomPaint(painter: _DotBgPainter()),
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _DotBgPainter(
+                    dotColor: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF1A1A1A)
+                        : const Color(0xFFE8E8E8),
+                  ),
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,10 +47,10 @@ class SpendlyBlackCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         'SPEND SNAPSHOT',
                         style: TextStyle(
-                          color: Color(0xFFA0A0A0),
+                          color: context.textSecondary,
                           fontSize: 10,
                           letterSpacing: 1.1,
                           fontWeight: FontWeight.w700,
@@ -62,7 +68,7 @@ class SpendlyBlackCard extends StatelessWidget {
                         tooltip: showValues ? 'Hide values' : 'Show values',
                         icon: Icon(
                           showValues ? AppIcons.eye : AppIcons.eyeOff,
-                          color: const Color(0xFFDADADA),
+                          color: context.textPrimary,
                           size: 18,
                         ),
                       ),
@@ -71,10 +77,10 @@ class SpendlyBlackCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'TOTAL BALANCE',
                         style: TextStyle(
-                          color: Color(0xFF8F8F8F),
+                          color: context.textSecondary,
                           fontSize: 9,
                           letterSpacing: 1,
                           fontWeight: FontWeight.w600,
@@ -87,8 +93,8 @@ class SpendlyBlackCard extends StatelessWidget {
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 Formatters.currency(balance),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: context.textPrimary,
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -101,18 +107,18 @@ class SpendlyBlackCard extends StatelessWidget {
                             ),
                     ],
                   ),
-                  const Row(
+                  Row(
                     children: [
                       Icon(
                         AppIcons.chevronRight,
                         size: 14,
-                        color: Colors.white,
+                        color: context.textPrimary,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         'Tap for transactions',
                         style: TextStyle(
-                          color: Color(0xFFB7B7B7),
+                          color: context.textSecondary,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
@@ -145,7 +151,7 @@ class _MaskBars extends StatelessWidget {
             width: 7,
             height: 22,
             margin: EdgeInsets.only(right: index == bars - 1 ? 0 : 6),
-            color: Colors.white,
+              color: context.textPrimary,
           ),
         ),
       ),
@@ -154,13 +160,15 @@ class _MaskBars extends StatelessWidget {
 }
 
 class _DotBgPainter extends CustomPainter {
-  const _DotBgPainter();
+  const _DotBgPainter({required this.dotColor});
+
+  final Color dotColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     const spacing = 14.0;
     const radius = 1.2;
-    final paint = Paint()..color = const Color(0xFF1A1A1A);
+    final paint = Paint()..color = dotColor;
 
     for (double y = spacing / 2; y < size.height; y += spacing) {
       for (double x = spacing / 2; x < size.width; x += spacing) {
@@ -170,5 +178,6 @@ class _DotBgPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DotBgPainter oldDelegate) =>
+      oldDelegate.dotColor != dotColor;
 }

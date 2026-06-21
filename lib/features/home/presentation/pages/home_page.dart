@@ -51,8 +51,8 @@ class HomePage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: context.surface,
+        foregroundColor: context.textPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
         child: const Icon(AppIcons.plus, size: 28),
       ),
@@ -128,8 +128,8 @@ class HomePage extends ConsumerWidget {
                 Container(
                     padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0E0E0E),
-                      border: Border.all(color: const Color(0xFF242424)),
+                      color: context.surface,
+                      border: Border.all(color: context.border),
                       borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
                     child: Row(
@@ -185,7 +185,7 @@ class HomePage extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
-          if (activeRecurring.isNotEmpty) ...[
+              if (activeRecurring.isNotEmpty) ...[
             const SizedBox(height: 12),
             InkWell(
               onTap: () => context.push('/recurring'),
@@ -195,8 +195,8 @@ class HomePage extends ConsumerWidget {
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0E0E0E),
-                  border: Border.all(color: const Color(0xFF242424)),
+                  color: context.surface,
+                  border: Border.all(color: context.border),
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
                 child: Row(
@@ -204,7 +204,7 @@ class HomePage extends ConsumerWidget {
                     Icon(
                       AppIcons.repeat,
                       size: 16,
-                      color: AppIcons.getColorForIcon(AppIcons.repeat),
+                      color: AppIcons.getColorForIcon(AppIcons.repeat, brightness: Theme.of(context).brightness),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -213,9 +213,9 @@ class HomePage extends ConsumerWidget {
                           activeRecurring.length,
                           nearestRecurring,
                         ),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFFB2B2B2),
+                          color: context.textSecondary,
                         ),
                       ),
                     ),
@@ -240,7 +240,7 @@ class HomePage extends ConsumerWidget {
               ),
             ],
           ),
-          const Divider(height: 28, color: AppColors.borderDark),
+          Divider(height: 28, color: context.border),
           recent.when(
             data: (items) {
               if (items.isEmpty) {
@@ -384,15 +384,15 @@ class _StatTile extends StatelessWidget {
       height: 208,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: const Color(0xFF242424)),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (active)
-            const Divider(height: 0, thickness: 2, color: Colors.white),
+            Divider(height: 0, thickness: 2, color: context.textPrimary),
           if (active) const SizedBox(height: 10),
           Text(
             title,
@@ -432,16 +432,16 @@ class _TransactionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.borderDark)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.border)),
       ),
       child: Row(
         children: [
-          Container(
+            Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
+              color: context.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(icon, size: 20, color: iconColor),
@@ -455,8 +455,8 @@ class _TransactionRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFFB2B2B2),
+                  style: TextStyle(
+                    color: context.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -472,7 +472,7 @@ class _TransactionRow extends StatelessWidget {
                   ? const Color(0xFF57F28F)
                   : type == TransactionType.investment
                       ? const Color(0xFF8B5CF6)
-                      : Colors.white,
+                      : context.textPrimary,
             ),
           ),
         ],
@@ -501,8 +501,8 @@ class _LendQuickCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF0E0E0E),
-          border: Border.all(color: const Color(0xFF242424)),
+          color: context.surface,
+          border: Border.all(color: context.border),
           borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Column(
@@ -513,14 +513,14 @@ class _LendQuickCard extends StatelessWidget {
                 Icon(
                   AppIcons.money,
                   size: 16,
-                  color: AppIcons.getColorForIcon(AppIcons.money),
+                  color: AppIcons.getColorForIcon(AppIcons.money, brightness: Theme.of(context).brightness),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'LEND & BORROW',
                   style: AppTypography.metadata(
                     context,
-                  ).copyWith(color: const Color(0xFFBDBDBD)),
+                  ).copyWith(color: context.textSecondary),
                 ),
               ],
             ),
@@ -547,7 +547,7 @@ class _LendQuickCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               '$openPeople active people - Tap to open',
-              style: const TextStyle(color: Color(0xFFB2B2B2), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
           ],
         ),
@@ -572,7 +572,7 @@ class _LendMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF2B2B2B)),
+          border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
       child: Column(
@@ -580,7 +580,7 @@ class _LendMetric extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: Color(0xFFA3A3A3)),
+            style: TextStyle(fontSize: 11, color: context.textSecondary),
           ),
           const SizedBox(height: 4),
           Text(

@@ -38,7 +38,7 @@ class AddTransactionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.background,
       body: SafeArea(
         top: false,
         child: Column(
@@ -241,7 +241,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       width: 76,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5B5B5B),
+                        color: context.textSecondary,
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                     ),
@@ -259,9 +259,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const Icon(
+                        icon: Icon(
                           AppIcons.close,
-                          color: Color(0xFFE0E0E0),
+                          color: context.textPrimary,
                           size: 28,
                         ),
                       ),
@@ -277,8 +277,8 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       decimal: true,
                     ),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                       height: 1,
@@ -286,13 +286,13 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     decoration: InputDecoration(
                       hintText: '0.00',
                       prefixText: '${AppConstants.currencySymbol} ',
-                      prefixStyle: const TextStyle(
-                        color: Color(0xFFBEBEBE),
+                      prefixStyle: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF6F6F6F),
+                      hintStyle: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -312,7 +312,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   const SizedBox(height: 14),
-                  const Divider(color: Color(0xFF2A2A2A), height: 1),
+                  Divider(color: context.border, height: 1),
                   const SizedBox(height: 22),
                   const _SheetLabel('TYPE'),
                   const SizedBox(height: 12),
@@ -396,7 +396,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     child: Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF4A4A4A)),
+                        border: Border.all(color: context.border),
                         borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -407,16 +407,16 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                               MaterialLocalizations.of(
                                 context,
                               ).formatMediumDate(_date),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: context.textPrimary,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             AppIcons.calendar,
-                            color: Color(0xFFB0B0B0),
+                            color: context.textSecondary,
                             size: 20,
                           ),
                         ],
@@ -430,14 +430,14 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(AppRadii.md),
-                      border: Border.all(color: const Color(0xFF4A4A4A)),
+                      border: Border.all(color: context.border),
                     ),
                     alignment: Alignment.center,
                     child: TextField(
                       controller: _noteController,
                       maxLines: 1,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                      decoration: const InputDecoration(
+                      style: TextStyle(color: context.textPrimary, fontSize: 16),
+                      decoration: InputDecoration(
                         filled: false,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -446,7 +446,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                         focusedErrorBorder: InputBorder.none,
                         hintText: 'What was this for?',
                         hintStyle: TextStyle(
-                          color: Color(0xFF6F6F6F),
+                          color: context.textSecondary,
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
@@ -456,14 +456,14 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  const Divider(color: Color(0xFF2A2A2A), height: 1),
+                  Divider(color: context.border, height: 1),
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 54,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
+                        backgroundColor: context.surface,
+                        foregroundColor: context.textPrimary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
@@ -512,8 +512,8 @@ class _SheetLabel extends StatelessWidget {
       children: [
         Text(
           text,
-          style: const TextStyle(
-            color: Color(0xFFC5C5C5),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 12,
             letterSpacing: 1.6,
             fontWeight: FontWeight.w700,
@@ -561,16 +561,16 @@ class _SheetChoiceChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.black,
+          color: selected ? context.textPrimary : context.surface,
           borderRadius: BorderRadius.circular(AppRadii.md),
           border: Border.all(
-            color: selected ? Colors.white : const Color(0xFF4A4A4A),
+            color: selected ? context.textPrimary : context.border,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.black : Colors.white,
+            color: selected ? context.surface : context.textPrimary,
             fontSize: 13,
             letterSpacing: 0.8,
             fontWeight: FontWeight.w700,
@@ -597,7 +597,7 @@ class _AccountSegment extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -609,12 +609,12 @@ class _AccountSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: selected == item.$1 ? Colors.white : Colors.black,
+                  color: selected == item.$1 ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == items.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -622,7 +622,7 @@ class _AccountSegment extends StatelessWidget {
                 child: Text(
                   item.$2,
                   style: TextStyle(
-                    color: selected == item.$1 ? Colors.black : Colors.white,
+                    color: selected == item.$1 ? context.surface : context.textPrimary,
                     fontSize: 13,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,
@@ -652,7 +652,7 @@ class _CardTypeSegment extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -665,12 +665,12 @@ class _CardTypeSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.black,
+                  color: isSelected ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == items.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -678,7 +678,7 @@ class _CardTypeSegment extends StatelessWidget {
                 child: Text(
                   item.$2,
                   style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
+                    color: isSelected ? context.surface : context.textPrimary,
                     fontSize: 13,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,
@@ -709,7 +709,7 @@ class _TypeSegment extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -721,12 +721,12 @@ class _TypeSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: selected == item.$1 ? Colors.white : Colors.black,
+                  color: selected == item.$1 ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == items.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -734,7 +734,7 @@ class _TypeSegment extends StatelessWidget {
                 child: Text(
                   item.$2,
                   style: TextStyle(
-                    color: selected == item.$1 ? Colors.black : Colors.white,
+                    color: selected == item.$1 ? context.surface : context.textPrimary,
                     fontSize: 13,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,

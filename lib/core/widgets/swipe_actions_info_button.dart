@@ -33,14 +33,14 @@ class SwipeActionsInfoButton extends StatelessWidget {
         height: 32,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFF0E0E0E),
-          border: Border.all(color: AppColors.borderDark),
+          color: context.surface,
+          border: Border.all(color: context.border),
           borderRadius: BorderRadius.circular(AppRadii.sm),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.info_outline,
           size: 18,
-          color: Color(0xFFD2D2D2),
+          color: context.textSecondary,
         ),
       ),
     );
@@ -88,8 +88,8 @@ class SwipeActionsInfoButton extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFFD0D0D0),
+                  style: TextStyle(
+                    color: context.textSecondary,
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -136,7 +136,7 @@ class _SwipeHintRow extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: background,
-        border: Border.all(color: AppColors.borderDark),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -146,7 +146,7 @@ class _SwipeHintRow extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.16),
+              color: context.textPrimary.withValues(alpha: 0.16),
               border: Border.all(color: color.withValues(alpha: 0.35)),
               borderRadius: BorderRadius.circular(AppRadii.sm),
             ),
@@ -156,11 +156,11 @@ class _SwipeHintRow extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
             ),
           ),
         ],

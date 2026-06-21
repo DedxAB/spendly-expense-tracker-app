@@ -1,3 +1,4 @@
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/features/settings/domain/entities/settings_entity.dart';
 
 abstract class SettingsRepository {
@@ -11,6 +12,8 @@ abstract class SettingsRepository {
   });
 
   Future<void> markBudgetAlertNotified(DateTime at);
+
+  Future<void> setThemeMode(AppThemeMode mode);
 
   Future<void> setPrivacyLockEnabled(bool enabled);
 

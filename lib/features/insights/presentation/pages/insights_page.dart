@@ -76,15 +76,15 @@ class InsightsPage extends ConsumerWidget {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderDark),
+                      border: Border.all(color: context.border),
                     ),
                     child: imageUrl == null
-                        ? const Icon(Icons.person, size: 18, color: Color(0xFFABABAB))
+                        ? Icon(Icons.person, size: 18, color: context.textSecondary)
                         : Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.person, size: 18, color: Color(0xFFABABAB)),
+                                Icon(Icons.person, size: 18, color: context.textSecondary),
                           ),
                   ),
                 );
@@ -92,9 +92,9 @@ class InsightsPage extends ConsumerWidget {
             ),
           ),
         ],
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: AppColors.borderDark),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, thickness: 1, color: context.border),
         ),
       ),
       body: ListView(
@@ -138,8 +138,8 @@ class InsightsPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderDark),
-              color: const Color(0xFF0E0E0E),
+              border: Border.all(color: context.border),
+              color: context.surface,
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Column(
@@ -354,7 +354,7 @@ class _PeriodNavigator extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              icon: const Icon(AppIcons.chevronLeft, color: Color(0xFFD0D0D0)),
+              icon: Icon(AppIcons.chevronLeft, color: context.textSecondary),
               onPressed: previous,
             ),
             Expanded(
@@ -365,8 +365,8 @@ class _PeriodNavigator extends ConsumerWidget {
                       ? month.year.toString()
                       : DateFormat('MMMM yyyy').format(month),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: context.textPrimary,
                   fontSize: 18,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
@@ -375,7 +375,7 @@ class _PeriodNavigator extends ConsumerWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(AppIcons.chevronRight, color: Color(0xFFD0D0D0)),
+              icon: Icon(AppIcons.chevronRight, color: context.textSecondary),
               onPressed: next,
             ),
           ],
@@ -386,7 +386,7 @@ class _PeriodNavigator extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderDark),
+              border: Border.all(color: context.border),
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Row(
@@ -414,13 +414,13 @@ class _ViewModeChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.white : Colors.transparent,
+        color: isSelected ? context.textPrimary : Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: isSelected ? Colors.black : const Color(0xFF8A8A8A),
+          color: isSelected ? context.surface : context.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
@@ -438,9 +438,9 @@ class _YearPickerDialog extends StatelessWidget {
     final now = DateTime.now().year;
     final years = List.generate(now - 2019, (i) => now - i);
     return Dialog(
-      backgroundColor: const Color(0xFF0E0E0E),
+      backgroundColor: context.surface,
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.borderDark),
+        side: BorderSide(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: SizedBox(
@@ -451,12 +451,12 @@ class _YearPickerDialog extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text('Select Year', style: AppTypography.sectionTitle(context)),
             ),
-            const Divider(color: AppColors.borderDark, height: 1),
+            Divider(color: context.border, height: 1),
             Expanded(
               child: ListView.separated(
                 itemCount: years.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(color: AppColors.borderDark, height: 1),
+                    Divider(color: context.border, height: 1),
                 itemBuilder: (_, i) {
                   final year = years[i];
                   final sel = year == selectedYear;
@@ -464,9 +464,9 @@ class _YearPickerDialog extends StatelessWidget {
                     title: Text(
                       year.toString(),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: sel ? Colors.white : const Color(0xFF8A8A8A),
-                        fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                  style: TextStyle(
+                    color: sel ? context.textPrimary : context.textSecondary,
+                    fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                       ),
                     ),
                     onTap: () => context.pop(year),
@@ -525,8 +525,8 @@ class _BurnRateCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -545,8 +545,8 @@ class _BurnRateCard extends StatelessWidget {
             children: [
               Text(
                 '${AppConstants.currencySymbol}${_formatCompact(rateValue)}',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: context.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                 ),
@@ -556,14 +556,14 @@ class _BurnRateCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   rateLabel,
-                  style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                  style: TextStyle(color: context.textSecondary, fontSize: 14),
                 ),
               ),
               const Spacer(),
               if (displayProjected > 0)
                 Text(
                   isYearly ? 'Projected EoY ${Formatters.currency(displayProjected)}' : 'Projected ${Formatters.currency(displayProjected)}',
-                  style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+                  style: TextStyle(color: context.textSecondary, fontSize: 12),
                 ),
             ],
           ),
@@ -604,7 +604,7 @@ class _BudgetBar extends StatelessWidget {
             value: pct,
             minHeight: 8,
             color: isOver ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
-            backgroundColor: const Color(0xFF1A1A1A),
+            backgroundColor: context.surfaceAlt,
           ),
         ),
         const SizedBox(height: 6),
@@ -613,7 +613,7 @@ class _BudgetBar extends StatelessWidget {
           children: [
             Text(
               '${(pct * 100).toStringAsFixed(0)}% of budget',
-              style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
             Text(
               isOver
@@ -672,8 +672,8 @@ class _SummaryStrip extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Padding(
@@ -736,8 +736,8 @@ class _SummaryRow extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF8A8A8A),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -763,7 +763,7 @@ class _SummaryRow extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle!,
-                style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 10),
+                style: TextStyle(color: context.textSecondary, fontSize: 10),
               ),
             ],
           ],
@@ -797,8 +797,8 @@ class _CategoryWatch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -806,7 +806,7 @@ class _CategoryWatch extends StatelessWidget {
         children: [
           Text('Spending by Category', style: AppTypography.sectionTitle(context)),
           const SizedBox(height: 12),
-          const Divider(color: AppColors.borderDark, height: 1),
+          Divider(color: context.border, height: 1),
           const SizedBox(height: 4),
           ...sorted.take(6).map((slice) {
             final prevAmount = prevByCategory[slice.category] ?? 0.0;
@@ -815,7 +815,7 @@ class _CategoryWatch extends StatelessWidget {
                 : null;
             final sliceColor = Formatters.parseHexColor(
               slice.color,
-              fallback: Colors.white,
+              fallback: context.textPrimary,
             );
 
             return Padding(
@@ -831,7 +831,7 @@ class _CategoryWatch extends StatelessWidget {
                   Expanded(
                     child: Text(
                       slice.category,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFFCFCFCF)),
+                      style: TextStyle(fontSize: 14, color: context.textSecondary),
                     ),
                   ),
                   if (delta != null && delta.abs() > 1)
@@ -860,10 +860,10 @@ class _CategoryWatch extends StatelessWidget {
                     child: Text(
                       Formatters.currency(slice.total),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: context.textPrimary,
                       ),
                     ),
                   ),
@@ -875,7 +875,7 @@ class _CategoryWatch extends StatelessWidget {
           Center(
             child: Text(
               '${Formatters.currency(totalExpense)} total across ${sorted.length} categories',
-              style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
           ),
         ],
@@ -892,8 +892,8 @@ class _CategoryWatchSkeleton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: const SizedBox(
@@ -921,13 +921,13 @@ class _ExportButton extends StatelessWidget {
         label: Text(
           'Export PDF Report',
           style: TextStyle(
-            color: AppColors.darkTextPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w500,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.borderDark),
-          backgroundColor: const Color(0xFF0E0E0E),
+              side: BorderSide(color: context.border),
+              backgroundColor: context.surface,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -1002,8 +1002,8 @@ class _WhatsChanged extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -1023,16 +1023,16 @@ class _WhatsChanged extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '\u2022',
-                    style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                    style: TextStyle(color: context.textSecondary, fontSize: 14),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       line,
-                      style: const TextStyle(
-                        color: Color(0xFFCFCFCF),
+                      style: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 14,
                         height: 1.5,
                       ),
@@ -1086,14 +1086,14 @@ class _TrendChart extends StatelessWidget {
               show: true,
               horizontalInterval: safeMaxY / 4,
               getDrawingHorizontalLine: (_) =>
-                  const FlLine(color: Color(0xFF252525), strokeWidth: 0.8),
+                  FlLine(color: context.border, strokeWidth: 0.8),
               drawVerticalLine: false,
             ),
             borderData: FlBorderData(
               show: true,
-              border: const Border(
-                bottom: BorderSide(color: Colors.white),
-                left: BorderSide(color: AppColors.borderDark),
+              border: Border(
+                bottom: BorderSide(color: context.textPrimary),
+                left: BorderSide(color: context.border),
               ),
             ),
             extraLinesData: ExtraLinesData(
@@ -1120,7 +1120,7 @@ class _TrendChart extends StatelessWidget {
             lineTouchData: LineTouchData(
               enabled: true,
               touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (_) => const Color(0xFFF4F4F4),
+                getTooltipColor: (_) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2A2A2A) : const Color(0xFFF4F4F4),
                 tooltipRoundedRadius: 8,
                 tooltipPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1133,7 +1133,7 @@ class _TrendChart extends StatelessWidget {
                 getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
                   final index = spot.x.round();
                   if (index < 0 || index >= chartPoints.length) return null;
-                  return _tooltipItem(chartPoints, index);
+                  return _tooltipItem(context, chartPoints, index);
                 }).toList(),
               ),
             ),
@@ -1151,9 +1151,9 @@ class _TrendChart extends StatelessWidget {
                   reservedSize: 54,
                   getTitlesWidget: (value, _) => Text(
                     _formatAxisAmount(value),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: Color(0xFFA6A6A6),
+                      color: context.textSecondary,
                     ),
                   ),
                 ),
@@ -1170,9 +1170,9 @@ class _TrendChart extends StatelessWidget {
                     }
                     return Text(
                       chartPoints[i].label,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFFA6A6A6),
+                        color: context.textSecondary,
                       ),
                     );
                   },
@@ -1186,7 +1186,7 @@ class _TrendChart extends StatelessWidget {
                     FlSpot(i.toDouble(), chartPoints[i].value),
                 ],
                 isCurved: true,
-                color: Colors.white,
+                color: context.textPrimary,
                 barWidth: 3,
                 dotData: FlDotData(
                   show: true,
@@ -1195,15 +1195,15 @@ class _TrendChart extends StatelessWidget {
                         chartPoints[index].value == maxY;
                     return FlDotCirclePainter(
                       radius: isMax ? 5 : 3.5,
-                      color: Colors.white,
+                      color: context.textPrimary,
                       strokeWidth: isMax ? 2 : 0,
-                      strokeColor: const Color(0xFF252525),
+                      strokeColor: context.border,
                     );
                   },
                 ),
             belowBarData: BarAreaData(
               show: true,
-              color: Colors.white.withValues(alpha: 0.06),
+              color: context.textPrimary.withValues(alpha: 0.06),
               cutOffY: 0,
               applyCutOffY: true,
             ),
@@ -1214,6 +1214,7 @@ class _TrendChart extends StatelessWidget {
   }
 
   LineTooltipItem _tooltipItem(
+    BuildContext context,
     List<_TrendChartPoint> chartPoints,
     int index,
   ) {
@@ -1221,12 +1222,12 @@ class _TrendChart extends StatelessWidget {
     final average = point.daysInPeriod <= 0
         ? 0.0
         : point.value / point.daysInPeriod;
-    final comparison = _comparison(chartPoints, index);
+    final comparison = _comparison(context, chartPoints, index);
 
     return LineTooltipItem(
       '${point.title}\n',
-      const TextStyle(
-        color: Colors.black,
+      TextStyle(
+        color: context.textPrimary,
         fontSize: 12,
         fontWeight: FontWeight.w700,
       ),
@@ -1234,24 +1235,24 @@ class _TrendChart extends StatelessWidget {
       children: [
         TextSpan(
           text: '${Formatters.currency(point.value)} spent\n',
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: context.textPrimary,
             fontSize: 13,
             fontWeight: FontWeight.w800,
           ),
         ),
         TextSpan(
           text: '${point.periodLabel}\n',
-          style: const TextStyle(
-            color: Color(0xFF555555),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
         ),
         TextSpan(
           text: '${Formatters.currency(average)} per day',
-          style: const TextStyle(
-            color: Color(0xFF555555),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -1270,6 +1271,7 @@ class _TrendChart extends StatelessWidget {
   }
 
   _TrendComparison? _comparison(
+    BuildContext context,
     List<_TrendChartPoint> chartPoints,
     int index,
   ) {
@@ -1281,7 +1283,7 @@ class _TrendChart extends StatelessWidget {
     if (previous <= 0 && current <= 0) {
       return _TrendComparison(
         text: 'same as $previousLabel',
-        color: const Color(0xFF555555),
+        color: context.textSecondary,
       );
     }
     if (previous <= 0) {
@@ -1295,7 +1297,7 @@ class _TrendChart extends StatelessWidget {
     if (chg.abs() < 0.05) {
       return _TrendComparison(
         text: 'same as $previousLabel',
-        color: const Color(0xFF555555),
+        color: context.textSecondary,
       );
     }
     final direction = chg > 0 ? '\u25B2' : '\u25BC';
@@ -1417,8 +1419,8 @@ class _SnapshotTile extends StatelessWidget {
       height: 76,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: const Color(0xFF252525)),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1428,8 +1430,8 @@ class _SnapshotTile extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF8F8F8F),
+            style: TextStyle(
+              color: context.textSecondary,
               fontSize: 9,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -1440,8 +1442,8 @@ class _SnapshotTile extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w800,
             ),
@@ -1451,7 +1453,7 @@ class _SnapshotTile extends StatelessWidget {
             caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFFB2B2B2), fontSize: 11),
+            style: TextStyle(color: context.textSecondary, fontSize: 11),
           ),
         ],
       ),

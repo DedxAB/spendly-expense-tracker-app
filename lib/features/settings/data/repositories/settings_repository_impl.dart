@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/constants/app_constants.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
@@ -557,7 +558,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
         monthlyBudget: Value(normalizedBudget),
         monthlyBudgetPaise: Value(Money.toPaise(normalizedBudget)),
         currency: Value(current?.currency ?? 'INR'),
-        themeMode: const Value('dark'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
@@ -576,6 +577,29 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    final db = _ref.read(appDatabaseProvider);
+    final current = await db.getSettingsRow();
+    await db.upsertSettings(
+      SettingsCompanion.insert(
+        id: const Value(1),
+        monthlyBudget: Value(current?.monthlyBudget ?? 0),
+        monthlyBudgetPaise: Value(
+          Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
+        ),
+        currency: Value(current?.currency ?? 'INR'),
+        themeMode: Value(mode.value),
+        transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
+        dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
+        privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
+        lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
+
+  @override
   Future<void> setNotificationPreferences({
     required bool budgetAlertsEnabled,
     required bool dailyReminderEnabled,
@@ -590,7 +614,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
         ),
         currency: Value(current?.currency ?? 'INR'),
-        themeMode: const Value('dark'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
         transactionHintsSeen: Value(budgetAlertsEnabled),
         dailyReminderEnabled: Value(dailyReminderEnabled),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
@@ -613,7 +637,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
         ),
         currency: Value(current?.currency ?? 'INR'),
-        themeMode: const Value('dark'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(enabled),
@@ -644,7 +668,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
         ),
         currency: Value(current?.currency ?? 'INR'),
-        themeMode: const Value('dark'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
@@ -667,7 +691,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
         ),
         currency: Value(current?.currency ?? 'INR'),
-        themeMode: const Value('dark'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),

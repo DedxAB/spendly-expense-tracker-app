@@ -61,20 +61,7 @@ class RecurringPage extends ConsumerWidget {
 
     await showDialog<void>(
       context: context,
-      builder: (context) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          dialogTheme: DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
-        ),
-        child: StatefulBuilder(
+      builder: (context) => StatefulBuilder(
           builder: (context, setState) {
             final dropdownMenuColor =
                 Theme.of(context).brightness == Brightness.dark
@@ -280,7 +267,6 @@ class RecurringPage extends ConsumerWidget {
             );
           },
         ),
-      ),
     );
   }
 
@@ -289,7 +275,7 @@ class RecurringPage extends ConsumerWidget {
     final rules = ref.watch(recurringRulesProvider);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.chevronLeft,
@@ -435,9 +421,9 @@ class RecurringPage extends ConsumerWidget {
                               ),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF0E0E0E),
+                                  color: context.surface,
                                   border: Border.all(
-                                    color: AppColors.borderDark,
+                                    color: context.border,
                                   ),
                                   borderRadius: BorderRadius.circular(AppRadii.md),
                                 ),
@@ -454,7 +440,7 @@ class RecurringPage extends ConsumerWidget {
                                           height: 44,
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFF1A1A1A),
+                                            color: context.surfaceAlt,
                                             borderRadius: BorderRadius.circular(
                                               AppRadii.md,
                                             ),
@@ -466,7 +452,7 @@ class RecurringPage extends ConsumerWidget {
                                                 ? AppIcons.getColorForIcon(
                                                     AppIcons.repeat,
                                                   )
-                                                : const Color(0xFF8F8F8F),
+                                                : context.textSecondary,
                                           ),
                                         ),
                                         const SizedBox(width: AppSpacing.sm),
@@ -477,8 +463,8 @@ class RecurringPage extends ConsumerWidget {
                                             children: [
                                               Text(
                                                 item.title,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
+                                                style: TextStyle(
+                                                  color: context.textPrimary,
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 16,
                                                 ),
@@ -517,8 +503,8 @@ class RecurringPage extends ConsumerWidget {
                                                   Flexible(
                                                     child: Text(
                                                       '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                                                      style: const TextStyle(
-                                                        color: Color(0xFFB8B8B8),
+                                                      style: TextStyle(
+                                                        color: context.textSecondary,
                                                         fontSize: 12,
                                                       ),
                                                       overflow:
@@ -539,8 +525,8 @@ class RecurringPage extends ConsumerWidget {
                                           children: [
                                             Text(
                                               Formatters.currency(item.amount),
-                                              style: const TextStyle(
-                                                color: Colors.white,
+                                              style: TextStyle(
+                                                color: context.textPrimary,
                                                 fontSize: 17,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -593,7 +579,7 @@ class _PaymentModeSegment extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -606,12 +592,12 @@ class _PaymentModeSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.black,
+                  color: isSelected ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == items.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -619,7 +605,7 @@ class _PaymentModeSegment extends StatelessWidget {
                 child: Text(
                   item.$2,
                   style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
+                    color: context.textPrimary,
                     fontSize: 13,
                     letterSpacing: 0.8,
                     fontWeight: FontWeight.w700,
@@ -646,8 +632,8 @@ class _ModalFieldLabel extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFB3B3B3),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
