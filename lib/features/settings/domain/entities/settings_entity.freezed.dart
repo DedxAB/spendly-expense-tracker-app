@@ -28,6 +28,7 @@ mixin _$SettingsEntity {
   bool get dailyReminderEnabled => throw _privateConstructorUsedError;
   bool get privacyLockEnabled => throw _privateConstructorUsedError;
   bool get showAmountsEnabled => throw _privateConstructorUsedError;
+  AppThemeMode get themeMode => throw _privateConstructorUsedError;
   DateTime? get lastBudgetAlertAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -56,6 +57,7 @@ abstract class $SettingsEntityCopyWith<$Res> {
     bool dailyReminderEnabled,
     bool privacyLockEnabled,
     bool showAmountsEnabled,
+    AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,
     DateTime updatedAt,
   });
@@ -83,6 +85,7 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
     Object? dailyReminderEnabled = null,
     Object? privacyLockEnabled = null,
     Object? showAmountsEnabled = null,
+    Object? themeMode = null,
     Object? lastBudgetAlertAt = freezed,
     Object? updatedAt = null,
   }) {
@@ -116,6 +119,10 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
                 ? _value.showAmountsEnabled
                 : showAmountsEnabled // ignore: cast_nullable_to_non_nullable
                       as bool,
+            themeMode: null == themeMode
+                ? _value.themeMode
+                : themeMode // ignore: cast_nullable_to_non_nullable
+                      as AppThemeMode,
             lastBudgetAlertAt: freezed == lastBudgetAlertAt
                 ? _value.lastBudgetAlertAt
                 : lastBudgetAlertAt // ignore: cast_nullable_to_non_nullable
@@ -147,6 +154,7 @@ abstract class _$$SettingsEntityImplCopyWith<$Res>
     bool dailyReminderEnabled,
     bool privacyLockEnabled,
     bool showAmountsEnabled,
+    AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,
     DateTime updatedAt,
   });
@@ -173,6 +181,7 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
     Object? dailyReminderEnabled = null,
     Object? privacyLockEnabled = null,
     Object? showAmountsEnabled = null,
+    Object? themeMode = null,
     Object? lastBudgetAlertAt = freezed,
     Object? updatedAt = null,
   }) {
@@ -206,6 +215,10 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
             ? _value.showAmountsEnabled
             : showAmountsEnabled // ignore: cast_nullable_to_non_nullable
                   as bool,
+        themeMode: null == themeMode
+            ? _value.themeMode
+            : themeMode // ignore: cast_nullable_to_non_nullable
+                  as AppThemeMode,
         lastBudgetAlertAt: freezed == lastBudgetAlertAt
             ? _value.lastBudgetAlertAt
             : lastBudgetAlertAt // ignore: cast_nullable_to_non_nullable
@@ -230,6 +243,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     this.dailyReminderEnabled = false,
     this.privacyLockEnabled = false,
     this.showAmountsEnabled = true,
+    this.themeMode = AppThemeMode.system,
     this.lastBudgetAlertAt,
     required this.updatedAt,
   });
@@ -259,13 +273,16 @@ class _$SettingsEntityImpl implements _SettingsEntity {
   @JsonKey()
   final bool showAmountsEnabled;
   @override
+  @JsonKey()
+  final AppThemeMode themeMode;
+  @override
   final DateTime? lastBudgetAlertAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, privacyLockEnabled: $privacyLockEnabled, showAmountsEnabled: $showAmountsEnabled, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
+    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, privacyLockEnabled: $privacyLockEnabled, showAmountsEnabled: $showAmountsEnabled, themeMode: $themeMode, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -286,6 +303,8 @@ class _$SettingsEntityImpl implements _SettingsEntity {
                 other.privacyLockEnabled == privacyLockEnabled) &&
             (identical(other.showAmountsEnabled, showAmountsEnabled) ||
                 other.showAmountsEnabled == showAmountsEnabled) &&
+            (identical(other.themeMode, themeMode) ||
+                other.themeMode == themeMode) &&
             (identical(other.lastBudgetAlertAt, lastBudgetAlertAt) ||
                 other.lastBudgetAlertAt == lastBudgetAlertAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -303,6 +322,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     dailyReminderEnabled,
     privacyLockEnabled,
     showAmountsEnabled,
+    themeMode,
     lastBudgetAlertAt,
     updatedAt,
   );
@@ -333,6 +353,7 @@ abstract class _SettingsEntity implements SettingsEntity {
     final bool dailyReminderEnabled,
     final bool privacyLockEnabled,
     final bool showAmountsEnabled,
+    final AppThemeMode themeMode,
     final DateTime? lastBudgetAlertAt,
     required final DateTime updatedAt,
   }) = _$SettingsEntityImpl;
@@ -354,6 +375,8 @@ abstract class _SettingsEntity implements SettingsEntity {
   bool get privacyLockEnabled;
   @override
   bool get showAmountsEnabled;
+  @override
+  AppThemeMode get themeMode;
   @override
   DateTime? get lastBudgetAlertAt;
   @override

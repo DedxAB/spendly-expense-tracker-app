@@ -8,6 +8,7 @@ import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_theme.dart';
+import 'package:spendly/core/theme/app_theme_provider.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
@@ -53,6 +54,7 @@ class SpendlyApp extends ConsumerWidget {
       await ref.read(settingsRepositoryProvider).markBudgetAlertNotified(now);
     });
     final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return ValueListenableBuilder<bool>(
       valueListenable: AmountVisibilityController.showAmounts,
@@ -60,8 +62,9 @@ class SpendlyApp extends ConsumerWidget {
         return MaterialApp.router(
           title: 'Spendly',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme(),
-          themeMode: ThemeMode.dark,
+          theme: AppTheme.lightTheme(),
+          darkTheme: AppTheme.darkTheme(),
+          themeMode: themeMode,
           routerConfig: router,
           builder: (context, child) {
             return PrivacyLockGate(child: child ?? const SizedBox.shrink());
@@ -282,7 +285,7 @@ class _PrivacyLockScreen extends StatelessWidget {
                 ),
                 child: const Icon(
                   AppIcons.shield,
-                  color: Color(0xFF57F28F),
+                  color: Color(0xFF3DD07B),
                   size: 34,
                 ),
               ),

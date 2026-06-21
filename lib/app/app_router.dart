@@ -206,8 +206,6 @@ class AppShell extends StatelessWidget {
       ),
     ];
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
       body: child,
       bottomNavigationBar: SafeArea(
@@ -216,11 +214,9 @@ class AppShell extends StatelessWidget {
           height: 62,
           padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            color: context.surface,
             border: Border(
-              top: BorderSide(
-                color: isDark ? AppColors.borderDark : AppColors.borderLight,
-              ),
+              top: BorderSide(color: context.border),
             ),
           ),
           child: Row(
@@ -286,7 +282,6 @@ class _ShellNavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       borderRadius: BorderRadius.circular(AppRadii.md),
       onTap: onTap,
@@ -299,7 +294,7 @@ class _ShellNavTile extends StatelessWidget {
             right: 12,
             child: Container(
               height: 2,
-              color: selected ? Colors.white : Colors.transparent,
+              color: selected ? context.textPrimary : Colors.transparent,
             ),
           ),
           Column(
@@ -311,6 +306,7 @@ class _ShellNavTile extends StatelessWidget {
                 color: AppIcons.getColorForIcon(
                   selected ? item.selectedIcon : item.icon,
                   label: item.label,
+                  brightness: Theme.of(context).brightness,
                 ).withValues(alpha: selected ? 1.0 : 0.62),
               ),
               const SizedBox(height: 4),
@@ -321,10 +317,8 @@ class _ShellNavTile extends StatelessWidget {
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   letterSpacing: 0,
                   color: selected
-                      ? Colors.white
-                      : (isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.lightTextSecondary),
+                      ? context.textPrimary
+                      : context.textSecondary,
                 ),
               ),
             ],

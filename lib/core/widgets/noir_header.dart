@@ -50,7 +50,7 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                 leadingIcon,
                 size: 22,
                 color:
-                    leadingIconColor ?? AppIcons.getColorForIcon(leadingIcon),
+                    leadingIconColor ?? AppIcons.getColorForIcon(leadingIcon, brightness: Theme.of(context).brightness),
               ),
               onPressed: onLeadingTap,
             )
@@ -68,13 +68,13 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.borderDark),
+                        border: Border.all(color: context.border),
                       ),
                       child: imageUrl == null
                           ? Icon(
                               Icons.person,
                               size: 18,
-                              color: AppIcons.getColorForIcon(Icons.person),
+                              color: AppIcons.getColorForIcon(Icons.person, brightness: Theme.of(context).brightness),
                             )
                           : Image.network(
                               imageUrl,
@@ -82,7 +82,7 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                               errorBuilder: (_, __, ___) => Icon(
                                 Icons.person,
                                 size: 18,
-                                color: AppIcons.getColorForIcon(Icons.person),
+                                color: AppIcons.getColorForIcon(Icons.person, brightness: Theme.of(context).brightness),
                               ),
                             ),
                     ),
@@ -91,9 +91,9 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
               ),
             ]
           : const [],
-      bottom: const PreferredSize(
-        preferredSize: Size.fromHeight(1),
-        child: Divider(height: 1, thickness: 1, color: AppColors.borderDark),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(height: 1, thickness: 1, color: context.border),
       ),
     );
   }

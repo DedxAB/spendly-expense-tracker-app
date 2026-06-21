@@ -111,7 +111,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          const Divider(color: AppColors.borderDark),
+          Divider(color: context.border),
           const SizedBox(height: AppSpacing.smPlus),
           Text('TOTAL SPENDING', style: AppTypography.metadata(context)),
           const SizedBox(height: AppSpacing.xs),
@@ -146,7 +146,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
-          const Divider(color: AppColors.borderDark),
+          Divider(color: context.border),
           const SizedBox(height: 10),
           if (selectedItems.isEmpty)
             const Padding(
@@ -294,10 +294,10 @@ class _MonthGrid extends StatelessWidget {
                   child: Container(
                     height: 42,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(
-                        right: BorderSide(color: AppColors.borderDark),
-                        bottom: BorderSide(color: AppColors.borderDark),
+                        right: BorderSide(color: context.border),
+                        bottom: BorderSide(color: context.border),
                       ),
                     ),
                     child: Text(
@@ -339,14 +339,14 @@ class _MonthGrid extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFFE5E5E5)
-                        : (isToday ? const Color(0xFF111111) : Colors.black),
+                        ? context.surfaceAlt
+                        : (isToday ? context.surfaceAlt : context.surface),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFFE5E5E5)
+                          ? context.surfaceAlt
                           : (isToday
-                                ? const Color(0xFFE0E0E0)
-                                : AppColors.borderDark),
+                                ? context.border
+                                : context.border),
                       width: isToday && !isSelected ? 1.2 : 1,
                     ),
                   ),
@@ -359,10 +359,10 @@ class _MonthGrid extends StatelessWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: isSelected
-                              ? Colors.black
+                              ? context.textPrimary
                               : (isCurrentMonth
-                                    ? Colors.white
-                                    : const Color(0xFF4A4A4A)),
+                                    ? context.textPrimary
+                                    : context.border),
                         ),
                       ),
                       const Spacer(),
@@ -372,7 +372,7 @@ class _MonthGrid extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.black : Colors.white,
+                            color: isSelected ? context.textPrimary : context.textPrimary,
                           ),
                         ),
                     ],
@@ -428,7 +428,7 @@ class _CalendarTransactionRow extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
+              color: context.surfaceAlt,
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Icon(icon, color: iconColor, size: 20),

@@ -96,7 +96,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
             children: [
               Text(entry.key, style: AppTypography.sectionTitle(context)),
               const SizedBox(height: 12),
-              const Divider(color: AppColors.borderDark),
+              Divider(color: context.border),
               ...entry.value.map((tx) => Dismissible(
                 key: ValueKey(tx.id),
                 confirmDismiss: (direction) async {
@@ -171,8 +171,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
               child: OutlinedButton(
                 onPressed: _loadMore,
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.borderDark),
-                  backgroundColor: const Color(0xFF0E0E0E),
+                  side: BorderSide(color: context.border),
+                  backgroundColor: context.surface,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -180,7 +180,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 ),
                 child: Text(
                   'Show more (${totalCount - shown} left)',
-                  style: const TextStyle(color: Color(0xFFD0D0D0)),
+                  style: TextStyle(color: context.textSecondary),
                 ),
               ),
             ),
@@ -352,7 +352,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
             ),
           ],
           const SizedBox(height: AppSpacing.mdPlus),
-          const Divider(color: AppColors.borderDark),
+          Divider(color: context.border),
           transactions.when(
             data: (items) {
               if (items.isEmpty) {
@@ -400,18 +400,18 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0E0E0E),
-                      border: Border.all(color: AppColors.borderDark),
+                      color: context.surface,
+                      border: Border.all(color: context.border),
                       borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
                     child: Row(
                       children: [
-                        const Text(
+                        Text(
                           'INCOME',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: context.textPrimary,
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -421,7 +421,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF8AF0A0),
+                            color: Color(0xFF5DD48C),
                           ),
                         ),
                       ],
@@ -453,7 +453,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  const Divider(color: AppColors.borderDark),
+                  Divider(color: context.border),
                   _buildTransactionGroups(grouped, items.length, categoryById),
                 ],
               );
@@ -643,7 +643,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                       child: Container(
                         width: 64,
                         height: 4,
-                        color: const Color(0xFF6A6A6A),
+                        color: context.textSecondary,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.smPlus),
@@ -767,10 +767,10 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     const _FilterSectionLabel('Category'),
                     const SizedBox(height: 8),
                     if (availableCategories.isEmpty)
-                      const Text(
+                      Text(
                         'No categories available.',
                         style: TextStyle(
-                          color: Color(0xFF8E8E8E),
+                          color: context.textSecondary,
                           fontSize: 12,
                         ),
                       )
@@ -920,8 +920,8 @@ class _FilterSectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFFB3B3B3),
+      style: TextStyle(
+        color: context.textSecondary,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
@@ -944,11 +944,13 @@ class _FilterSegment extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(labels.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(labels.length, (index) {
           final isSelected = selectedIndex == index;
           return Expanded(
             child: InkWell(
@@ -956,12 +958,12 @@ class _FilterSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.black,
+                  color: isSelected ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == labels.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -969,7 +971,7 @@ class _FilterSegment extends StatelessWidget {
                 child: Text(
                   labels[index],
                   style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
+                    color: isSelected ? context.surface : context.textPrimary,
                     fontSize: 12,
                     letterSpacing: 0.2,
                     fontWeight: FontWeight.w600,
@@ -979,6 +981,7 @@ class _FilterSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }
@@ -1002,16 +1005,16 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? Colors.white : const Color(0xFF0E0E0E),
+          color: selected ? context.textPrimary : context.surface,
           border: Border.all(
-            color: selected ? Colors.white : const Color(0xFF4A4A4A),
+            color: selected ? context.textPrimary : context.border,
           ),
           borderRadius: BorderRadius.circular(AppRadii.sm),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.black : Colors.white,
+            color: selected ? context.surface : context.textPrimary,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
@@ -1126,8 +1129,8 @@ class _ActiveFilterBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1135,11 +1138,11 @@ class _ActiveFilterBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'ACTIVE FILTERS',
                   style: TextStyle(
-                    color: Color(0xFFBDBDBD),
+                    color: context.textSecondary,
                     fontSize: 11,
                     letterSpacing: 1.2,
                     fontWeight: FontWeight.w700,
@@ -1149,7 +1152,7 @@ class _ActiveFilterBar extends StatelessWidget {
               TextButton(
                 onPressed: onClearAll,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
+                  foregroundColor: context.textPrimary,
                   padding: EdgeInsets.zero,
                   minimumSize: const Size(0, 32),
                 ),
@@ -1159,9 +1162,9 @@ class _ActiveFilterBar extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (chips.isEmpty)
-            const Text(
+            Text(
               'No filters applied.',
-              style: TextStyle(color: Color(0xFF8E8E8E), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             )
           else
             Wrap(spacing: 8, runSpacing: 8, children: chips),
@@ -1220,8 +1223,8 @@ class _SummaryChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
-        color: const Color(0xFF141414),
+        border: Border.all(color: context.border),
+        color: context.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
       child: Row(
@@ -1229,8 +1232,8 @@ class _SummaryChip extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -1239,10 +1242,10 @@ class _SummaryChip extends StatelessWidget {
             const SizedBox(width: 8),
             InkWell(
               onTap: onRemove,
-              child: const Icon(
+              child: Icon(
                 Icons.close,
                 size: 14,
-                color: Color(0xFFB0B0B0),
+                color: context.textSecondary,
               ),
             ),
           ],
@@ -1267,15 +1270,15 @@ class _DateRangeButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: const Color(0xFF0E0E0E),
-          border: Border.all(color: const Color(0xFF4A4A4A)),
+          color: context.surface,
+          border: Border.all(color: context.border),
           borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Text(
           label,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: context.textPrimary,
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -1319,20 +1322,20 @@ class _HistoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.borderDark)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: context.border)),
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(AppRadii.md),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: context.surfaceAlt,
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -1349,15 +1352,15 @@ class _HistoryRow extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF333333)),
+                        border: Border.all(color: context.border),
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
                         paymentModeLabel.toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFA3A3A3),
+                          color: context.textSecondary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -1369,8 +1372,8 @@ class _HistoryRow extends StatelessWidget {
                   subtitle.isNotEmpty ? subtitle : 'No note',
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: subtitle.isNotEmpty
-                        ? const Color(0xFFB5B5B5)
-                        : const Color(0xFF6B6B6B),
+                        ? context.textSecondary
+                        : context.textSecondary,
                   ),
                 ),
               ],
@@ -1383,10 +1386,10 @@ class _HistoryRow extends StatelessWidget {
               fontSize: 16,
             ).copyWith(
               color: type == TransactionType.income
-                  ? const Color(0xFF5DF393)
+                  ? const Color(0xFF3DD07B)
                   : type == TransactionType.investment
                       ? const Color(0xFF8B5CF6)
-                      : Colors.white,
+                      : context.textPrimary,
             ),
           ),
         ],
@@ -1406,8 +1409,8 @@ class _AccountBreakupCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: AppColors.borderDark),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1415,10 +1418,10 @@ class _AccountBreakupCard extends StatelessWidget {
         children: [
           Text(
             name.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: context.textPrimary,
               letterSpacing: 1.0,
             ),
           ),
@@ -1428,7 +1431,7 @@ class _AccountBreakupCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFFFB3A8),
+              color: Color(0xFFFF8A7A),
             ),
           ),
         ],

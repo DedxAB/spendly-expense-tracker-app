@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 
 part 'settings_entity.freezed.dart';
 part 'settings_entity.g.dart';
@@ -13,6 +14,7 @@ class SettingsEntity with _$SettingsEntity {
     @Default(false) bool dailyReminderEnabled,
     @Default(false) bool privacyLockEnabled,
     @Default(true) bool showAmountsEnabled,
+    @Default(AppThemeMode.system) AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,
     required DateTime updatedAt,
   }) = _SettingsEntity;

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -128,11 +129,12 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const bg = Color(0xFF0E0E0E);
-    const divider = Color(0xFF2A2A2A);
-    const primary = Colors.white;
-    const secondary = Color(0xFFBBBBBB);
-    const muted = Color(0xFF8F8F8F);
+    final bg = context.surface;
+    final divider = context.border;
+    final primary = context.textPrimary;
+    final secondary = context.textSecondary;
+    final muted = context.textSecondary;
+    final brightness = Theme.of(context).brightness;
 
     final profile = ref.watch(userProfileProvider).valueOrNull;
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
@@ -178,8 +180,8 @@ class SettingsPage extends ConsumerWidget {
             children: [
               _ProfilePhoto(
                 imageUrl: imageUrl,
-                backgroundColor: const Color(0xFF323A44),
-                iconColor: const Color(0xFFD9DEE3),
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                iconColor: context.textSecondary,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -214,8 +216,8 @@ class SettingsPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          const _SectionLabel('PREFERENCES', color: secondary),
-          const Divider(color: divider, height: 26),
+          _SectionLabel('PREFERENCES', color: secondary),
+          Divider(color: divider, height: 26),
           _ProfileRow(
             icon: AppIcons.user,
             title: 'Account',
@@ -224,6 +226,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.user,
               label: 'Account',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -235,7 +238,15 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.notifications,
               label: 'Notifications',
+              brightness: brightness,
             ),
+            dividerColor: divider,
+          ),
+          _ThemeToggleTile(
+            currentMode: settings?.themeMode ?? AppThemeMode.system,
+            onChanged: (mode) {
+              ref.read(settingsRepositoryProvider).setThemeMode(mode);
+            },
             dividerColor: divider,
           ),
           _ProfileRow(
@@ -246,6 +257,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.categories,
               label: 'Categories',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -259,6 +271,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.money,
               label: 'Lend & Borrow',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -272,6 +285,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.repeat,
               label: 'Recurring',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -285,12 +299,13 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.history,
               label: 'Activity & Screen Time',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
           const SizedBox(height: 24),
-          const _SectionLabel('PRIVACY & LOCKS', color: secondary),
-          const Divider(color: divider, height: 26),
+          _SectionLabel('PRIVACY & LOCKS', color: secondary),
+          Divider(color: divider, height: 26),
           _PrivacyShieldTile(
             enabled: privacyLock,
             onChanged: (value) => _setPrivacyLock(context, ref, value),
@@ -306,6 +321,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.download,
               label: 'Export JSON',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -319,6 +335,7 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.upload,
               label: 'Import Data',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
@@ -332,17 +349,18 @@ class SettingsPage extends ConsumerWidget {
             iconColor: AppIcons.getColorForIcon(
               AppIcons.trash,
               label: 'Erase All Data',
+              brightness: brightness,
             ),
             dividerColor: divider,
           ),
           const SizedBox(height: 24),
-          const _SectionLabel('DATA & SYSTEM', color: secondary),
-          const Divider(color: divider, height: 26),
+          _SectionLabel('DATA & SYSTEM', color: secondary),
+          Divider(color: divider, height: 26),
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
               border: Border.all(color: divider),
-              color: const Color(0xFF0E0E0E),
+              color: context.surface,
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Column(
@@ -357,14 +375,14 @@ class SettingsPage extends ConsumerWidget {
                   cloudSync?.isConnected == true
                       ? 'Connected: ${cloudSync?.connectedEmail ?? '-'}'
                       : 'Not connected',
-                  style: const TextStyle(color: muted, fontSize: 12),
+                  style: TextStyle(color: muted, fontSize: 12),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   cloudSync?.lastBackupAt == null
                       ? 'Last backup: never'
                       : 'Last backup: ${DateFormat('dd MMM, hh:mm a').format(cloudSync!.lastBackupAt!)}',
-                  style: const TextStyle(color: muted, fontSize: 12),
+                  style: TextStyle(color: muted, fontSize: 12),
                 ),
                 const SizedBox(height: AppSpacing.smPlus),
                 SwitchListTile(
@@ -537,7 +555,7 @@ class SettingsPage extends ConsumerWidget {
               ),
             ),
           ),
-          const Center(
+          Center(
             child: Text(
               'Version 1.1.2',
               style: TextStyle(color: muted, fontSize: 14),
@@ -645,16 +663,16 @@ class SettingsPage extends ConsumerWidget {
                   child: Container(
                     width: 64,
                     height: 4,
-                    color: const Color(0xFF6A6A6A),
+                    color: context.border,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.smPlus),
                 Text('Account', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                const Text(
-                  'Update your primary profile details.',
-                  style: TextStyle(color: Color(0xFF9B9B9B), fontSize: 12),
-                ),
+                  Text(
+                    'Update your primary profile details.',
+                    style: TextStyle(color: context.textSecondary, fontSize: 12),
+                  ),
                 const SizedBox(height: AppSpacing.smPlus),
                 _SheetLabeledField(
                   label: 'Name',
@@ -720,40 +738,26 @@ class SettingsPage extends ConsumerWidget {
     if (!context.mounted) return;
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => Theme(
-        data: Theme.of(dialogContext).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          dialogTheme: DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Export JSON'),
+        content: SizedBox(
+          width: AppModalSizes.dialogContentWidth,
+          child: SingleChildScrollView(child: SelectableText(payload)),
         ),
-        child: AlertDialog(
-          title: const Text('Export JSON'),
-          content: SizedBox(
-            width: AppModalSizes.dialogContentWidth,
-            child: SingleChildScrollView(child: SelectableText(payload)),
+        actions: [
+          DialogActionsRow(
+            cancelText: 'Close',
+            confirmText: 'Copy',
+            onCancel: () => Navigator.pop(dialogContext),
+            onConfirm: () {
+              Clipboard.setData(ClipboardData(text: payload));
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('JSON copied to clipboard')),
+              );
+            },
           ),
-          actions: [
-            DialogActionsRow(
-              cancelText: 'Close',
-              confirmText: 'Copy',
-              onCancel: () => Navigator.pop(dialogContext),
-              onConfirm: () {
-                Clipboard.setData(ClipboardData(text: payload));
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('JSON copied to clipboard')),
-                );
-              },
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -762,49 +766,35 @@ class SettingsPage extends ConsumerWidget {
     final controller = TextEditingController();
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => Theme(
-        data: Theme.of(dialogContext).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          dialogTheme: DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
-        ),
-        child: AlertDialog(
-          title: const Text('Import JSON'),
-          content: SizedBox(
-            width: AppModalSizes.dialogContentWidth,
-            child: TextField(
-              controller: controller,
-              maxLines: 14,
-              decoration: const InputDecoration(
-                hintText: 'Paste your exported JSON here',
-              ),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Import JSON'),
+        content: SizedBox(
+          width: AppModalSizes.dialogContentWidth,
+          child: TextField(
+            controller: controller,
+            maxLines: 14,
+            decoration: const InputDecoration(
+              hintText: 'Paste your exported JSON here',
             ),
           ),
-          actions: [
-            DialogActionsRow(
-              cancelText: 'Cancel',
-              confirmText: 'Import',
-              onCancel: () => Navigator.pop(dialogContext),
-              onConfirm: () async {
-                final raw = controller.text.trim();
-                if (raw.isEmpty) return;
-                await ref.read(settingsRepositoryProvider).importJson(raw);
-                if (!dialogContext.mounted) return;
-                Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Import completed')),
-                );
-              },
-            ),
-          ],
         ),
+        actions: [
+          DialogActionsRow(
+            cancelText: 'Cancel',
+            confirmText: 'Import',
+            onCancel: () => Navigator.pop(dialogContext),
+            onConfirm: () async {
+              final raw = controller.text.trim();
+              if (raw.isEmpty) return;
+              await ref.read(settingsRepositoryProvider).importJson(raw);
+              if (!dialogContext.mounted) return;
+              Navigator.pop(dialogContext);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Import completed')),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -904,22 +894,22 @@ class _PrivacyShieldTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: enabled
                   ? const Color(0xFF142119)
-                  : const Color(0xFF0E0E0E),
+                  : context.surface,
               borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: enabled
                     ? const Color(0xFF2F6F46)
-                    : const Color(0xFF2A2A2A),
+                    : context.border,
               ),
             ),
             child: Icon(
               AppIcons.shield,
-              color: AppIcons.getColorForIcon(AppIcons.shield),
+              color: AppIcons.getColorForIcon(AppIcons.shield, brightness: Theme.of(context).brightness),
               size: 22,
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -930,13 +920,107 @@ class _PrivacyShieldTile extends StatelessWidget {
                 SizedBox(height: 4),
                 Text(
                   'Require fingerprint, face, or device PIN for app access',
-                  style: TextStyle(color: Color(0xFF8F8F8F), fontSize: 12),
+                  style: TextStyle(color: context.textSecondary, fontSize: 12),
                 ),
               ],
             ),
           ),
           Switch(value: enabled, onChanged: onChanged),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeToggleTile extends StatelessWidget {
+  const _ThemeToggleTile({
+    required this.currentMode,
+    required this.onChanged,
+    required this.dividerColor,
+  });
+
+  final AppThemeMode currentMode;
+  final ValueChanged<AppThemeMode> onChanged;
+  final Color dividerColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: dividerColor)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+                color: context.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadii.md),
+            ),
+            child: const Icon(Icons.brightness_6, color: Color(0xFFE8B830), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Theme',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Switch between light and dark mode',
+                  style: TextStyle(color: context.textSecondary, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: context.border),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _seg(context, 'Sys', currentMode == AppThemeMode.system, true, () => onChanged(AppThemeMode.system)),
+                  _seg(context, 'Light', currentMode == AppThemeMode.light, true, () => onChanged(AppThemeMode.light)),
+                  _seg(context, 'Dark', currentMode == AppThemeMode.dark, false, () => onChanged(AppThemeMode.dark)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _seg(BuildContext ctx, String label, bool selected, bool showRightBorder, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        decoration: BoxDecoration(
+          color: selected ? ctx.textPrimary : ctx.surface,
+          border: Border(
+            right: BorderSide(color: showRightBorder ? ctx.border : Colors.transparent),
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? ctx.surface : ctx.textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
     );
   }
@@ -957,8 +1041,8 @@ class _TransactionCountPill extends StatelessWidget {
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: const Color(0xFF303030)),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
@@ -967,13 +1051,13 @@ class _TransactionCountPill extends StatelessWidget {
           Icon(
             AppIcons.receipt,
             size: 14,
-            color: AppIcons.getColorForIcon(AppIcons.receipt),
+            color: AppIcons.getColorForIcon(AppIcons.receipt, brightness: Theme.of(context).brightness),
           ),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFFE7E7E7),
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -1000,8 +1084,8 @@ class _TrackingSincePill extends StatelessWidget {
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: const Color(0xFF292929)),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
@@ -1010,13 +1094,13 @@ class _TrackingSincePill extends StatelessWidget {
           Icon(
             AppIcons.history,
             size: 14,
-            color: AppIcons.getColorForIcon(AppIcons.history),
+            color: AppIcons.getColorForIcon(AppIcons.history, brightness: Theme.of(context).brightness),
           ),
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFFD4D4D4),
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
@@ -1050,8 +1134,8 @@ class _SheetLabeledField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFB3B3B3),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -1125,7 +1209,7 @@ class _ProfileRow extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: const Color(0xFF1A1A1A),
+              color: context.surfaceAlt,
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
               child: Icon(icon, color: iconColor, size: 20),

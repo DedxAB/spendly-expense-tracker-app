@@ -56,7 +56,7 @@ class InsightsPage extends ConsumerWidget {
           ),
         ),
         leading: IconButton(
-          icon: Icon(AppIcons.bell, size: 22, color: const Color(0xFFFFC857)),
+          icon: Icon(AppIcons.bell, size: 22, color: const Color(0xFFE8B830)),
           onPressed: () => context.push('/notifications'),
         ),
         leadingWidth: 56,
@@ -76,15 +76,15 @@ class InsightsPage extends ConsumerWidget {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderDark),
+                      border: Border.all(color: context.border),
                     ),
                     child: imageUrl == null
-                        ? const Icon(Icons.person, size: 18, color: Color(0xFFABABAB))
+                        ? Icon(Icons.person, size: 18, color: context.textSecondary)
                         : Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.person, size: 18, color: Color(0xFFABABAB)),
+                                Icon(Icons.person, size: 18, color: context.textSecondary),
                           ),
                   ),
                 );
@@ -92,9 +92,9 @@ class InsightsPage extends ConsumerWidget {
             ),
           ),
         ],
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: AppColors.borderDark),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, thickness: 1, color: context.border),
         ),
       ),
       body: ListView(
@@ -138,20 +138,36 @@ class InsightsPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderDark),
-              color: const Color(0xFF0E0E0E),
+              border: Border.all(color: context.border),
+              color: context.surface,
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Trend', style: AppTypography.sectionTitle(context)),
-                const SizedBox(height: AppSpacing.smPlus),
+                Row(
+                  children: [
+                    Text('Trend', style: AppTypography.sectionTitle(context)),
+                    const Spacer(),
+                    trend.when(
+                      data: (points) => _TrendArrow(
+                        points: points,
+                        isYearly: isYearly,
+                      ),
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
                 SizedBox(
                   height: 200,
                   child: trend.when(
-                    data: (points) =>
-                        _TrendChart(points: points, isYearly: isYearly),
+                    data: (points) => _TrendChart(
+                      points: points,
+                      isYearly: isYearly,
+                      budget: monthlyBudget,
+                    ),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (_, __) =>
@@ -214,6 +230,11 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
   final yearlyBars =
       ref.read(yearlyIncomeVsExpenseProvider).valueOrNull ?? const [];
 
+  final userProfile = ref.read(userProfileProvider).valueOrNull;
+  final userName = userProfile != null && userProfile.name.trim().isNotEmpty
+      ? userProfile.name.trim()
+      : null;
+
     final service = InsightsExportService();
   try {
     final lucideData = await rootBundle.load('assets/fonts/lucide/Lucide.ttf');
@@ -224,11 +245,20 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
     );
     final baseFont = pw.Font.ttf(baseFontData);
 
+    final incomeVal = (incomeExpense['income'] ?? 0).toDouble();
+    final expenseVal = (incomeExpense['expense'] ?? 0).toDouble();
+    final prevExpenseVal =
+        (ref.read(previousIncomeVsExpenseProvider).valueOrNull?['expense'] ??
+                0.0)
+            .toDouble();
+
     await service.exportPdf(
       month: month,
       isYearly: isYearly,
-      income: (incomeExpense['income'] ?? 0).toDouble(),
-      expense: (incomeExpense['expense'] ?? 0).toDouble(),
+      userName: userName,
+      income: incomeVal,
+      expense: expenseVal,
+      prevExpense: prevExpenseVal,
       changePercent: change,
       distribution: distribution,
       paymentMode: const {},
@@ -324,7 +354,7 @@ class _PeriodNavigator extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              icon: const Icon(AppIcons.chevronLeft, color: Color(0xFFD0D0D0)),
+              icon: Icon(AppIcons.chevronLeft, color: context.textSecondary),
               onPressed: previous,
             ),
             Expanded(
@@ -335,9 +365,9 @@ class _PeriodNavigator extends ConsumerWidget {
                       ? month.year.toString()
                       : DateFormat('MMMM yyyy').format(month),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                  fontSize: 18,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -345,7 +375,7 @@ class _PeriodNavigator extends ConsumerWidget {
               ),
             ),
             IconButton(
-              icon: const Icon(AppIcons.chevronRight, color: Color(0xFFD0D0D0)),
+              icon: Icon(AppIcons.chevronRight, color: context.textSecondary),
               onPressed: next,
             ),
           ],
@@ -356,7 +386,7 @@ class _PeriodNavigator extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderDark),
+              border: Border.all(color: context.border),
               borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
             child: Row(
@@ -384,13 +414,13 @@ class _ViewModeChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: isSelected ? Colors.white : Colors.transparent,
+        color: isSelected ? context.textPrimary : Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: isSelected ? Colors.black : const Color(0xFF8A8A8A),
+          color: isSelected ? context.surface : context.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
@@ -408,9 +438,9 @@ class _YearPickerDialog extends StatelessWidget {
     final now = DateTime.now().year;
     final years = List.generate(now - 2019, (i) => now - i);
     return Dialog(
-      backgroundColor: const Color(0xFF0E0E0E),
+      backgroundColor: context.surface,
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: AppColors.borderDark),
+        side: BorderSide(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: SizedBox(
@@ -421,12 +451,12 @@ class _YearPickerDialog extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Text('Select Year', style: AppTypography.sectionTitle(context)),
             ),
-            const Divider(color: AppColors.borderDark, height: 1),
+            Divider(color: context.border, height: 1),
             Expanded(
               child: ListView.separated(
                 itemCount: years.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(color: AppColors.borderDark, height: 1),
+                    Divider(color: context.border, height: 1),
                 itemBuilder: (_, i) {
                   final year = years[i];
                   final sel = year == selectedYear;
@@ -434,9 +464,9 @@ class _YearPickerDialog extends StatelessWidget {
                     title: Text(
                       year.toString(),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: sel ? Colors.white : const Color(0xFF8A8A8A),
-                        fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
+                  style: TextStyle(
+                    color: sel ? context.textPrimary : context.textSecondary,
+                    fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                       ),
                     ),
                     onTap: () => context.pop(year),
@@ -471,23 +501,32 @@ class _BurnRateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final daysInPeriod = isYearly
-        ? DateTime(month.year + 1, 1, 1).difference(DateTime(month.year, 1, 1)).inDays
-        : DateTime(month.year, month.month + 1, 0).day;
-    final daysElapsed = isYearly
-        ? (month.year == now.year
-            ? now.difference(DateTime(month.year, 1, 1)).inDays + 1
-            : daysInPeriod)
-        : (month.year == now.year && month.month == now.month
-            ? now.day
-            : daysInPeriod);
-    final dailyAvg = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
+
+    final isCurrentYear = month.year == now.year;
+    final isCurrentMonth = isCurrentYear && month.month == now.month;
+
+    String rateLabel;
+    double rateValue;
+    double displayProjected;
+
+    if (isYearly) {
+      final monthsElapsed = isCurrentYear ? now.month : 12;
+      rateValue = monthsElapsed <= 0 ? 0.0 : expense / monthsElapsed;
+      rateLabel = '/ month';
+      displayProjected = monthsElapsed <= 0 ? 0.0 : (expense / monthsElapsed) * 12;
+    } else {
+      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+      final daysElapsed = isCurrentMonth ? now.day : daysInMonth;
+      rateValue = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
+      rateLabel = '/ day';
+      displayProjected = projected;
+    }
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -495,9 +534,9 @@ class _BurnRateCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.speed, color: Color(0xFFFFC857), size: 18),
+              const Icon(Icons.speed, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
-              Text('Daily Burn Rate', style: AppTypography.sectionTitle(context)),
+              Text(isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate', style: AppTypography.sectionTitle(context)),
             ],
           ),
           const SizedBox(height: 12),
@@ -505,32 +544,32 @@ class _BurnRateCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '${AppConstants.currencySymbol}${_formatCompact(dailyAvg)}',
-                style: const TextStyle(
-                  color: Colors.white,
+                '${AppConstants.currencySymbol}${_formatCompact(rateValue)}',
+                style: TextStyle(
+                  color: context.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(width: 6),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  '/ day',
-                  style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                  rateLabel,
+                  style: TextStyle(color: context.textSecondary, fontSize: 14),
                 ),
               ),
               const Spacer(),
-              if (projected > 0)
+              if (displayProjected > 0)
                 Text(
-                  'On track ${Formatters.currency(projected)}',
-                  style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+                  isYearly ? 'Projected EoY ${Formatters.currency(displayProjected)}' : 'Projected ${Formatters.currency(displayProjected)}',
+                  style: TextStyle(color: context.textSecondary, fontSize: 12),
                 ),
             ],
           ),
           if (budget > 0) ...[
             const SizedBox(height: 14),
-            _BudgetBar(expense: expense, budget: budget, projected: projected),
+            _BudgetBar(expense: expense, budget: budget, projected: displayProjected),
           ],
         ],
       ),
@@ -564,8 +603,8 @@ class _BudgetBar extends StatelessWidget {
           child: LinearProgressIndicator(
             value: pct,
             minHeight: 8,
-            color: isOver ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
-            backgroundColor: const Color(0xFF1A1A1A),
+            color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+            backgroundColor: context.surfaceAlt,
           ),
         ),
         const SizedBox(height: 6),
@@ -574,14 +613,14 @@ class _BudgetBar extends StatelessWidget {
           children: [
             Text(
               '${(pct * 100).toStringAsFixed(0)}% of budget',
-              style: const TextStyle(color: Color(0xFF8A8A8A), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
             Text(
               isOver
                   ? '${Formatters.currency(remaining.abs())} over'
                   : '${Formatters.currency(remaining)} left',
               style: TextStyle(
-                color: isOver ? const Color(0xFFFF7A7A) : const Color(0xFF5BE39A),
+                color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -592,7 +631,7 @@ class _BudgetBar extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Projected to exceed by ${Formatters.currency(projected - budget)}',
-            style: const TextStyle(color: Color(0xFFFF7A7A), fontSize: 11),
+            style: const TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
           ),
         ],
       ],
@@ -609,9 +648,9 @@ class _SummaryStrip extends StatelessWidget {
     required this.prevExpense,
   });
 
-  static const _incomeColor = Color(0xFF5BE39A);
-  static const _expenseColor = Color(0xFFFF7A7A);
-  static const _warningColor = Color(0xFFFFC857);
+  static const _incomeColor = Color(0xFF3DD07B);
+  static const _expenseColor = Color(0xFFF55C5C);
+  static const _warningColor = Color(0xFFE8B830);
 
   final double income;
   final double expense;
@@ -633,134 +672,103 @@ class _SummaryStrip extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Container(height: 3, color: _incomeColor)),
-              Container(width: 1, height: 3, color: AppColors.borderDark),
-              Expanded(child: Container(height: 3, color: _expenseColor)),
-              Container(width: 1, height: 3, color: AppColors.borderDark),
-              Expanded(child: Container(height: 3, color: savedColor)),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Income',
-                      value: Formatters.currency(income),
-                      valueColor: _incomeColor,
-                      icon: Icons.trending_up,
-                      accentColor: _incomeColor,
-                    ),
-                  ),
-                  _VertDivider(),
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Expense',
-                      value: Formatters.currency(expense),
-                      valueColor: _expenseColor,
-                      icon: Icons.trending_down,
-                      accentColor: _expenseColor,
-                      subtitle: changeText,
-                    ),
-                  ),
-                  _VertDivider(),
-                  Expanded(
-                    child: _SummaryCardSection(
-                      label: 'Saved',
-                      value: '${savingsRate.toStringAsFixed(0)}%',
-                      valueColor: savedColor,
-                      icon: Icons.savings,
-                      accentColor: savedColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+        child: Column(
+              children: [
+                _SummaryRow(
+                  icon: Icons.trending_up,
+                  label: 'Income',
+                  value: Formatters.currency(income),
+                  valueColor: _incomeColor,
+                  accentColor: _incomeColor,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.trending_down,
+                  label: 'Expense',
+                  value: Formatters.currency(expense),
+                  valueColor: _expenseColor,
+                  accentColor: _expenseColor,
+                  subtitle: changeText,
+                ),
+                const SizedBox(height: 14),
+                _SummaryRow(
+                  icon: Icons.savings,
+                  label: 'Saved',
+                  value: '${savingsRate.toStringAsFixed(0)}%',
+                  valueColor: savedColor,
+                  accentColor: savedColor,
+                ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _SummaryCardSection extends StatelessWidget {
-  const _SummaryCardSection({
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.icon,
     required this.label,
     required this.value,
     required this.valueColor,
-    required this.icon,
     required this.accentColor,
     this.subtitle,
   });
 
+  final IconData icon;
   final String label;
   final String value;
   final Color valueColor;
-  final IconData icon;
   final Color accentColor;
   final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Row(
+        Icon(icon, size: 13, color: accentColor),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: context.textSecondary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const Spacer(),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Icon(icon, size: 13, color: accentColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF8A8A8A),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                value,
+                style: TextStyle(
+                  color: valueColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
               ),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(color: context.textSecondary, fontSize: 10),
+              ),
+            ],
           ],
         ),
-        const SizedBox(height: 10),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            height: 1.1,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            subtitle!,
-            style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 10),
-          ),
-        ],
       ],
-    );
-  }
-}
-
-class _VertDivider extends StatelessWidget {
-  const _VertDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      color: AppColors.borderDark,
     );
   }
 }
@@ -789,8 +797,8 @@ class _CategoryWatch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -798,7 +806,7 @@ class _CategoryWatch extends StatelessWidget {
         children: [
           Text('Spending by Category', style: AppTypography.sectionTitle(context)),
           const SizedBox(height: 12),
-          const Divider(color: AppColors.borderDark, height: 1),
+          Divider(color: context.border, height: 1),
           const SizedBox(height: 4),
           ...sorted.take(6).map((slice) {
             final prevAmount = prevByCategory[slice.category] ?? 0.0;
@@ -807,7 +815,7 @@ class _CategoryWatch extends StatelessWidget {
                 : null;
             final sliceColor = Formatters.parseHexColor(
               slice.color,
-              fallback: Colors.white,
+              fallback: context.textPrimary,
             );
 
             return Padding(
@@ -823,7 +831,7 @@ class _CategoryWatch extends StatelessWidget {
                   Expanded(
                     child: Text(
                       slice.category,
-                      style: const TextStyle(fontSize: 14, color: Color(0xFFCFCFCF)),
+                      style: TextStyle(fontSize: 14, color: context.textSecondary),
                     ),
                   ),
                   if (delta != null && delta.abs() > 1)
@@ -831,8 +839,8 @@ class _CategoryWatch extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: delta > 0
-                            ? const Color(0xFFFF7A7A).withValues(alpha: 0.15)
-                            : const Color(0xFF5BE39A).withValues(alpha: 0.15),
+                            ? const Color(0xFFF55C5C).withValues(alpha: 0.15)
+                            : const Color(0xFF3DD07B).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
@@ -841,8 +849,8 @@ class _CategoryWatch extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: delta > 0
-                              ? const Color(0xFFFF7A7A)
-                              : const Color(0xFF5BE39A),
+                              ? const Color(0xFFF55C5C)
+                              : const Color(0xFF3DD07B),
                         ),
                       ),
                     ),
@@ -852,10 +860,10 @@ class _CategoryWatch extends StatelessWidget {
                     child: Text(
                       Formatters.currency(slice.total),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: context.textPrimary,
                       ),
                     ),
                   ),
@@ -867,7 +875,7 @@ class _CategoryWatch extends StatelessWidget {
           Center(
             child: Text(
               '${Formatters.currency(totalExpense)} total across ${sorted.length} categories',
-              style: const TextStyle(color: Color(0xFF6A6A6A), fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: 12),
             ),
           ),
         ],
@@ -884,8 +892,8 @@ class _CategoryWatchSkeleton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: const SizedBox(
@@ -909,17 +917,17 @@ class _ExportButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: const Icon(AppIcons.download, size: 18, color: Color(0xFFFFC857)),
+        icon: const Icon(AppIcons.download, size: 18, color: Color(0xFFE8B830)),
         label: Text(
           'Export PDF Report',
           style: TextStyle(
-            color: AppColors.darkTextPrimary,
+            color: context.textPrimary,
             fontWeight: FontWeight.w500,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.borderDark),
-          backgroundColor: const Color(0xFF0E0E0E),
+              side: BorderSide(color: context.border),
+              backgroundColor: context.surface,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -994,8 +1002,8 @@ class _WhatsChanged extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -1015,16 +1023,16 @@ class _WhatsChanged extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '\u2022',
-                    style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                    style: TextStyle(color: context.textSecondary, fontSize: 14),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       line,
-                      style: const TextStyle(
-                        color: Color(0xFFCFCFCF),
+                      style: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 14,
                         height: 1.5,
                       ),
@@ -1043,9 +1051,15 @@ class _WhatsChanged extends StatelessWidget {
 // ── Trend Chart ───────────────────────────────────────────────
 
 class _TrendChart extends StatelessWidget {
-  const _TrendChart({required this.points, required this.isYearly});
+  const _TrendChart({
+    required this.points,
+    required this.isYearly,
+    this.budget = 0,
+  });
+
   final List<InsightPoint> points;
   final bool isYearly;
+  final double budget;
 
   @override
   Widget build(BuildContext context) {
@@ -1055,100 +1069,143 @@ class _TrendChart extends StatelessWidget {
     }
 
     final maxY = chartPoints.map((e) => e.value).fold<double>(0, math.max);
-    final safeMaxY = maxY <= 0 ? 1.0 : maxY * 1.2;
+    final budgetPerPeriod = isYearly ? budget : (budget / 4);
+    final overallMax = [
+      maxY,
+      if (budgetPerPeriod > 0) budgetPerPeriod,
+    ].fold<double>(0, math.max);
+    final safeMaxY = overallMax <= 0 ? 1.0 : overallMax * 1.2;
 
     return LineChart(
       LineChartData(
-        minX: 0,
-        maxX: math.max(0, chartPoints.length - 1).toDouble(),
-        minY: 0,
-        maxY: safeMaxY,
-        gridData: FlGridData(
-          show: true,
-          horizontalInterval: safeMaxY / 4,
-          getDrawingHorizontalLine: (_) =>
-              const FlLine(color: Color(0xFF252525), strokeWidth: 0.8),
-          drawVerticalLine: false,
-        ),
-        borderData: FlBorderData(
-          show: true,
-          border: const Border(
-            bottom: BorderSide(color: Colors.white),
-            left: BorderSide(color: AppColors.borderDark),
-          ),
-        ),
-        lineTouchData: LineTouchData(
-          enabled: true,
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => const Color(0xFFF4F4F4),
-            tooltipRoundedRadius: 8,
-            tooltipPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 10,
+            minX: 0,
+            maxX: math.max(0, chartPoints.length - 1).toDouble(),
+            minY: 0,
+            maxY: safeMaxY,
+            gridData: FlGridData(
+              show: true,
+              horizontalInterval: safeMaxY / 4,
+              getDrawingHorizontalLine: (_) =>
+                  FlLine(color: context.border, strokeWidth: 0.8),
+              drawVerticalLine: false,
             ),
-            tooltipMargin: 12,
-            maxContentWidth: 180,
-            fitInsideHorizontally: true,
-            fitInsideVertically: true,
-            getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
-              final index = spot.x.round();
-              if (index < 0 || index >= chartPoints.length) return null;
-              return _tooltipItem(chartPoints, index);
-            }).toList(),
-          ),
-        ),
-        titlesData: FlTitlesData(
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: safeMaxY / 4,
-              reservedSize: 54,
-              getTitlesWidget: (value, _) => Text(
-                _formatAxisAmount(value),
-                style: const TextStyle(fontSize: 11, color: Color(0xFFA6A6A6)),
+            borderData: FlBorderData(
+              show: true,
+              border: Border(
+                bottom: BorderSide(color: context.textPrimary),
+                left: BorderSide(color: context.border),
               ),
             ),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: 1,
-              reservedSize: 28,
-              getTitlesWidget: (value, _) {
-                final i = value.round();
-                if (i < 0 || i >= chartPoints.length || value != i) {
-                  return const SizedBox.shrink();
-                }
-                return Text(
-                  chartPoints[i].label,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFFA6A6A6),
+            extraLinesData: ExtraLinesData(
+              horizontalLines: [
+                if (budgetPerPeriod > 0)
+                  HorizontalLine(
+                    y: budgetPerPeriod,
+                    color: const Color(0xFFE8B830),
+                    strokeWidth: 1.5,
+                    dashArray: [6, 4],
+                    label: HorizontalLineLabel(
+                      show: true,
+                      alignment: Alignment.topRight,
+                      style: const TextStyle(
+                        color: Color(0xFFE8B830),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      labelResolver: (_) => 'Budget',
+                    ),
                   ),
-                );
-              },
+              ],
             ),
-          ),
-        ),
-        lineBarsData: [
-          LineChartBarData(
-            spots: [
-              for (var i = 0; i < chartPoints.length; i++)
-                FlSpot(i.toDouble(), chartPoints[i].value),
-            ],
-            isCurved: true,
-            color: Colors.white,
-            barWidth: 3,
-            dotData: FlDotData(
+            lineTouchData: LineTouchData(
+              enabled: true,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2A2A2A) : const Color(0xFFF4F4F4),
+                tooltipRoundedRadius: 8,
+                tooltipPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                tooltipMargin: 12,
+                maxContentWidth: 180,
+                fitInsideHorizontally: true,
+                fitInsideVertically: true,
+                getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                  final index = spot.x.round();
+                  if (index < 0 || index >= chartPoints.length) return null;
+                  return _tooltipItem(context, chartPoints, index);
+                }).toList(),
+              ),
+            ),
+            titlesData: FlTitlesData(
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: safeMaxY / 4,
+                  reservedSize: 54,
+                  getTitlesWidget: (value, _) => Text(
+                    _formatAxisAmount(value),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  interval: 1,
+                  reservedSize: 28,
+                  getTitlesWidget: (value, _) {
+                    final i = value.round();
+                    if (i < 0 || i >= chartPoints.length || value != i) {
+                      return const SizedBox.shrink();
+                    }
+                    return Text(
+                      chartPoints[i].label,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.textSecondary,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            lineBarsData: [
+              LineChartBarData(
+                spots: [
+                  for (var i = 0; i < chartPoints.length; i++)
+                    FlSpot(i.toDouble(), chartPoints[i].value),
+                ],
+                isCurved: true,
+                color: context.textPrimary,
+                barWidth: 3,
+                dotData: FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, barData, index) {
+                    final isMax = index < chartPoints.length &&
+                        chartPoints[index].value == maxY;
+                    return FlDotCirclePainter(
+                      radius: isMax ? 5 : 3.5,
+                      color: context.textPrimary,
+                      strokeWidth: isMax ? 2 : 0,
+                      strokeColor: context.border,
+                    );
+                  },
+                ),
+            belowBarData: BarAreaData(
               show: true,
-              getDotPainter: (_, __, ___, ____) =>
-                  FlDotCirclePainter(radius: 4.5, color: Colors.white),
+              color: context.textPrimary.withValues(alpha: 0.06),
+              cutOffY: 0,
+              applyCutOffY: true,
             ),
           ),
         ],
@@ -1156,17 +1213,21 @@ class _TrendChart extends StatelessWidget {
     );
   }
 
-  LineTooltipItem _tooltipItem(List<_TrendChartPoint> chartPoints, int index) {
+  LineTooltipItem _tooltipItem(
+    BuildContext context,
+    List<_TrendChartPoint> chartPoints,
+    int index,
+  ) {
     final point = chartPoints[index];
     final average = point.daysInPeriod <= 0
         ? 0.0
         : point.value / point.daysInPeriod;
-    final comparison = _comparison(chartPoints, index);
+    final comparison = _comparison(context, chartPoints, index);
 
     return LineTooltipItem(
       '${point.title}\n',
-      const TextStyle(
-        color: Colors.black,
+      TextStyle(
+        color: context.textPrimary,
         fontSize: 12,
         fontWeight: FontWeight.w700,
       ),
@@ -1174,24 +1235,24 @@ class _TrendChart extends StatelessWidget {
       children: [
         TextSpan(
           text: '${Formatters.currency(point.value)} spent\n',
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: context.textPrimary,
             fontSize: 13,
             fontWeight: FontWeight.w800,
           ),
         ),
         TextSpan(
           text: '${point.periodLabel}\n',
-          style: const TextStyle(
-            color: Color(0xFF555555),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
         ),
         TextSpan(
           text: '${Formatters.currency(average)} per day',
-          style: const TextStyle(
-            color: Color(0xFF555555),
+          style: TextStyle(
+            color: context.textSecondary,
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -1209,7 +1270,11 @@ class _TrendChart extends StatelessWidget {
     );
   }
 
-  _TrendComparison? _comparison(List<_TrendChartPoint> chartPoints, int index) {
+  _TrendComparison? _comparison(
+    BuildContext context,
+    List<_TrendChartPoint> chartPoints,
+    int index,
+  ) {
     if (index == 0) return null;
 
     final current = chartPoints[index].value;
@@ -1218,13 +1283,13 @@ class _TrendChart extends StatelessWidget {
     if (previous <= 0 && current <= 0) {
       return _TrendComparison(
         text: 'same as $previousLabel',
-        color: const Color(0xFF555555),
+        color: context.textSecondary,
       );
     }
     if (previous <= 0) {
       return _TrendComparison(
         text: '\u25B2 from no spend in $previousLabel',
-        color: const Color(0xFFFF6F61),
+        color: const Color(0xFFF55C5C),
       );
     }
 
@@ -1232,13 +1297,14 @@ class _TrendChart extends StatelessWidget {
     if (chg.abs() < 0.05) {
       return _TrendComparison(
         text: 'same as $previousLabel',
-        color: const Color(0xFF555555),
+        color: context.textSecondary,
       );
     }
     final direction = chg > 0 ? '\u25B2' : '\u25BC';
     return _TrendComparison(
-      text: '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
-      color: chg > 0 ? const Color(0xFFFF6F61) : const Color(0xFF19C37D),
+      text:
+          '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
+      color: chg > 0 ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
     );
   }
 
@@ -1248,6 +1314,48 @@ class _TrendChart extends StatelessWidget {
       return '${AppConstants.currencySymbol}${value.toStringAsFixed(0)}';
     }
     return '${AppConstants.currencySymbol}${(value / 1000).toStringAsFixed(1)}k';
+  }
+}
+
+class _TrendArrow extends StatelessWidget {
+  const _TrendArrow({required this.points, required this.isYearly});
+
+  final List<InsightPoint> points;
+  final bool isYearly;
+
+  @override
+  Widget build(BuildContext context) {
+    final chartPoints = _buildTrendChartPoints(points, isYearly);
+    if (chartPoints.length < 2) return const SizedBox.shrink();
+
+    final first = chartPoints.first.value;
+    final last = chartPoints.last.value;
+    final diff = last - first;
+
+    if (diff.abs() < 0.01) return const SizedBox.shrink();
+
+    final isUp = diff > 0;
+    final pct = first > 0 ? (diff / first * 100).abs() : 100;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isUp ? Icons.trending_up : Icons.trending_down,
+          size: 16,
+          color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}%',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -1267,12 +1375,7 @@ class _TrendSnapshot extends StatelessWidget {
     final chartPoints = _buildTrendChartPoints(points, isYearly);
     if (chartPoints.isEmpty) return const SizedBox.shrink();
 
-    final total = chartPoints.fold<double>(0, (sum, e) => sum + e.value);
     final peak = chartPoints.reduce((a, b) => a.value >= b.value ? a : b);
-    final averageBase = isYearly
-        ? _elapsedMonthsInYear(period)
-        : _elapsedDaysInMonth(period);
-    final average = averageBase <= 0 ? 0.0 : total / averageBase;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.smPlus),
@@ -1283,14 +1386,6 @@ class _TrendSnapshot extends StatelessWidget {
               label: isYearly ? 'ACTIVE MONTHS' : 'ACTIVE WEEKS',
               value: chartPoints.length.toString(),
               caption: 'with spend',
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _SnapshotTile(
-              label: isYearly ? 'AVG / MONTH' : 'AVG / DAY',
-              value: Formatters.currency(average),
-              caption: isYearly ? 'this year' : 'this period',
             ),
           ),
           const SizedBox(width: 8),
@@ -1324,8 +1419,8 @@ class _SnapshotTile extends StatelessWidget {
       height: 76,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
-        border: Border.all(color: const Color(0xFF252525)),
+        color: context.surface,
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -1335,8 +1430,8 @@ class _SnapshotTile extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF8F8F8F),
+            style: TextStyle(
+              color: context.textSecondary,
               fontSize: 9,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
@@ -1347,8 +1442,8 @@ class _SnapshotTile extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: context.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w800,
             ),
@@ -1358,7 +1453,7 @@ class _SnapshotTile extends StatelessWidget {
             caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFFB2B2B2), fontSize: 11),
+            style: TextStyle(color: context.textSecondary, fontSize: 11),
           ),
         ],
       ),
@@ -1429,21 +1524,6 @@ int _daysInWeekBucket(int daysInMonth, int weekIndex) {
   final startDay = (weekIndex * 7) + 1;
   final endDay = math.min(startDay + 6, daysInMonth);
   return math.max(0, endDay - startDay + 1);
-}
-
-int _elapsedDaysInMonth(DateTime period) {
-  final now = DateTime.now();
-  final daysInMonth = DateTime(period.year, period.month + 1, 0).day;
-  if (period.year == now.year && period.month == now.month) {
-    return math.min(now.day, daysInMonth);
-  }
-  return daysInMonth;
-}
-
-int _elapsedMonthsInYear(DateTime period) {
-  final now = DateTime.now();
-  if (period.year == now.year) return now.month;
-  return 12;
 }
 
 // ── Data Classes ──────────────────────────────────────────────

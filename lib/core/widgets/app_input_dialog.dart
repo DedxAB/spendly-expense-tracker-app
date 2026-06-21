@@ -129,8 +129,8 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
                 children: [
                   Text(
                     widget.requiredLabel!,
-                    style: const TextStyle(
-                      color: Color(0xFFB3B3B3),
+                    style: TextStyle(
+                      color: context.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

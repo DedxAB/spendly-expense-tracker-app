@@ -47,8 +47,8 @@ class MonthlySummaryCard extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.borderDark),
-        color: const Color(0xFF0E0E0E),
+        border: Border.all(color: context.border),
+        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -56,7 +56,7 @@ class MonthlySummaryCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: Color(0xFFFFC857), size: 18),
+              const Icon(Icons.auto_awesome, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
               Text(
                 isYearly ? 'Year in Review' : 'Monthly Insights',
@@ -71,16 +71,16 @@ class MonthlySummaryCard extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '\u2022',
-                    style: TextStyle(color: Color(0xFF8A8A8A), fontSize: 14),
+                    style: TextStyle(color: context.textSecondary, fontSize: 14),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       line,
-                      style: const TextStyle(
-                        color: Color(0xFFCFCFCF),
+                      style: TextStyle(
+                        color: context.textSecondary,
                         fontSize: 14,
                         height: 1.5,
                       ),

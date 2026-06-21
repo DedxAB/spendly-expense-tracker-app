@@ -50,7 +50,7 @@ Future<bool> showAppDeleteConfirmDialog(
           DialogActionsRow(
             cancelText: 'Cancel',
             confirmText: confirmText,
-            confirmColor: const Color(0xFFB13232),
+            confirmColor: const Color(0xFFD94545),
             onCancel: () => rootNav.pop(false),
             onConfirm: () => rootNav.pop(true),
           ),

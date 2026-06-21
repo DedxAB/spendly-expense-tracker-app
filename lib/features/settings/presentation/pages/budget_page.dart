@@ -71,7 +71,7 @@ class BudgetPage extends ConsumerWidget {
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: AppIcons.bell,
-        leadingIconColor: const Color(0xFFFFC857),
+        leadingIconColor: const Color(0xFFE8B830),
         onLeadingTap: () => context.push('/notifications'),
       ),
       body: ListView(
@@ -86,16 +86,16 @@ class BudgetPage extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             '${DateFormat('MMMM').format(now)} Overview',
-            style: const TextStyle(color: Color(0xFFC5C5C5)),
+            style: TextStyle(color: context.textSecondary),
           ),
           const SizedBox(height: 10),
-          const Divider(color: AppColors.borderDark),
+          Divider(color: context.border),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderDark),
-              color: const Color(0xFF0E0E0E),
+              border: Border.all(color: context.border),
+              color: context.surface,
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: Column(
@@ -103,18 +103,18 @@ class BudgetPage extends ConsumerWidget {
               children: [
                 Text('Monthly Health', style: AppTypography.cardTitle(context)),
                 const SizedBox(height: 6),
-                const Text(
-                  'TOTAL AVAILABLE VS USED',
-                  style: TextStyle(
-                    letterSpacing: 1.8,
-                    fontSize: 11,
-                    color: Color(0xFFAFAFAF),
+                  Text(
+                    'TOTAL AVAILABLE VS USED',
+                    style: TextStyle(
+                      letterSpacing: 1.8,
+                      fontSize: 11,
+                      color: context.textSecondary,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 10),
                 RichText(
                   text: TextSpan(
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: context.textPrimary),
                     children: [
                       TextSpan(
                         text: Formatters.currency(monthlySpend),
@@ -122,9 +122,9 @@ class BudgetPage extends ConsumerWidget {
                       ),
                       TextSpan(
                         text: ' / ${Formatters.currency(budget)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFFC8C8C8),
+                          color: context.textSecondary,
                         ),
                       ),
                     ],
@@ -134,8 +134,8 @@ class BudgetPage extends ConsumerWidget {
                 LinearProgressIndicator(
                   value: budget <= 0 ? 0 : (monthlySpend / budget).clamp(0, 1),
                   minHeight: 8,
-                  color: Colors.white,
-                  backgroundColor: const Color(0xFF2F2F2F),
+                  color: context.textPrimary,
+                  backgroundColor: context.border,
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -150,7 +150,7 @@ class BudgetPage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(color: AppColors.borderDark),
+                Divider(color: context.border),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -158,11 +158,11 @@ class BudgetPage extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Safe to Spend',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFB8B8B8),
+                              color: context.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -172,8 +172,8 @@ class BudgetPage extends ConsumerWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: safePerDay >= 0
-                                  ? const Color(0xFF59F28F)
-                                  : const Color(0xFFFFB3A8),
+                                  ? const Color(0xFF3DD07B)
+                                  : const Color(0xFFFF8A7A),
                               height: 1,
                             ),
                           ),
@@ -186,7 +186,7 @@ class BudgetPage extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF797979)),
+                        border: Border.all(color: context.border),
                         borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
                       child: Text(
@@ -403,7 +403,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 child: Container(
                   width: 64,
                   height: 4,
-                  color: const Color(0xFF6A6A6A),
+                  color: context.border,
                 ),
               ),
               const SizedBox(height: AppSpacing.smPlus),
@@ -445,7 +445,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 Text(
                   'Total category budgets (${Formatters.currency(totalCategoryBudget)}) cannot exceed monthly budget (${Formatters.currency(monthlyBudgetValue)}).',
                   style: const TextStyle(
-                    color: Color(0xFFFFB3A8),
+                    color: Color(0xFFFF8A7A),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -486,8 +486,8 @@ class _ModalFieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFFB3B3B3),
+      style: TextStyle(
+        color: context.textSecondary,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
@@ -525,9 +525,9 @@ class _BudgetCategoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E0E),
+        color: context.surface,
         border: Border.all(
-          color: overBudget ? const Color(0xFFFFB3A8) : AppColors.borderDark,
+          color: overBudget ? const Color(0xFFFF8A7A) : context.border,
         ),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
@@ -540,7 +540,7 @@ class _BudgetCategoryCard extends StatelessWidget {
                 child: Text(
                   name,
                   style: AppTypography.sectionTitle(context).copyWith(
-                    color: overBudget ? const Color(0xFFFFB3A8) : Colors.white,
+                    color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
                   ),
                 ),
               ),
@@ -550,14 +550,14 @@ class _BudgetCategoryCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     letterSpacing: 1.2,
-                    color: Color(0xFFFFB3A8),
+                    color: Color(0xFFFF8A7A),
                   ),
                 ),
               const SizedBox(width: 8),
               Icon(
                 icon,
                 size: 17,
-                color: overBudget ? const Color(0xFFFFB3A8) : Colors.white,
+                color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
               ),
             ],
           ),
@@ -566,16 +566,16 @@ class _BudgetCategoryCard extends StatelessWidget {
             '${Formatters.currency(spend)} / ${Formatters.currency(allocated)}',
             style: TextStyle(
               color: overBudget
-                  ? const Color(0xFFFFB3A8)
-                  : const Color(0xFFE1E1E1),
+                  ? const Color(0xFFFF8A7A)
+                  : context.textPrimary,
             ),
           ),
           const SizedBox(height: 18),
           LinearProgressIndicator(
             value: ratio.clamp(0, 1.6),
             minHeight: 4,
-            color: overBudget ? const Color(0xFFFFB3A8) : Colors.white,
-            backgroundColor: const Color(0xFF2F2F2F),
+            color: overBudget ? const Color(0xFFFF8A7A) : context.textPrimary,
+            backgroundColor: context.border,
           ),
           const SizedBox(height: 6),
           Row(
@@ -586,8 +586,8 @@ class _BudgetCategoryCard extends StatelessWidget {
                 '${remaining >= 0 ? Formatters.currency(remaining) : '-${Formatters.currency(remaining.abs())}'} ${remaining >= 0 ? 'Left' : 'Over'}',
                 style: TextStyle(
                   color: overBudget
-                      ? const Color(0xFFFFB3A8)
-                      : const Color(0xFFD0D0D0),
+                      ? const Color(0xFFFF8A7A)
+                      : context.textSecondary,
                 ),
               ),
             ],

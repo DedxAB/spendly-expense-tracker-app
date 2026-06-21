@@ -24,20 +24,7 @@ class CategoriesPage extends ConsumerWidget {
 
     await showDialog<void>(
       context: context,
-      builder: (context) => Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF0E0E0E),
-            onSurface: Colors.white,
-          ),
-          dialogTheme: DialogThemeData(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-            backgroundColor: Color(0xFF0E0E0E),
-          ),
-        ),
-        child: StatefulBuilder(
+      builder: (context) => StatefulBuilder(
           builder: (context, setState) => AlertDialog(
             title: const Text('Add Category'),
             content: SizedBox(
@@ -88,7 +75,6 @@ class CategoriesPage extends ConsumerWidget {
               ),
             ],
           ),
-        ),
       ),
     );
   }
@@ -96,13 +82,13 @@ class CategoriesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(allCategoriesProvider);
-    final bg = Colors.black;
-    final surface = const Color(0xFF0E0E0E);
-    final border = const Color(0xFF2E2E2E);
-    final primary = Colors.white;
-    final secondary = const Color(0xFFB0B0B0);
+    final bg = context.background;
+    final surface = context.surface;
+    final border = context.border;
+    final primary = context.textPrimary;
+    final secondary = context.textSecondary;
     const destructive = Color(0xFFE35D5D);
-    const destructiveBorder = Color(0xFF5A2323);
+    final destructiveBorder = context.border;
 
     return Scaffold(
       backgroundColor: bg,
@@ -117,8 +103,6 @@ class CategoriesPage extends ConsumerWidget {
         height: 54,
         child: FloatingActionButton.extended(
           onPressed: () => _showCategoryDialog(context, ref),
-          backgroundColor: primary,
-          foregroundColor: Colors.black,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
           icon: const Icon(AppIcons.plus, size: 18),
           label: const Text(
@@ -234,7 +218,7 @@ class CategoriesPage extends ConsumerWidget {
                     height: 44,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A1A),
+                      color: context.surfaceAlt,
                       borderRadius: BorderRadius.circular(AppRadii.md),
                     ),
                     child: Icon(
@@ -296,11 +280,11 @@ class CategoriesPage extends ConsumerWidget {
           );
         },
         loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+            Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Text(
             'Failed to load: $error',
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: context.textPrimary),
           ),
         ),
       ),
@@ -317,8 +301,8 @@ class _ModalFieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFFB3B3B3),
+      style: TextStyle(
+        color: context.textSecondary,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
@@ -342,11 +326,13 @@ class _CategoryTypeSegment extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF4A4A4A)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Row(
-        children: List.generate(items.length, (index) {
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Row(
+          children: List.generate(items.length, (index) {
           final item = items[index];
           final isSelected = selected == item.$1;
           return Expanded(
@@ -355,12 +341,12 @@ class _CategoryTypeSegment extends StatelessWidget {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.black,
+                  color: isSelected ? context.textPrimary : context.surface,
                   border: Border(
                     right: BorderSide(
                       color: index == items.length - 1
                           ? Colors.transparent
-                          : const Color(0xFF4A4A4A),
+                          : context.border,
                     ),
                   ),
                 ),
@@ -368,7 +354,7 @@ class _CategoryTypeSegment extends StatelessWidget {
                 child: Text(
                   item.$2,
                   style: TextStyle(
-                    color: isSelected ? Colors.black : Colors.white,
+                    color: isSelected ? context.surface : context.textPrimary,
                     fontSize: 13,
                     letterSpacing: 0.2,
                     fontWeight: FontWeight.w600,
@@ -378,6 +364,7 @@ class _CategoryTypeSegment extends StatelessWidget {
             ),
           );
         }),
+        ),
       ),
     );
   }

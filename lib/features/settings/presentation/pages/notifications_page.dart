@@ -36,9 +36,9 @@ class NotificationsPage extends ConsumerWidget {
         children: [
           Text('Notifications', style: AppTypography.screenTitle(context)),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Recent alerts and activity updates.',
-            style: TextStyle(color: Color(0xFFABABAB), fontSize: 14),
+            style: TextStyle(color: context.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 18),
           const Divider(),
@@ -47,20 +47,20 @@ class NotificationsPage extends ConsumerWidget {
               title: 'Budget exceeded',
               message:
                   'You are over budget by ${Formatters.currency(summary.remainingBudget.abs())} this month.',
-              color: const Color(0xFFFF6B6B),
+              color: const Color(0xFFF55C5C),
             ),
           if (recent.isNotEmpty)
             _NoticeTile(
               title: 'Latest transaction',
               message:
                   '${recent.first.type.name == 'income' ? 'Income' : 'Expense'} of ${Formatters.currency(recent.first.amount)} added.',
-              color: const Color(0xFF57F28F),
+              color: const Color(0xFF3DD07B),
             ),
           _NoticeTile(
             title: 'Push notifications',
             message:
                 'Daily reminder: ${(settings?.dailyReminderEnabled ?? false) ? 'ON' : 'OFF'} | Budget alerts: ${(settings?.budgetAlertsEnabled ?? false) ? 'ON' : 'OFF'}',
-            color: const Color(0xFFB0B0B0),
+            color: context.textSecondary,
           ),
           const SizedBox(height: 12),
           Align(
@@ -93,7 +93,7 @@ class _NoticeTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF2E2E2E)),
+        border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
@@ -110,7 +110,7 @@ class _NoticeTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             message,
-            style: const TextStyle(fontSize: 13, color: Color(0xFFC2C2C2)),
+            style: TextStyle(fontSize: 13, color: context.textSecondary),
           ),
         ],
       ),
