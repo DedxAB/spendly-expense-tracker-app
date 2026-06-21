@@ -13,6 +13,7 @@ import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
+import 'package:spendly/features/cloud_sync/domain/entities/drive_backup_info.dart';
 import 'package:spendly/features/cloud_sync/presentation/providers/cloud_sync_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
@@ -104,6 +105,202 @@ class SettingsPage extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Logout failed. Please try again.')),
       );
+    }
+  }
+
+  Future<bool> _restoreFromDrive(BuildContext context, WidgetRef ref) async {
+    final cloudController = ref.read(cloudSyncControllerProvider.notifier);
+    final cloud = ref.read(cloudSyncControllerProvider).valueOrNull;
+
+    DriveBackupInfo? backupInfo;
+    try {
+      backupInfo = await cloudController.getBackupInfo();
+    } catch (_) {
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not fetch backup info. Please try again.'),
+        ),
+      );
+      return false;
+    }
+
+    if (backupInfo == null) {
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No backup found in Google Drive.'),
+        ),
+      );
+      return false;
+    }
+
+    final lastLocalBackup = cloud?.lastBackupAt;
+    final backupDate = backupInfo.exportedAt;
+    final localDeviceId = await cloudController.getDeviceId();
+    final isDifferentDevice = localDeviceId != null &&
+        backupInfo.sourceDeviceId != null &&
+        backupInfo.sourceDeviceId != localDeviceId;
+
+    if (!context.mounted) return false;
+
+    final shouldRestore = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) {
+        final rootNav = Navigator.of(dialogContext, rootNavigator: true);
+        final theme = Theme.of(dialogContext);
+        final surfaceColor = theme.colorScheme.surface;
+        final infoColor = const Color(0xFF5B7FBF);
+
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: surfaceColor,
+          surfaceTintColor: Colors.transparent,
+          titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          title: const Text('Restore from Google Drive?'),
+          content: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                _RestoreInfoRow(
+                  label: 'Backup created on',
+                  value: DateFormat('dd MMM yyyy, hh:mm a').format(backupDate),
+                  icon: Icons.cloud_download_outlined,
+                ),
+                const SizedBox(height: 8),
+                _RestoreInfoRow(
+                  label: 'Your last backup',
+                  value: lastLocalBackup != null
+                      ? DateFormat('dd MMM yyyy, hh:mm a')
+                          .format(lastLocalBackup)
+                      : 'Never',
+                  icon: Icons.history,
+                ),
+                if (isDifferentDevice) ...[
+                  const SizedBox(height: 8),
+                  _RestoreInfoRow(
+                    label: 'Source device',
+                    value: 'Different device',
+                    icon: Icons.devices_other,
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2F6F46).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF2F6F46).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.shield_outlined,
+                          color: const Color(0xFF2F6F46), size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Your current data will be automatically backed '
+                          'up to Drive before restoring — nothing is lost. '
+                          'A local snapshot is also saved for extra safety.',
+                          style: TextStyle(
+                            color: const Color(0xFF2F6F46),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: infoColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: infoColor.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: infoColor, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Current local data will be replaced with '
+                          'the Drive backup contents.',
+                          style: TextStyle(
+                            color: infoColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => rootNav.pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => rootNav.pop(true),
+                    child: const Text('Restore'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldRestore != true) return false;
+
+    try {
+      await cloudController.restoreFromDrive();
+      await cloudController.refresh();
+      if (!context.mounted) return true;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Restore completed successfully.'),
+        ),
+      );
+      return true;
+    } catch (_) {
+      if (!context.mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Restore failed. Please try again.'),
+        ),
+      );
+      return false;
     }
   }
 
@@ -455,18 +652,10 @@ class SettingsPage extends ConsumerWidget {
                       child: const Text('Backup now'),
                     ),
                     OutlinedButton(
-                      onPressed: cloudSync?.isConnected == true
+                      onPressed: cloudSync?.isConnected == true &&
+                              cloudSync?.isProcessing != true
                           ? () async {
-                              await _runCloudAction(
-                                context,
-                                () => ref
-                                    .read(cloudSyncControllerProvider.notifier)
-                                    .restoreFromDrive(),
-                                successMessage:
-                                    'Restore completed successfully.',
-                                failureMessage:
-                                    'Restore failed. Please try again.',
-                              );
+                              await _restoreFromDrive(context, ref);
                             }
                           : null,
                       child: const Text('Restore'),
@@ -1147,6 +1336,51 @@ class _SheetLabeledField extends StatelessWidget {
           keyboardType: keyboardType,
           textCapitalization: textCapitalization,
           decoration: InputDecoration(hintText: hintText),
+        ),
+      ],
+    );
+  }
+}
+
+class _RestoreInfoRow extends StatelessWidget {
+  const _RestoreInfoRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: context.textSecondary),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: context.textSecondary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ],
     );
