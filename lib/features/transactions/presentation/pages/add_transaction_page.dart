@@ -173,6 +173,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   }
 
   Future<void> _pickDate() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final picked = await showDatePicker(
       context: context,
       initialDate: _date,
@@ -182,20 +183,27 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
         final base = Theme.of(context);
         return Theme(
           data: base.copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Colors.white,
-              onPrimary: Colors.black,
-              surface: Color(0xFF0E0E0E),
-              onSurface: Colors.white,
-            ),
+            colorScheme: isDark
+                ? const ColorScheme.dark(
+                    primary: Colors.white,
+                    onPrimary: Colors.black,
+                    surface: Color(0xFF0E0E0E),
+                    onSurface: Colors.white,
+                  )
+                : const ColorScheme.light(
+                    primary: Color(0xFF111111),
+                    onPrimary: Colors.white,
+                    surface: Color(0xFFFFFFFF),
+                    onSurface: Color(0xFF111111),
+                  ),
             dialogTheme: DialogThemeData(
-              backgroundColor: Color(0xFF0E0E0E),
+              backgroundColor: isDark ? const Color(0xFF0E0E0E) : const Color(0xFFFFFFFF),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
             ),
-            datePickerTheme: AppDatePickerTheme.darkBoxy(),
+            datePickerTheme: isDark ? AppDatePickerTheme.darkBoxy() : AppDatePickerTheme.lightBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
+                foregroundColor: isDark ? Colors.white : const Color(0xFF111111),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),

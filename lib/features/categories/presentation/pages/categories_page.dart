@@ -94,7 +94,7 @@ class CategoriesPage extends ConsumerWidget {
       backgroundColor: bg,
       appBar: NoirHeader(
         showLeading: true,
-        leadingIcon: AppIcons.chevronLeft,
+        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
         showProfileAction: false,
       ),

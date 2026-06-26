@@ -73,7 +73,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     return Scaffold(
       appBar: NoirHeader(
         showLeading: true,
-        leadingIcon: AppIcons.chevronLeft,
+        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -342,12 +342,12 @@ class _MonthGrid extends StatelessWidget {
                         ? context.surfaceAlt
                         : (isToday ? context.surfaceAlt : context.surface),
                     border: Border.all(
-                      color: isSelected
-                          ? context.surfaceAlt
-                          : (isToday
-                                ? context.border
+                      color: isToday && !isSelected
+                          ? context.textPrimary
+                          : (isSelected
+                                ? context.textPrimary
                                 : context.border),
-                      width: isToday && !isSelected ? 1.2 : 1,
+                      width: isToday && !isSelected ? 1.5 : 1,
                     ),
                   ),
                   child: Column(

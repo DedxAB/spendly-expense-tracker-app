@@ -63,4 +63,67 @@ class AppDatePickerTheme {
       confirmButtonStyle: TextButton.styleFrom(foregroundColor: Colors.white),
     );
   }
+
+  static DatePickerThemeData lightBoxy() {
+    const surface = Color(0xFFFFFFFF);
+    const border = Color(0xFFD0D0D0);
+    const divider = Color(0xFFE8E8E8);
+    const selected = Color(0xFF111111);
+    const onSelected = Colors.white;
+
+    return DatePickerThemeData(
+      backgroundColor: surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+      headerBackgroundColor: surface,
+      headerForegroundColor: const Color(0xFF111111),
+      dayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return selected;
+        return Colors.transparent;
+      }),
+      dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return onSelected;
+        return const Color(0xFF111111);
+      }),
+      dayOverlayColor: const WidgetStatePropertyAll(Colors.transparent),
+      dayStyle: const TextStyle(fontWeight: FontWeight.w600),
+      dayShape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.sm)),
+      ),
+      todayForegroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return onSelected;
+        return const Color(0xFF111111);
+      }),
+      todayBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return selected;
+        return Colors.transparent;
+      }),
+      todayBorder: const BorderSide(color: border),
+      yearForegroundColor: const WidgetStatePropertyAll(Color(0xFF111111)),
+      yearBackgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return selected;
+        return Colors.transparent;
+      }),
+      yearShape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.sm)),
+      ),
+      rangeSelectionBackgroundColor: const Color(0xFFE8E8E8),
+      dividerColor: divider,
+      rangePickerBackgroundColor: surface,
+      rangePickerSurfaceTintColor: Colors.transparent,
+      rangePickerShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      rangePickerHeaderBackgroundColor: surface,
+      rangePickerHeaderForegroundColor: const Color(0xFF111111),
+      rangePickerHeaderHeadlineStyle: const TextStyle(
+        fontWeight: FontWeight.w700,
+      ),
+      rangePickerHeaderHelpStyle: const TextStyle(fontWeight: FontWeight.w600),
+      rangePickerElevation: 0,
+      rangePickerShadowColor: Colors.transparent,
+      cancelButtonStyle: TextButton.styleFrom(foregroundColor: const Color(0xFF111111)),
+      confirmButtonStyle: TextButton.styleFrom(foregroundColor: const Color(0xFF111111)),
+    );
+  }
 }

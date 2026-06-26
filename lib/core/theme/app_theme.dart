@@ -62,7 +62,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.borderLight),
         ),
       ),
-      datePickerTheme: AppDatePickerTheme.darkBoxy(),
+      datePickerTheme: AppDatePickerTheme.lightBoxy(),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: AppColors.lightSurface,
         surfaceTintColor: Colors.transparent,
