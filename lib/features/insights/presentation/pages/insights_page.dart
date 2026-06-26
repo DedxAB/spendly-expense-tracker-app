@@ -1336,6 +1336,7 @@ class _TrendArrow extends StatelessWidget {
 
     final isUp = diff > 0;
     final pct = first > 0 ? (diff / first * 100).abs() : 100;
+    final periodLabel = isYearly ? 'first month' : 'first week';
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -1347,7 +1348,7 @@ class _TrendArrow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}%',
+          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}% from ${periodLabel} start',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

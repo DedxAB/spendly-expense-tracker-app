@@ -132,29 +132,42 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     super.dispose();
   }
 
+  DateTime? _backgroundedAt;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _visible = true;
       _lastUsageTick = DateTime.now();
+      final enabled =
+          ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
+          false;
+      if (enabled && _backgroundedAt != null) {
+        final away = DateTime.now().difference(_backgroundedAt!);
+        if (away.inSeconds <= 30) {
+          setState(() {
+            _locked = false;
+            _unlockPromptQueuedForCurrentLock = false;
+          });
+        }
+      }
+      _backgroundedAt = null;
       return;
     }
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _flushUsage();
       _visible = false;
-    }
-
-    final enabled =
-        ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
-        false;
-    if (!enabled) return;
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      setState(() {
-        _locked = true;
-        _unlockPromptQueuedForCurrentLock = false;
-      });
+      _backgroundedAt = DateTime.now();
+      final enabled =
+          ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
+          false;
+      if (enabled) {
+        setState(() {
+          _locked = true;
+          _unlockPromptQueuedForCurrentLock = false;
+        });
+      }
     }
   }
 

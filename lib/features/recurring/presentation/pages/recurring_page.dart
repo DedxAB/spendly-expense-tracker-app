@@ -278,7 +278,7 @@ class RecurringPage extends ConsumerWidget {
       backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
-        leadingIcon: AppIcons.chevronLeft,
+        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
         showProfileAction: false,
       ),

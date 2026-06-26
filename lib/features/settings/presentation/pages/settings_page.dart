@@ -326,7 +326,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bg = context.surface;
+    final bg = context.background;
     final divider = context.border;
     final primary = context.textPrimary;
     final secondary = context.textSecondary;
@@ -414,145 +414,167 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           _SectionLabel('PREFERENCES', color: secondary),
-          Divider(color: divider, height: 26),
-          _ProfileRow(
-            icon: AppIcons.user,
-            title: 'Account',
-            onTap: () => _editAccount(context, ref),
-            textColor: primary,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.user,
-              label: 'Account',
-              brightness: brightness,
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surface,
+              border: Border.all(color: divider),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.notifications,
-            title: 'Notifications',
-            onTap: () => context.push('/notifications'),
-            textColor: primary,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.notifications,
-              label: 'Notifications',
-              brightness: brightness,
+            child: Column(
+              children: [
+                _ProfileRow(
+                  icon: AppIcons.user,
+                  title: 'Account',
+                  onTap: () => _editAccount(context, ref),
+                  textColor: primary,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.user,
+                    label: 'Account',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.notifications,
+                  title: 'Notifications',
+                  onTap: () => context.push('/notifications'),
+                  textColor: primary,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.notifications,
+                    label: 'Notifications',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ThemeToggleTile(
+                  currentMode: settings?.themeMode ?? AppThemeMode.system,
+                  onChanged: (mode) {
+                    ref.read(settingsRepositoryProvider).setThemeMode(mode);
+                  },
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.categories,
+                  title: 'Categories',
+                  onTap: () => context.push('/categories'),
+                  textColor: primary,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.categories,
+                    label: 'Categories',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.money,
+                  title: 'Lend & Borrow',
+                  subtitle: 'Track people and settlements',
+                  onTap: () => context.go('/lend'),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.money,
+                    label: 'Lend & Borrow',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.repeat,
+                  title: 'Recurring',
+                  subtitle: 'Automate repeating expenses',
+                  onTap: () => context.push('/recurring'),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.repeat,
+                    label: 'Recurring',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.history,
+                  title: 'Activity & Screen Time',
+                  subtitle: 'Audit logs and app usage',
+                  onTap: () => context.push('/activity'),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.history,
+                    label: 'Activity & Screen Time',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+              ],
             ),
-            dividerColor: divider,
-          ),
-          _ThemeToggleTile(
-            currentMode: settings?.themeMode ?? AppThemeMode.system,
-            onChanged: (mode) {
-              ref.read(settingsRepositoryProvider).setThemeMode(mode);
-            },
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.categories,
-            title: 'Categories',
-            onTap: () => context.push('/categories'),
-            textColor: primary,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.categories,
-              label: 'Categories',
-              brightness: brightness,
-            ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.money,
-            title: 'Lend & Borrow',
-            subtitle: 'Track people and settlements',
-            onTap: () => context.go('/lend'),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.money,
-              label: 'Lend & Borrow',
-              brightness: brightness,
-            ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.repeat,
-            title: 'Recurring',
-            subtitle: 'Automate repeating expenses',
-            onTap: () => context.push('/recurring'),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.repeat,
-              label: 'Recurring',
-              brightness: brightness,
-            ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.history,
-            title: 'Activity & Screen Time',
-            subtitle: 'Audit logs and app usage',
-            onTap: () => context.push('/activity'),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.history,
-              label: 'Activity & Screen Time',
-              brightness: brightness,
-            ),
-            dividerColor: divider,
           ),
           const SizedBox(height: 24),
           _SectionLabel('PRIVACY & LOCKS', color: secondary),
-          Divider(color: divider, height: 26),
-          _PrivacyShieldTile(
-            enabled: privacyLock,
-            onChanged: (value) => _setPrivacyLock(context, ref, value),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.download,
-            title: 'Export JSON',
-            subtitle: 'Create a portable backup file',
-            onTap: () => _openExport(context, ref),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.download,
-              label: 'Export JSON',
-              brightness: brightness,
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surface,
+              border: Border.all(color: divider),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.upload,
-            title: 'Import Data',
-            subtitle: 'Restore from a Spendly JSON backup',
-            onTap: () => _openImport(context, ref),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.upload,
-              label: 'Import Data',
-              brightness: brightness,
+            child: Column(
+              children: [
+                _PrivacyShieldTile(
+                  enabled: privacyLock,
+                  onChanged: (value) => _setPrivacyLock(context, ref, value),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.download,
+                  title: 'Export JSON',
+                  subtitle: 'Create a portable backup file',
+                  onTap: () => _openExport(context, ref),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.download,
+                    label: 'Export JSON',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.upload,
+                  title: 'Import Data',
+                  subtitle: 'Restore from a Spendly JSON backup',
+                  onTap: () => _openImport(context, ref),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.upload,
+                    label: 'Import Data',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+                _ProfileRow(
+                  icon: AppIcons.trash,
+                  title: 'Erase All Data',
+                  subtitle: 'Reset app to a clean start',
+                  onTap: () => _eraseAllData(context, ref),
+                  textColor: primary,
+                  subtitleColor: muted,
+                  iconColor: AppIcons.getColorForIcon(
+                    AppIcons.trash,
+                    label: 'Erase All Data',
+                    brightness: brightness,
+                  ),
+                  dividerColor: divider,
+                ),
+              ],
             ),
-            dividerColor: divider,
-          ),
-          _ProfileRow(
-            icon: AppIcons.trash,
-            title: 'Erase All Data',
-            subtitle: 'Reset app to a clean start',
-            onTap: () => _eraseAllData(context, ref),
-            textColor: primary,
-            subtitleColor: muted,
-            iconColor: AppIcons.getColorForIcon(
-              AppIcons.trash,
-              label: 'Erase All Data',
-              brightness: brightness,
-            ),
-            dividerColor: divider,
           ),
           const SizedBox(height: 24),
           _SectionLabel('DATA & SYSTEM', color: secondary),
-          Divider(color: divider, height: 26),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
@@ -563,9 +585,9 @@ class SettingsPage extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Cloud Sync',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -584,9 +606,9 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.smPlus),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
+                  title: Text(
                     'Automatic daily backup',
-                    style: TextStyle(fontSize: 14),
+                    style: TextStyle(fontSize: 14, color: primary),
                   ),
                   value: cloudSync?.automaticDailyBackup ?? false,
                   onChanged: cloudSync?.isConnected == true
@@ -665,45 +687,58 @@ class SettingsPage extends ConsumerWidget {
               ],
             ),
           ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'Budget alerts',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: context.surface,
+              border: Border.all(color: divider),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
             ),
-            subtitle: const Text(
-              'Show in-app budget warning notifications',
-              style: TextStyle(fontSize: 12),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
+                    'Budget alerts',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  ),
+                  subtitle: Text(
+                    'Show in-app budget warning notifications',
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  value: budgetAlerts,
+                  onChanged: (value) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .setNotificationPreferences(
+                          budgetAlertsEnabled: value,
+                          dailyReminderEnabled: dailyReminder,
+                        );
+                  },
+                ),
+                Divider(height: 1, color: divider, indent: 16, endIndent: 16),
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
+                    'Daily reminder',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  ),
+                  subtitle: Text(
+                    'Receive a push reminder every day',
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  value: dailyReminder,
+                  onChanged: (value) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .setNotificationPreferences(
+                          budgetAlertsEnabled: budgetAlerts,
+                          dailyReminderEnabled: value,
+                        );
+                  },
+                ),
+              ],
             ),
-            value: budgetAlerts,
-            onChanged: (value) async {
-              await ref
-                  .read(settingsRepositoryProvider)
-                  .setNotificationPreferences(
-                    budgetAlertsEnabled: value,
-                    dailyReminderEnabled: dailyReminder,
-                  );
-            },
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text(
-              'Daily reminder',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            subtitle: const Text(
-              'Receive a push reminder every day',
-              style: TextStyle(fontSize: 12),
-            ),
-            value: dailyReminder,
-            onChanged: (value) async {
-              await ref
-                  .read(settingsRepositoryProvider)
-                  .setNotificationPreferences(
-                    budgetAlertsEnabled: budgetAlerts,
-                    dailyReminderEnabled: value,
-                  );
-            },
           ),
           const SizedBox(height: 26),
           SizedBox(
@@ -1071,7 +1106,7 @@ class _PrivacyShieldTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: dividerColor)),
       ),
@@ -1083,7 +1118,7 @@ class _PrivacyShieldTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: enabled
                   ? const Color(0xFF142119)
-                  : context.surface,
+                  : const Color(0xFF3DD07B).withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppRadii.md),
               border: Border.all(
                 color: enabled
@@ -1093,7 +1128,9 @@ class _PrivacyShieldTile extends StatelessWidget {
             ),
             child: Icon(
               AppIcons.shield,
-              color: AppIcons.getColorForIcon(AppIcons.shield, brightness: Theme.of(context).brightness),
+              color: enabled
+                  ? Colors.white
+                  : AppIcons.getColorForIcon(AppIcons.shield, brightness: Theme.of(context).brightness),
               size: 22,
             ),
           ),
@@ -1135,7 +1172,7 @@ class _ThemeToggleTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: dividerColor)),
       ),
@@ -1145,7 +1182,7 @@ class _ThemeToggleTile extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-                color: context.surfaceAlt,
+              color: const Color(0xFFE8B830).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
             child: const Icon(Icons.brightness_6, color: Color(0xFFE8B830), size: 20),
@@ -1433,7 +1470,7 @@ class _ProfileRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: dividerColor)),
         ),
@@ -1443,7 +1480,7 @@ class _ProfileRow extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-              color: context.surfaceAlt,
+                color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
               child: Icon(icon, color: iconColor, size: 20),

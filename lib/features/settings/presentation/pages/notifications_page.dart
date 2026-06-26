@@ -20,6 +20,7 @@ class NotificationsPage extends ConsumerWidget {
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
 
     return Scaffold(
+      backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: Icons.arrow_back,
@@ -41,7 +42,7 @@ class NotificationsPage extends ConsumerWidget {
             style: TextStyle(color: context.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 18),
-          const Divider(),
+          Divider(color: context.border),
           if (summary != null && summary.remainingBudget < 0)
             _NoticeTile(
               title: 'Budget exceeded',
@@ -67,6 +68,13 @@ class NotificationsPage extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: OutlinedButton(
               onPressed: () => context.push('/settings'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: context.textPrimary,
+                side: BorderSide(color: context.border),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+              ),
               child: const Text('Open Notification Settings'),
             ),
           ),
@@ -91,28 +99,65 @@ class _NoticeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        color: context.surface,
         border: Border.all(color: context.border),
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: color,
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(AppRadii.md - 1),
+                  bottomLeft: Radius.circular(AppRadii.md - 1),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            message,
-            style: TextStyle(fontSize: 13, color: context.textSecondary),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 14, 14, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      message,
+                      style: TextStyle(fontSize: 13, color: context.textSecondary, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

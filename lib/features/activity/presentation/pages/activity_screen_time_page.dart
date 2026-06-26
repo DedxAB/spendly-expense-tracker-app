@@ -19,7 +19,7 @@ class ActivityScreenTimePage extends ConsumerWidget {
     return Scaffold(
       appBar: NoirHeader(
         showLeading: true,
-        leadingIcon: AppIcons.chevronLeft,
+        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => context.pop(),
         showProfileAction: false,
       ),
@@ -50,9 +50,29 @@ class ActivityScreenTimePage extends ConsumerWidget {
             error: (_, __) => const Text('Screen time unavailable'),
           ),
           const SizedBox(height: AppSpacing.mdPlus),
-          Text(
-            'Diagnostic Audit Trail',
-            style: AppTypography.sectionTitle(context),
+          Row(
+            children: [
+              Text(
+                'Diagnostic Audit Trail',
+                style: AppTypography.sectionTitle(context),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: context.surfaceAlt,
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                ),
+                child: Text(
+                  '3 days',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.sm),
           events.when(
@@ -118,14 +138,22 @@ class _ScreenTimeCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0E2B1B),
-                  border: Border.all(color: const Color(0xFF166E3C)),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF0E2B1B)
+                      : const Color(0xFFE6F7EE),
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF166E3C)
+                        : const Color(0xFF3DD07B),
+                  ),
                   borderRadius: BorderRadius.circular(AppRadii.pill),
                 ),
-                child: const Text(
+                child: Text(
                   'LIVE',
                   style: TextStyle(
-                    color: Color(0xFF3DD07B),
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF3DD07B)
+                        : const Color(0xFF166E3C),
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
