@@ -93,10 +93,10 @@ class CategoriesPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: NoirHeader(
+        title: 'Categories',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
-        showProfileAction: false,
       ),
       floatingActionButton: SizedBox(
         width: 178,

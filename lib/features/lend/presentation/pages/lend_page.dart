@@ -55,16 +55,10 @@ class LendPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.background,
       appBar: NoirHeader(
+        title: 'Lend',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
-        onLeadingTap: () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          } else {
-            context.go('/settings');
-          }
-        },
-        showProfileAction: false,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: overview.when(
         data: (data) {

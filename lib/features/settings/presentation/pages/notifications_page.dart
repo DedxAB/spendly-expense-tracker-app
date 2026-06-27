@@ -22,10 +22,10 @@ class NotificationsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.background,
       appBar: NoirHeader(
+        title: 'Notifications',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
-        showProfileAction: false,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

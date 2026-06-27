@@ -230,6 +230,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
 
     return Scaffold(
       appBar: NoirHeader(
+        title: 'Transactions',
         showLeading: true,
         leadingIcon: AppIcons.calendar,
         onLeadingTap: () => context.push('/calendar'),

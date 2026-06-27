@@ -277,10 +277,10 @@ class RecurringPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.background,
       appBar: NoirHeader(
+        title: 'Recurring',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
-        showProfileAction: false,
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddDialog(context, ref),

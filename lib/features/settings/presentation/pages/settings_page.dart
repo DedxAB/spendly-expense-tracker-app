@@ -353,16 +353,10 @@ class SettingsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: bg,
       appBar: NoirHeader(
+        title: 'Settings',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
-        onLeadingTap: () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          } else {
-            context.go('/home');
-          }
-        },
-        showProfileAction: false,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
@@ -1074,20 +1068,23 @@ class _ProfilePhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: Container(
-        width: 76,
-        height: 76,
+    return Container(
+      width: 76,
+      height: 76,
+      decoration: BoxDecoration(
         color: backgroundColor,
-        child: imageUrl != null
-            ? Image.network(
-                imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    Icon(Icons.account_box, size: 44, color: iconColor),
-              )
-            : Icon(Icons.account_box, size: 44, color: iconColor),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.border),
       ),
+      clipBehavior: Clip.antiAlias,
+      child: imageUrl != null
+          ? Image.network(
+              imageUrl!,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Icon(Icons.account_box, size: 44, color: iconColor),
+            )
+          : Icon(Icons.account_box, size: 44, color: iconColor),
     );
   }
 }

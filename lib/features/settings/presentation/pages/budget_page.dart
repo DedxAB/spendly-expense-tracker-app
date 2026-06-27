@@ -69,10 +69,10 @@ class BudgetPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: NoirHeader(
+        title: 'Budget',
         showLeading: true,
-        leadingIcon: AppIcons.bell,
-        leadingIconColor: const Color(0xFFE8B830),
-        onLeadingTap: () => context.push('/notifications'),
+        leadingIcon: Icons.arrow_back,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

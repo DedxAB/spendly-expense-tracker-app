@@ -334,14 +334,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       appBar: NoirHeader(
         showLeading: true,
         leadingIcon: Icons.arrow_back,
-        onLeadingTap: () {
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          } else {
-            context.go('/lend');
-          }
-        },
-        showProfileAction: false,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
