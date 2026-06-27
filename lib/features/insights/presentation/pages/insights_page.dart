@@ -272,7 +272,7 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
     if (context.mounted) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF exported')),
+        const SnackBar(content: Text('PDF saved to app documents')),
       );
     }
   } catch (e) {
@@ -598,14 +598,11 @@ class _BudgetBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-          child: LinearProgressIndicator(
-            value: pct,
-            minHeight: 8,
-            color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
-            backgroundColor: context.surfaceAlt,
-          ),
+        LinearProgressIndicator(
+          value: pct,
+          minHeight: 8,
+          color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+          backgroundColor: context.surfaceAlt,
         ),
         const SizedBox(height: 6),
         Row(

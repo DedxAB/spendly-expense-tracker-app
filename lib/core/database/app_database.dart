@@ -747,6 +747,12 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> insertActivityEvent(ActivityEventsCompanion companion) async {
     await into(activityEvents).insert(companion);
+    final cutoff = DateTime.now()
+        .subtract(const Duration(days: 3))
+        .millisecondsSinceEpoch;
+    await (delete(activityEvents)
+          ..where((tbl) => tbl.occurredAt.isSmallerThanValue(cutoff)))
+        .go();
   }
 
   Stream<List<AppUsageDay>> watchRecentAppUsageDays({int days = 4}) {
