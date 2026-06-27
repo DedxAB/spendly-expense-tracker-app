@@ -1055,7 +1055,6 @@ class _EmergencyFundCard extends StatelessWidget {
             backgroundColor: context.textSecondary,
             valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
             minHeight: 14,
-            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 16),
           Text(
@@ -1191,7 +1190,6 @@ class _AggregateInsightCard extends StatelessWidget {
             minHeight: 8,
             backgroundColor: context.surfaceAlt,
             valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
-            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
           Row(
@@ -1376,7 +1374,6 @@ style: TextStyle(
             minHeight: 6,
             backgroundColor: context.surfaceAlt,
             valueColor: AlwaysStoppedAnimation<Color>(context.textPrimary),
-            borderRadius: BorderRadius.circular(AppRadii.sm),
           ),
           const SizedBox(height: 12),
           Row(

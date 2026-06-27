@@ -604,19 +604,19 @@ class _PaymentModeSegment extends StatelessWidget {
                   ),
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: 13,
-                    letterSpacing: 0.8,
-                    fontWeight: FontWeight.w700,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: isSelected ? context.surface : context.textPrimary,
+                      fontSize: 13,
+                      letterSpacing: 0.8,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );

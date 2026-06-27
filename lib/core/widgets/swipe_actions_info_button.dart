@@ -97,14 +97,18 @@ class SwipeActionsInfoButton extends StatelessWidget {
                 const SizedBox(height: AppSpacing.md),
                 _SwipeHintRow(
                   color: AppColors.income,
-                  background: const Color(0xFF11261B),
+                  background: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF11261B)
+                      : const Color(0xFFE6F7E6),
                   icon: AppIcons.edit,
                   text: leftActionLabel,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 _SwipeHintRow(
                   color: AppColors.expense,
-                  background: const Color(0xFF2A1313),
+                  background: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2A1313)
+                      : const Color(0xFFFDE8E8),
                   icon: AppIcons.trash,
                   text: rightActionLabel,
                 ),

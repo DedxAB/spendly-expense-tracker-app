@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/features/insights/domain/entities/expense_slice.dart';
 import 'package:spendly/features/insights/domain/entities/income_expense_bar.dart';
@@ -118,17 +117,13 @@ class InsightsExportService {
     );
 
     final dir = await getApplicationDocumentsDirectory();
+    final reportsDir = Directory('${dir.path}/Spendly_Reports');
+    if (!await reportsDir.exists()) {
+      await reportsDir.create(recursive: true);
+    }
     final fileName = 'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
-    final file = File('${dir.path}/$fileName');
+    final file = File('${reportsDir.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
-
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        subject: 'Spendly Report - $periodLabel',
-        text: 'Spendly Analytics Report for $periodLabel',
-      ),
-    );
   }
 
   pw.Widget _buildHeader(
@@ -410,18 +405,10 @@ class InsightsExportService {
     }
 
     final activeBuckets = aggregated.length;
-    final total = aggregated.fold<double>(0, (s, e) => s + e.value);
     final peak = aggregated.fold<_AggregatedPoint>(
       aggregated.first,
       (a, b) => a.value >= b.value ? a : b,
     );
-    final avgBase = isYearly ? DateTime.now().month : DateTime(
-      trend.first.date.year,
-      trend.first.date.month + 1,
-      0,
-    ).day;
-    final avg = avgBase <= 0 ? 0.0 : total / avgBase;
-
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
       children: [
@@ -723,19 +710,6 @@ class InsightsExportService {
           ),
         ],
       ],
-    );
-  }
-
-  pw.Widget _buildChangePercent(double? changePercent, pw.TextStyle bodyStyle) {
-    if (changePercent == null) return pw.SizedBox.shrink();
-    final direction = changePercent >= 0 ? 'increased' : 'decreased';
-    return pw.Text(
-      'Spending $direction by ${changePercent.abs().toStringAsFixed(1)}% '
-      'compared to the previous period.',
-      style: bodyStyle.copyWith(
-        color: changePercent >= 0 ? PdfColors.red700 : PdfColors.green700,
-        fontWeight: pw.FontWeight.bold,
-      ),
     );
   }
 

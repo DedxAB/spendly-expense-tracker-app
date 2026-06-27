@@ -151,9 +151,12 @@ class _SplashPageState extends ConsumerState<SplashPage>
         child: Center(
           child: Text(
             'Spendly',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 64,
+              fontWeight: FontWeight.w800,
+              color: context.textPrimary,
+              letterSpacing: -1.5,
+            ),
           ),
         ),
       ),
