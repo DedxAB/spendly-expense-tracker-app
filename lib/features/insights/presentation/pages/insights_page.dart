@@ -1348,7 +1348,7 @@ class _TrendArrow extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}% from ${periodLabel} start',
+          '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}% from $periodLabel start',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

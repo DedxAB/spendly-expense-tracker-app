@@ -16,6 +16,7 @@ import 'package:spendly/features/home/presentation/providers/home_provider.dart'
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
+import 'package:spendly/core/utils/privacy_guard.dart';
 
 class SpendlyApp extends ConsumerWidget {
   const SpendlyApp({super.key});
@@ -27,6 +28,7 @@ class SpendlyApp extends ConsumerWidget {
       final settings = next.valueOrNull;
       if (settings == null) return;
       AmountVisibilityController.setVisible(settings.showAmountsEnabled);
+      await PrivacyGuard.setWindowSecure(settings.privacyLockEnabled);
       final notifications = ref.read(localNotificationServiceProvider);
       await notifications.initialize();
       if (settings.dailyReminderEnabled) {
@@ -136,12 +138,13 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final enabled =
+        ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
+        false;
+
     if (state == AppLifecycleState.resumed) {
       _visible = true;
       _lastUsageTick = DateTime.now();
-      final enabled =
-          ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
-          false;
       if (enabled && _backgroundedAt != null) {
         final away = DateTime.now().difference(_backgroundedAt!);
         if (away.inSeconds <= 30) {
@@ -151,17 +154,32 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
           });
         }
       }
+      if (enabled && _locked) {
+        setState(() {
+          _unlockPromptQueuedForCurrentLock = false;
+        });
+      }
       _backgroundedAt = null;
       return;
     }
+
+    if (state == AppLifecycleState.inactive) {
+      _flushUsage();
+      _visible = false;
+      if (enabled && !_locked) {
+        setState(() {
+          _locked = true;
+          _unlockPromptQueuedForCurrentLock = false;
+        });
+      }
+      return;
+    }
+
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
       _flushUsage();
       _visible = false;
       _backgroundedAt = DateTime.now();
-      final enabled =
-          ref.read(settingsStreamProvider).valueOrNull?.privacyLockEnabled ??
-          false;
       if (enabled) {
         setState(() {
           _locked = true;
