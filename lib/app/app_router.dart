@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:spendly/core/constants/app_enums.dart';
-import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/features/activity/presentation/pages/activity_screen_time_page.dart';
 import 'package:spendly/features/categories/presentation/pages/categories_page.dart';
@@ -32,7 +32,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfileOnboardingPage(),
       ),
       ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
+        builder: (context, state, child) => AppShell(
+          currentLocation: state.uri.toString(),
+          child: child,
+        ),
         routes: [
           GoRoute(path: '/home', builder: (context, state) => const HomePage()),
           GoRoute(
@@ -161,10 +164,18 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 }
 
-class AppShell extends StatelessWidget {
-  const AppShell({super.key, required this.child});
+class AppShell extends StatefulWidget {
+  const AppShell({super.key, required this.currentLocation, required this.child});
 
+  final String currentLocation;
   final Widget child;
+
+  @override
+  State<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends State<AppShell> {
+  int _selectedIndex = 0;
 
   int _indexForLocation(String location) {
     if (location.startsWith('/transactions')) return 1;
@@ -175,153 +186,79 @@ class AppShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.toString();
-    final selectedIndex = _indexForLocation(location);
-    final items = [
-      _ShellNavItem(
-        icon: AppIcons.home,
-        selectedIcon: AppIcons.home,
-        label: 'Home',
-      ),
-      _ShellNavItem(
-        icon: AppIcons.history,
-        selectedIcon: AppIcons.history,
-        label: 'History',
-      ),
-      _ShellNavItem(
-        icon: AppIcons.analytics,
-        selectedIcon: AppIcons.analytics,
-        label: 'Analytics',
-      ),
-      _ShellNavItem(
-        icon: AppIcons.budget,
-        selectedIcon: AppIcons.budget,
-        label: 'Budget',
-      ),
-      _ShellNavItem(
-        icon: AppIcons.goals,
-        selectedIcon: AppIcons.goals,
-        label: 'Goals',
-      ),
-    ];
-
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          height: 62,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: BoxDecoration(
-            color: context.surface,
-            border: Border(
-              top: BorderSide(color: context.border),
-            ),
-          ),
-          child: Row(
-            children: [
-              for (var i = 0; i < items.length; i++)
-                Expanded(
-                  child: _ShellNavTile(
-                    item: items[i],
-                    selected: i == selectedIndex,
-                    onTap: () {
-                      if (i == 0) {
-                        context.go('/home');
-                        return;
-                      }
-                      if (i == 1) {
-                        context.go('/transactions');
-                        return;
-                      }
-                      if (i == 2) {
-                        context.go('/insights');
-                        return;
-                      }
-                      if (i == 3) {
-                        context.go('/budget');
-                        return;
-                      }
-                      if (i == 4) {
-                        context.go('/goals');
-                      }
-                    },
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    _selectedIndex = _indexForLocation(widget.currentLocation);
   }
-}
 
-class _ShellNavItem {
-  _ShellNavItem({
-    required this.icon,
-    required this.selectedIcon,
-    required this.label,
-  });
-
-  final IconData icon;
-  final IconData selectedIcon;
-  final String label;
-}
-
-class _ShellNavTile extends StatelessWidget {
-  const _ShellNavTile({
-    required this.item,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final _ShellNavItem item;
-  final bool selected;
-  final VoidCallback onTap;
+  @override
+  void didUpdateWidget(covariant AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newIdx = _indexForLocation(widget.currentLocation);
+    if (newIdx != _selectedIndex) {
+      setState(() => _selectedIndex = newIdx);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppRadii.md),
-      onTap: onTap,
-      child: Stack(
-        alignment: Alignment.topCenter,
+    final selectedIndex = _selectedIndex;
+    final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final accent = isDark ? Colors.white : Colors.black;
+
+    final items = [
+      LiquidGlassTabBarItem(icon: AppIcons.home, label: 'Home'),
+      LiquidGlassTabBarItem(icon: AppIcons.history, label: 'History'),
+      LiquidGlassTabBarItem(icon: AppIcons.analytics, label: 'Analytics'),
+      LiquidGlassTabBarItem(icon: AppIcons.budget, label: 'Budget'),
+      LiquidGlassTabBarItem(icon: AppIcons.goals, label: 'Goals'),
+    ];
+
+    return Scaffold(
+      body: Stack(
         children: [
-          Positioned(
-            top: 0,
-            left: 12,
-            right: 12,
-            child: Container(
-              height: 2,
-              color: selected ? context.textPrimary : Colors.transparent,
+          widget.child,
+          LiquidGlassBottomNavBar.withImpeller(
+            items: items,
+            selectedIndex: selectedIndex,
+            onChanged: (i) {
+              setState(() => _selectedIndex = i);
+              if (i == 0) { context.go('/home'); return; }
+              if (i == 1) { context.go('/transactions'); return; }
+              if (i == 2) { context.go('/insights'); return; }
+              if (i == 3) { context.go('/budget'); return; }
+              if (i == 4) { context.go('/goals'); }
+            },
+            width: screenWidth - 32,
+            height: 54,
+            margin: const EdgeInsets.only(bottom: 8),
+            itemStyle: LiquidGlassNavItemStyle(
+              selectedColor: isDark ? const Color(0xFF64B5F6) : const Color(0xFF0A84FF),
+              unselectedColor: accent.withValues(alpha: 0.35),
+              iconSize: 20,
+              labelFontSize: 9,
+              iconLabelGap: 1,
             ),
-          ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                selected ? item.selectedIcon : item.icon,
-                size: 19,
-                color: AppIcons.getColorForIcon(
-                  selected ? item.selectedIcon : item.icon,
-                  label: item.label,
-                  brightness: Theme.of(context).brightness,
-                ).withValues(alpha: selected ? 1.0 : 0.62),
+            pillStyle: const LiquidGlassNavPillStyle(
+              mode: LiquidGlassPillMode.impellerOnly,
+              show: true,
+              animated: true,
+              growHeight: 3,
+              distortion: 0.06,
+              distortionWidth: 10,
+              magnification: 1.02,
+              travelStiffness: 280,
+              travelDamping: 31.4,
+            ),
+            style: LiquidGlassBottomNavBar.defaultStyle.copyWith(
+              refraction: const LiquidGlassRefraction(
+                distortion: 0.05,
+                distortionWidth: 20,
+                chromaticAberration: 0.003,
               ),
-              const SizedBox(height: 4),
-              Text(
-                item.label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  letterSpacing: 0,
-                  color: selected
-                      ? context.textPrimary
-                      : context.textSecondary,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

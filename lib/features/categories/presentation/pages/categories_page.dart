@@ -98,12 +98,14 @@ class CategoriesPage extends ConsumerWidget {
         onLeadingTap: () => Navigator.of(context).maybePop(),
         showProfileAction: false,
       ),
-      floatingActionButton: SizedBox(
-        width: 178,
-        height: 54,
-        child: FloatingActionButton.extended(
-          onPressed: () => _showCategoryDialog(context, ref),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: SizedBox(
+          width: 178,
+          height: 54,
+          child: FloatingActionButton.extended(
+            onPressed: () => _showCategoryDialog(context, ref),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
           icon: const Icon(AppIcons.plus, size: 18),
           label: const Text(
             'Add Category',
@@ -114,6 +116,7 @@ class CategoriesPage extends ConsumerWidget {
             ),
           ),
         ),
+      ),
       ),
       body: categories.when(
         data: (items) {

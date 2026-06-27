@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:spendly/core/constants/app_enums.dart';
@@ -604,20 +605,26 @@ class SettingsPage extends ConsumerWidget {
                   style: TextStyle(color: muted, fontSize: 12),
                 ),
                 const SizedBox(height: AppSpacing.smPlus),
-                SwitchListTile(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
                     'Automatic daily backup',
                     style: TextStyle(fontSize: 14, color: primary),
                   ),
-                  value: cloudSync?.automaticDailyBackup ?? false,
-                  onChanged: cloudSync?.isConnected == true
-                      ? (value) async {
+                  trailing: Opacity(
+                    opacity: cloudSync?.isConnected == true ? 1.0 : 0.4,
+                    child: IgnorePointer(
+                      ignoring: cloudSync?.isConnected != true,
+                      child: LiquidGlassToggle(
+                        value: cloudSync?.automaticDailyBackup ?? false,
+                        onChanged: (value) async {
                           await ref
                               .read(cloudSyncControllerProvider.notifier)
                               .setAutomaticDailyBackup(value);
-                        }
-                      : null,
+                        },
+                      ),
+                    ),
+                  ),
                 ),
                 Wrap(
                   spacing: 8,
@@ -696,7 +703,7 @@ class SettingsPage extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                SwitchListTile(
+                ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     'Budget alerts',
@@ -706,18 +713,20 @@ class SettingsPage extends ConsumerWidget {
                     'Show in-app budget warning notifications',
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
-                  value: budgetAlerts,
-                  onChanged: (value) async {
-                    await ref
-                        .read(settingsRepositoryProvider)
-                        .setNotificationPreferences(
-                          budgetAlertsEnabled: value,
-                          dailyReminderEnabled: dailyReminder,
-                        );
-                  },
+                  trailing: LiquidGlassToggle(
+                    value: budgetAlerts,
+                    onChanged: (value) async {
+                      await ref
+                          .read(settingsRepositoryProvider)
+                          .setNotificationPreferences(
+                            budgetAlertsEnabled: value,
+                            dailyReminderEnabled: dailyReminder,
+                          );
+                    },
+                  ),
                 ),
                 Divider(height: 1, color: divider, indent: 16, endIndent: 16),
-                SwitchListTile(
+                ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     'Daily reminder',
@@ -727,15 +736,17 @@ class SettingsPage extends ConsumerWidget {
                     'Receive a push reminder every day',
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
-                  value: dailyReminder,
-                  onChanged: (value) async {
-                    await ref
-                        .read(settingsRepositoryProvider)
-                        .setNotificationPreferences(
+                  trailing: LiquidGlassToggle(
+                    value: dailyReminder,
+                    onChanged: (value) async {
+                      await ref
+                          .read(settingsRepositoryProvider)
+                          .setNotificationPreferences(
                           budgetAlertsEnabled: budgetAlerts,
                           dailyReminderEnabled: value,
                         );
-                  },
+                    },
+                  ),
                 ),
               ],
             ),
@@ -1151,7 +1162,7 @@ class _PrivacyShieldTile extends StatelessWidget {
               ],
             ),
           ),
-          Switch(value: enabled, onChanged: onChanged),
+          LiquidGlassToggle(value: enabled, onChanged: onChanged),
         ],
       ),
     );

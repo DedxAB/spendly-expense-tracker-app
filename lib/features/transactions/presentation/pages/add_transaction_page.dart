@@ -233,7 +233,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
             AppSpacing.mdPlus,
             AppSpacing.xs,
             AppSpacing.mdPlus,
-            MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm,
+            MediaQuery.of(context).viewInsets.bottom + 100,
           ),
           child: categoriesAsync.when(
             data: (categories) {

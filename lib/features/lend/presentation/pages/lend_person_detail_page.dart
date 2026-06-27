@@ -742,10 +742,13 @@ class LendPersonDetailPage extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: person == null ? null : () => _showEntryDialog(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Add entry'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton.extended(
+          onPressed: person == null ? null : () => _showEntryDialog(context, ref),
+          icon: const Icon(Icons.add),
+          label: const Text('Add entry'),
+        ),
       ),
     );
   }

@@ -49,10 +49,13 @@ class HomePage extends ConsumerWidget {
         leadingIcon: AppIcons.bell,
         onLeadingTap: () => context.push('/notifications'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showAddExpenseSheet(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-        child: const Icon(AppIcons.plus, size: 28),
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton(
+          onPressed: () => showAddExpenseSheet(context),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+          child: const Icon(AppIcons.plus, size: 28),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

@@ -55,7 +55,7 @@ class GoalsPage extends ConsumerWidget {
           AppSpacing.smPlus,
           AppSpacing.md,
           AppSpacing.smPlus,
-          94,
+          110,
         ),
         children: [
           Row(
@@ -679,7 +679,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
         AppSpacing.md,
         AppSpacing.md,
         AppSpacing.md,
-        MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+        MediaQuery.of(context).viewInsets.bottom + 100,
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -863,7 +863,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
         AppSpacing.md,
         AppSpacing.md,
         AppSpacing.md,
-        MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
+        MediaQuery.of(context).viewInsets.bottom + 100,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

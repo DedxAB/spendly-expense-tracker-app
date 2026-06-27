@@ -79,7 +79,7 @@ class BudgetPage extends ConsumerWidget {
           AppSpacing.smPlus,
           AppSpacing.mdPlus,
           AppSpacing.smPlus,
-          AppSpacing.md,
+          100,
         ),
         children: [
           Text('Budget', style: AppTypography.screenTitle(context)),
@@ -393,7 +393,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
             AppSpacing.sm,
             AppSpacing.xs,
             AppSpacing.sm,
-            MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm,
+            MediaQuery.of(context).viewInsets.bottom + 100,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

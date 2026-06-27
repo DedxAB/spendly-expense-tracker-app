@@ -35,6 +35,7 @@ dependencies:
   url_launcher: ^6.3.0
   pdf: ^3.12.0
   share_plus: ^12.0.2
+  liquid_glass_easy: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -74,3 +75,7 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/icons/ic_launcher_foreground.png"
   adaptive_icon_monochrome: "assets/icons/ic_launcher_round.png"
   adaptive_icon_background: "#000000"
+
+dependency_overrides:
+  liquid_glass_easy:
+    path: packages/liquid_glass_easy

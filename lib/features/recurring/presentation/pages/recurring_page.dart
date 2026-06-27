@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
@@ -282,10 +283,13 @@ class RecurringPage extends ConsumerWidget {
         onLeadingTap: () => Navigator.of(context).maybePop(),
         showProfileAction: false,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddDialog(context, ref),
-        icon: const Icon(AppIcons.repeat),
-        label: const Text('Add Rule'),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton.extended(
+          onPressed: () => _openAddDialog(context, ref),
+          icon: const Icon(AppIcons.repeat),
+          label: const Text('Add Rule'),
+        ),
       ),
       body: rules.when(
         data: (items) {
@@ -531,7 +535,7 @@ class RecurringPage extends ConsumerWidget {
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             ),
-                                            Switch(
+                                            LiquidGlassToggle(
                                               value: item.isActive,
                                               onChanged: (value) async {
                                                 await ref

@@ -240,7 +240,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
           AppSpacing.smPlus,
           AppSpacing.mdPlus,
           AppSpacing.smPlus,
-          AppSpacing.md,
+          100,
         ),
         children: [
           Row(
@@ -641,7 +641,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   AppSpacing.sm,
                   AppSpacing.xs,
                   AppSpacing.sm,
-                  MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.sm,
+                  MediaQuery.of(sheetContext).viewInsets.bottom + 100,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

@@ -102,7 +102,7 @@ class InsightsPage extends ConsumerWidget {
           AppSpacing.smPlus,
           AppSpacing.md,
           AppSpacing.smPlus,
-          AppSpacing.md,
+          100,
         ),
         children: [
           _PeriodNavigator(month: month, isYearly: isYearly),

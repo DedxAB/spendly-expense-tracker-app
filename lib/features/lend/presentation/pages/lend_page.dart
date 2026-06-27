@@ -314,14 +314,17 @@ class LendPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Failed to load: $error')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddPersonDialog(context, ref),
-        icon: Icon(
-          AppIcons.personAdd,
-          color: AppIcons.getColorForIcon(AppIcons.personAdd),
-        ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton.extended(
+          onPressed: () => _showAddPersonDialog(context, ref),
+          icon: Icon(
+            AppIcons.personAdd,
+            color: AppIcons.getColorForIcon(AppIcons.personAdd),
+          ),
         label: const Text('Add person'),
       ),
+    ),
     );
   }
 }
