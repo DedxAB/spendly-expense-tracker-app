@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -45,10 +44,10 @@ class GoalsPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.background,
       appBar: NoirHeader(
+        title: 'Goals',
         showLeading: true,
-        leadingIcon: AppIcons.bell,
-        leadingIconColor: const Color(0xFFE8B830),
-        onLeadingTap: () => context.push('/notifications'),
+        leadingIcon: Icons.arrow_back,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

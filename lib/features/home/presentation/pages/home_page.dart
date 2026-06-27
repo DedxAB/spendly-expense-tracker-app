@@ -8,8 +8,8 @@ import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
+import 'package:spendly/features/home/presentation/widgets/home_header.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
@@ -44,11 +44,7 @@ class HomePage extends ConsumerWidget {
     final categoryById = {for (final c in categories) c.id: c};
 
     return Scaffold(
-      appBar: NoirHeader(
-        showLeading: true,
-        leadingIcon: AppIcons.bell,
-        onLeadingTap: () => context.push('/notifications'),
-      ),
+      appBar: const HomeHeader(),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),

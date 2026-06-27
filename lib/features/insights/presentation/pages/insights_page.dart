@@ -12,11 +12,12 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/noir_header.dart';
 import 'package:spendly/features/insights/domain/entities/expense_slice.dart';
 import 'package:spendly/features/insights/domain/entities/insight_point.dart';
 import 'package:spendly/features/insights/presentation/providers/insights_provider.dart';
-import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 import 'package:spendly/features/insights/presentation/services/insights_export_service.dart';
+import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
 class InsightsPage extends ConsumerWidget {
   const InsightsPage({super.key});
@@ -44,58 +45,11 @@ class InsightsPage extends ConsumerWidget {
         ((prevIncomeExpense?['expense'] ?? 0).toDouble());
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 72,
-        centerTitle: true,
-        title: Text(
-          'Spendly',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.9,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(AppIcons.bell, size: 22, color: const Color(0xFFE8B830)),
-          onPressed: () => context.push('/notifications'),
-        ),
-        leadingWidth: 56,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: InkWell(
-              onTap: () => context.push('/settings'),
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              child: Consumer(builder: (context, ref, _) {
-                final profile = ref.watch(userProfileProvider).valueOrNull;
-                final imageUrl = (profile?.imageUrl?.trim().isNotEmpty ?? false)
-                    ? profile!.imageUrl!.trim()
-                    : null;
-                return ClipOval(
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: context.border),
-                    ),
-                    child: imageUrl == null
-                        ? Icon(Icons.person, size: 18, color: context.textSecondary)
-                        : Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                Icon(Icons.person, size: 18, color: context.textSecondary),
-                          ),
-                  ),
-                );
-              }),
-            ),
-          ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: context.border),
-        ),
+      appBar: NoirHeader(
+        title: 'Analytics',
+        showLeading: true,
+        leadingIcon: Icons.arrow_back,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

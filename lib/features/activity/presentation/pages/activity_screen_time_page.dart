@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -17,10 +16,10 @@ class ActivityScreenTimePage extends ConsumerWidget {
 
     return Scaffold(
       appBar: NoirHeader(
+        title: 'Screen Time',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
-        onLeadingTap: () => context.pop(),
-        showProfileAction: false,
+        onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(

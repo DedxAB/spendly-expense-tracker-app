@@ -72,6 +72,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
     return Scaffold(
       appBar: NoirHeader(
+        title: 'Calendar',
         showLeading: true,
         leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),

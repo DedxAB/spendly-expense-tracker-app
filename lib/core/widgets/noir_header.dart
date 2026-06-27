@@ -3,97 +3,110 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
-import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
 class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
   const NoirHeader({
     super.key,
     this.showLeading = false,
-    this.leadingIcon = Icons.calendar_month_outlined,
+    this.leadingAsCard = true,
+    this.leadingIcon = Icons.arrow_back,
     this.leadingIconColor,
     this.onLeadingTap,
-    this.onProfileTap,
-    this.showProfileAction = true,
+    this.title,
   });
 
   final bool showLeading;
+  final bool leadingAsCard;
   final IconData leadingIcon;
   final Color? leadingIconColor;
   final VoidCallback? onLeadingTap;
-  final VoidCallback? onProfileTap;
-  final bool showProfileAction;
+  final String? title;
 
   @override
   Size get preferredSize => const Size.fromHeight(72);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(userProfileProvider).valueOrNull;
-    final imageUrl = (profile?.imageUrl?.trim().isNotEmpty ?? false)
-        ? profile!.imageUrl!.trim()
-        : null;
-
     return AppBar(
       toolbarHeight: 72,
       centerTitle: true,
-      title: Text(
-        'Spendly',
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.9,
-        ),
-      ),
-      leading: showLeading
-          ? IconButton(
-              icon: Icon(
-                leadingIcon,
-                size: 22,
-                color:
-                    leadingIconColor ?? AppIcons.getColorForIcon(leadingIcon, brightness: Theme.of(context).brightness),
+      automaticallyImplyLeading: false,
+      title: title != null
+          ? Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.9,
               ),
-              onPressed: onLeadingTap,
             )
-          : const SizedBox.shrink(),
-      leadingWidth: showLeading ? 56 : 0,
-      actions: showProfileAction
-          ? [
-              Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: InkWell(
-                  onTap: onProfileTap ?? () => context.push('/settings'),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                  child: ClipOval(
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: context.border),
-                      ),
-                      child: imageUrl == null
-                          ? Icon(
-                              Icons.person,
-                              size: 18,
-                              color: AppIcons.getColorForIcon(Icons.person, brightness: Theme.of(context).brightness),
-                            )
-                          : Image.network(
-                              imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Icon(
-                                Icons.person,
-                                size: 18,
-                                color: AppIcons.getColorForIcon(Icons.person, brightness: Theme.of(context).brightness),
-                              ),
-                            ),
-                    ),
+          : null,
+      leading: showLeading
+          ? leadingAsCard
+              ? Center(
+                  child: _IconCard(
+                    icon: leadingIcon,
+                    onTap: onLeadingTap ?? () {},
                   ),
-                ),
-              ),
-            ]
-          : const [],
+                )
+              : IconButton(
+                  icon: Icon(
+                    leadingIcon,
+                    size: 22,
+                    color: leadingIconColor ??
+                        AppIcons.getColorForIcon(
+                          leadingIcon,
+                          brightness: Theme.of(context).brightness,
+                        ),
+                  ),
+                  onPressed: onLeadingTap,
+                )
+          : const SizedBox.shrink(),
+      leadingWidth: showLeading ? (leadingAsCard ? 62 : 56) : 0,
+      actions: [
+        _IconCard(
+          icon: AppIcons.settings,
+          onTap: () => context.push('/settings'),
+        ),
+        const SizedBox(width: 6),
+        _IconCard(
+          icon: AppIcons.bell,
+          onTap: () => context.push('/notifications'),
+        ),
+        const SizedBox(width: 12),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Divider(height: 1, thickness: 1, color: context.border),
+      ),
+    );
+  }
+}
+
+class _IconCard extends StatelessWidget {
+  const _IconCard({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: context.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.border),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: context.textPrimary,
+        ),
       ),
     );
   }
