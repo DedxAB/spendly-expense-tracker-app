@@ -253,51 +253,34 @@ class CloudSyncRepositoryImpl implements CloudSyncRepository {
     }
 
     final drivePayload = driveResult.$2;
-
     final localMaxTs = _extractMaxTimestamp(localDecoded);
     final driveMaxTs = _extractMaxTimestamp(drivePayload);
-    final driveIsNewer = driveMaxTs > localMaxTs;
 
-    if (driveIsNewer) {
-      await _ref
-          .read(settingsRepositoryProvider)
-          .importJson(jsonEncode(drivePayload));
-
-      await _ref
-          .read(activityRepositoryProvider)
-          .recordEvent(
-            kind: 'sync',
-            title: 'Cloud restore',
-            description:
-                'Drive backup restored. '
-                'Local data was older, Drive backup preserved.',
-          );
-    } else {
-      if (!isFreshInstall) {
-        await _driveService.backupToDrive(
-          localDecoded,
-          interactiveIfNeeded: true,
-        );
-      }
-
-      final freshPayload = await _driveService.restoreFromDrive(
+    // Backup local data to Drive only if it has meaningful data AND is newer.
+    // This prevents overwriting the Drive backup with empty data on a new device.
+    if (!isFreshInstall && localMaxTs >= driveMaxTs) {
+      await _driveService.backupToDrive(
+        localDecoded,
         interactiveIfNeeded: true,
       );
-      await _ref
-          .read(settingsRepositoryProvider)
-          .importJson(jsonEncode(freshPayload));
-
-      await _ref
-          .read(activityRepositoryProvider)
-          .recordEvent(
-            kind: 'sync',
-            title: 'Cloud restore',
-            description: isFreshInstall
-                ? 'Drive backup restored onto a new device.'
-                : 'Drive backup restored. '
-                    'Local data backed up to Drive first.',
-          );
     }
+
+    // Always restore from the Drive payload fetched above.
+    // Do NOT re-fetch after backupToDrive, since that would read back
+    // the just-uploaded local data instead of the original backup.
+    await _ref
+        .read(settingsRepositoryProvider)
+        .importJson(jsonEncode(drivePayload));
+
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'sync',
+          title: 'Cloud restore',
+          description: !isFreshInstall && localMaxTs >= driveMaxTs
+              ? 'Drive backup restored. Local data backed up to Drive first.'
+              : 'Drive backup restored onto a new device.',
+        );
   }
 
   static int _extractMaxTimestamp(Map<String, dynamic> payload) {
