@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
@@ -210,9 +211,9 @@ class SettingsPage extends ConsumerWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Your current data will be automatically backed '
-                          'up to Drive before restoring — nothing is lost. '
-                          'A local snapshot is also saved for extra safety.',
+                          'A local snapshot of your current data is saved '
+                          'before restoring. Your Drive backup will not be '
+                          'overwritten.',
                           style: TextStyle(
                             color: const Color(0xFF2F6F46),
                             fontSize: 13,
@@ -259,22 +260,11 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => rootNav.pop(false),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => rootNav.pop(true),
-                    child: const Text('Restore'),
-                  ),
-                ),
-              ],
+            DialogActionsRow(
+              cancelText: 'Cancel',
+              confirmText: 'Restore',
+              onCancel: () => rootNav.pop(false),
+              onConfirm: () => rootNav.pop(true),
             ),
           ],
         );
@@ -773,11 +763,16 @@ class SettingsPage extends ConsumerWidget {
               ),
             ),
           ),
-          Center(
-            child: Text(
-              'Version 1.1.2',
-              style: TextStyle(color: muted, fontSize: 14),
-            ),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final info = snapshot.data;
+              if (info == null) return const SizedBox.shrink();
+              return Text(
+                'Version ${info.version}',
+                style: TextStyle(color: muted, fontSize: 14),
+              );
+            },
           ),
         ],
       ),
@@ -988,11 +983,16 @@ class SettingsPage extends ConsumerWidget {
         title: const Text('Import JSON'),
         content: SizedBox(
           width: AppModalSizes.dialogContentWidth,
+          height: 400,
           child: TextField(
             controller: controller,
-            maxLines: 14,
+            maxLines: null,
+            expands: true,
+            textAlignVertical: TextAlignVertical.top,
             decoration: const InputDecoration(
               hintText: 'Paste your exported JSON here',
+              border: OutlineInputBorder(),
+              alignLabelWithHint: true,
             ),
           ),
         ),
@@ -1004,12 +1004,19 @@ class SettingsPage extends ConsumerWidget {
             onConfirm: () async {
               final raw = controller.text.trim();
               if (raw.isEmpty) return;
-              await ref.read(settingsRepositoryProvider).importJson(raw);
-              if (!dialogContext.mounted) return;
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Import completed')),
-              );
+              try {
+                await ref.read(settingsRepositoryProvider).importJson(raw);
+                if (!dialogContext.mounted) return;
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Import completed')),
+                );
+              } catch (e) {
+                if (!dialogContext.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Import failed: $e')),
+                );
+              }
             },
           ),
         ],
