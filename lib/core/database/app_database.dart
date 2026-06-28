@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -193,6 +193,13 @@ class AppDatabase extends _$AppDatabase {
           "AND (note LIKE '-> %' OR note LIKE '<- %');",
         );
       }
+      if (from < 23) {
+        await m.addColumn(settings, settings.dailyReminderTime);
+        await m.addColumn(settings, settings.recurringBillRemindersEnabled);
+        await m.addColumn(settings, settings.lendDueRemindersEnabled);
+        await m.addColumn(settings, settings.goalRemindersEnabled);
+        await m.addColumn(lendEntries, lendEntries.dueDate);
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -252,6 +259,10 @@ class AppDatabase extends _$AppDatabase {
         themeMode: const Value('system'),
         transactionHintsSeen: const Value(false),
         dailyReminderEnabled: const Value(false),
+        dailyReminderTime: const Value(1200),
+        recurringBillRemindersEnabled: const Value(false),
+        lendDueRemindersEnabled: const Value(false),
+        goalRemindersEnabled: const Value(false),
         privacyLockEnabled: const Value(false),
         showAmountsEnabled: const Value(true),
         lastBudgetAlertAt: const Value(null),

@@ -26,6 +26,10 @@ mixin _$SettingsEntity {
   String get currency => throw _privateConstructorUsedError;
   bool get budgetAlertsEnabled => throw _privateConstructorUsedError;
   bool get dailyReminderEnabled => throw _privateConstructorUsedError;
+  int get dailyReminderTime => throw _privateConstructorUsedError;
+  bool get recurringBillRemindersEnabled => throw _privateConstructorUsedError;
+  bool get lendDueRemindersEnabled => throw _privateConstructorUsedError;
+  bool get goalRemindersEnabled => throw _privateConstructorUsedError;
   bool get privacyLockEnabled => throw _privateConstructorUsedError;
   bool get showAmountsEnabled => throw _privateConstructorUsedError;
   AppThemeMode get themeMode => throw _privateConstructorUsedError;
@@ -55,6 +59,10 @@ abstract class $SettingsEntityCopyWith<$Res> {
     String currency,
     bool budgetAlertsEnabled,
     bool dailyReminderEnabled,
+    int dailyReminderTime,
+    bool recurringBillRemindersEnabled,
+    bool lendDueRemindersEnabled,
+    bool goalRemindersEnabled,
     bool privacyLockEnabled,
     bool showAmountsEnabled,
     AppThemeMode themeMode,
@@ -83,6 +91,10 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
     Object? currency = null,
     Object? budgetAlertsEnabled = null,
     Object? dailyReminderEnabled = null,
+    Object? dailyReminderTime = null,
+    Object? recurringBillRemindersEnabled = null,
+    Object? lendDueRemindersEnabled = null,
+    Object? goalRemindersEnabled = null,
     Object? privacyLockEnabled = null,
     Object? showAmountsEnabled = null,
     Object? themeMode = null,
@@ -110,6 +122,22 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
             dailyReminderEnabled: null == dailyReminderEnabled
                 ? _value.dailyReminderEnabled
                 : dailyReminderEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            dailyReminderTime: null == dailyReminderTime
+                ? _value.dailyReminderTime
+                : dailyReminderTime // ignore: cast_nullable_to_non_nullable
+                      as int,
+            recurringBillRemindersEnabled: null == recurringBillRemindersEnabled
+                ? _value.recurringBillRemindersEnabled
+                : recurringBillRemindersEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            lendDueRemindersEnabled: null == lendDueRemindersEnabled
+                ? _value.lendDueRemindersEnabled
+                : lendDueRemindersEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            goalRemindersEnabled: null == goalRemindersEnabled
+                ? _value.goalRemindersEnabled
+                : goalRemindersEnabled // ignore: cast_nullable_to_non_nullable
                       as bool,
             privacyLockEnabled: null == privacyLockEnabled
                 ? _value.privacyLockEnabled
@@ -152,6 +180,10 @@ abstract class _$$SettingsEntityImplCopyWith<$Res>
     String currency,
     bool budgetAlertsEnabled,
     bool dailyReminderEnabled,
+    int dailyReminderTime,
+    bool recurringBillRemindersEnabled,
+    bool lendDueRemindersEnabled,
+    bool goalRemindersEnabled,
     bool privacyLockEnabled,
     bool showAmountsEnabled,
     AppThemeMode themeMode,
@@ -179,6 +211,10 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
     Object? currency = null,
     Object? budgetAlertsEnabled = null,
     Object? dailyReminderEnabled = null,
+    Object? dailyReminderTime = null,
+    Object? recurringBillRemindersEnabled = null,
+    Object? lendDueRemindersEnabled = null,
+    Object? goalRemindersEnabled = null,
     Object? privacyLockEnabled = null,
     Object? showAmountsEnabled = null,
     Object? themeMode = null,
@@ -206,6 +242,22 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
         dailyReminderEnabled: null == dailyReminderEnabled
             ? _value.dailyReminderEnabled
             : dailyReminderEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        dailyReminderTime: null == dailyReminderTime
+            ? _value.dailyReminderTime
+            : dailyReminderTime // ignore: cast_nullable_to_non_nullable
+                  as int,
+        recurringBillRemindersEnabled: null == recurringBillRemindersEnabled
+            ? _value.recurringBillRemindersEnabled
+            : recurringBillRemindersEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        lendDueRemindersEnabled: null == lendDueRemindersEnabled
+            ? _value.lendDueRemindersEnabled
+            : lendDueRemindersEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        goalRemindersEnabled: null == goalRemindersEnabled
+            ? _value.goalRemindersEnabled
+            : goalRemindersEnabled // ignore: cast_nullable_to_non_nullable
                   as bool,
         privacyLockEnabled: null == privacyLockEnabled
             ? _value.privacyLockEnabled
@@ -241,6 +293,10 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     this.currency = 'INR',
     this.budgetAlertsEnabled = false,
     this.dailyReminderEnabled = false,
+    this.dailyReminderTime = 1200,
+    this.recurringBillRemindersEnabled = false,
+    this.lendDueRemindersEnabled = false,
+    this.goalRemindersEnabled = false,
     this.privacyLockEnabled = false,
     this.showAmountsEnabled = true,
     this.themeMode = AppThemeMode.system,
@@ -268,6 +324,18 @@ class _$SettingsEntityImpl implements _SettingsEntity {
   final bool dailyReminderEnabled;
   @override
   @JsonKey()
+  final int dailyReminderTime;
+  @override
+  @JsonKey()
+  final bool recurringBillRemindersEnabled;
+  @override
+  @JsonKey()
+  final bool lendDueRemindersEnabled;
+  @override
+  @JsonKey()
+  final bool goalRemindersEnabled;
+  @override
+  @JsonKey()
   final bool privacyLockEnabled;
   @override
   @JsonKey()
@@ -282,7 +350,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
 
   @override
   String toString() {
-    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, privacyLockEnabled: $privacyLockEnabled, showAmountsEnabled: $showAmountsEnabled, themeMode: $themeMode, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
+    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, dailyReminderTime: $dailyReminderTime, recurringBillRemindersEnabled: $recurringBillRemindersEnabled, lendDueRemindersEnabled: $lendDueRemindersEnabled, goalRemindersEnabled: $goalRemindersEnabled, privacyLockEnabled: $privacyLockEnabled, showAmountsEnabled: $showAmountsEnabled, themeMode: $themeMode, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -299,6 +367,21 @@ class _$SettingsEntityImpl implements _SettingsEntity {
                 other.budgetAlertsEnabled == budgetAlertsEnabled) &&
             (identical(other.dailyReminderEnabled, dailyReminderEnabled) ||
                 other.dailyReminderEnabled == dailyReminderEnabled) &&
+            (identical(other.dailyReminderTime, dailyReminderTime) ||
+                other.dailyReminderTime == dailyReminderTime) &&
+            (identical(
+                  other.recurringBillRemindersEnabled,
+                  recurringBillRemindersEnabled,
+                ) ||
+                other.recurringBillRemindersEnabled ==
+                    recurringBillRemindersEnabled) &&
+            (identical(
+                  other.lendDueRemindersEnabled,
+                  lendDueRemindersEnabled,
+                ) ||
+                other.lendDueRemindersEnabled == lendDueRemindersEnabled) &&
+            (identical(other.goalRemindersEnabled, goalRemindersEnabled) ||
+                other.goalRemindersEnabled == goalRemindersEnabled) &&
             (identical(other.privacyLockEnabled, privacyLockEnabled) ||
                 other.privacyLockEnabled == privacyLockEnabled) &&
             (identical(other.showAmountsEnabled, showAmountsEnabled) ||
@@ -320,6 +403,10 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     currency,
     budgetAlertsEnabled,
     dailyReminderEnabled,
+    dailyReminderTime,
+    recurringBillRemindersEnabled,
+    lendDueRemindersEnabled,
+    goalRemindersEnabled,
     privacyLockEnabled,
     showAmountsEnabled,
     themeMode,
@@ -351,6 +438,10 @@ abstract class _SettingsEntity implements SettingsEntity {
     final String currency,
     final bool budgetAlertsEnabled,
     final bool dailyReminderEnabled,
+    final int dailyReminderTime,
+    final bool recurringBillRemindersEnabled,
+    final bool lendDueRemindersEnabled,
+    final bool goalRemindersEnabled,
     final bool privacyLockEnabled,
     final bool showAmountsEnabled,
     final AppThemeMode themeMode,
@@ -371,6 +462,14 @@ abstract class _SettingsEntity implements SettingsEntity {
   bool get budgetAlertsEnabled;
   @override
   bool get dailyReminderEnabled;
+  @override
+  int get dailyReminderTime;
+  @override
+  bool get recurringBillRemindersEnabled;
+  @override
+  bool get lendDueRemindersEnabled;
+  @override
+  bool get goalRemindersEnabled;
   @override
   bool get privacyLockEnabled;
   @override

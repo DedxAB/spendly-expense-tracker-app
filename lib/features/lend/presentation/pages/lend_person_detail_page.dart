@@ -153,6 +153,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     final noteController = TextEditingController(text: existing?.note ?? '');
     var selectedType = existing?.type ?? LendEntryType.lent;
     var selectedDate = existing?.date ?? DateTime.now();
+    var selectedDueDate = existing?.dueDate;
     final isEditing = existing != null;
     var formAttempted = false;
 
@@ -244,6 +245,49 @@ class LendPersonDetailPage extends ConsumerWidget {
                           }
                         },
                       ),
+                      const SizedBox(height: AppSpacing.sm),
+                      const _ModalFieldLabel('Due date (optional)'),
+                      const SizedBox(height: 4),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          selectedDueDate == null
+                              ? 'No due date'
+                              : Formatters.date(selectedDueDate!),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (selectedDueDate != null)
+                              IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  setState(() => selectedDueDate = null);
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.calendar_month),
+                          ],
+                        ),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDueDate ?? selectedDate.add(
+                              const Duration(days: 30),
+                            ),
+                            firstDate: selectedDate,
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 3650),
+                            ),
+                            builder: (context, child) => child!,
+                          );
+                          if (picked != null) {
+                            setState(() => selectedDueDate = picked);
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -266,6 +310,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         type: selectedType,
                         amount: amount,
                         date: selectedDate,
+                        dueDate: selectedDueDate,
                         note: noteController.text.trim(),
                       );
                     } else {
@@ -274,6 +319,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         type: selectedType,
                         amount: amount,
                         date: selectedDate,
+                        dueDate: selectedDueDate,
                         note: noteController.text.trim(),
                       );
                     }

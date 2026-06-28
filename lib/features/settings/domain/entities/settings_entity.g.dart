@@ -13,6 +13,12 @@ _$SettingsEntityImpl _$$SettingsEntityImplFromJson(Map<String, dynamic> json) =>
       currency: json['currency'] as String? ?? 'INR',
       budgetAlertsEnabled: json['budgetAlertsEnabled'] as bool? ?? false,
       dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? false,
+      dailyReminderTime: (json['dailyReminderTime'] as num?)?.toInt() ?? 1200,
+      recurringBillRemindersEnabled:
+          json['recurringBillRemindersEnabled'] as bool? ?? false,
+      lendDueRemindersEnabled:
+          json['lendDueRemindersEnabled'] as bool? ?? false,
+      goalRemindersEnabled: json['goalRemindersEnabled'] as bool? ?? false,
       privacyLockEnabled: json['privacyLockEnabled'] as bool? ?? false,
       showAmountsEnabled: json['showAmountsEnabled'] as bool? ?? true,
       themeMode:
@@ -32,6 +38,10 @@ Map<String, dynamic> _$$SettingsEntityImplToJson(
   'currency': instance.currency,
   'budgetAlertsEnabled': instance.budgetAlertsEnabled,
   'dailyReminderEnabled': instance.dailyReminderEnabled,
+  'dailyReminderTime': instance.dailyReminderTime,
+  'recurringBillRemindersEnabled': instance.recurringBillRemindersEnabled,
+  'lendDueRemindersEnabled': instance.lendDueRemindersEnabled,
+  'goalRemindersEnabled': instance.goalRemindersEnabled,
   'privacyLockEnabled': instance.privacyLockEnabled,
   'showAmountsEnabled': instance.showAmountsEnabled,
   'themeMode': _$AppThemeModeEnumMap[instance.themeMode]!,

@@ -82,6 +82,18 @@ class Settings extends Table {
   BoolColumn get dailyReminderEnabled => boolean()
       .named('daily_reminder_enabled')
       .withDefault(const Constant(false))();
+  IntColumn get dailyReminderTime => integer()
+      .named('daily_reminder_time')
+      .withDefault(const Constant(1200))();
+  BoolColumn get recurringBillRemindersEnabled => boolean()
+      .named('recurring_bill_reminders_enabled')
+      .withDefault(const Constant(false))();
+  BoolColumn get lendDueRemindersEnabled => boolean()
+      .named('lend_due_reminders_enabled')
+      .withDefault(const Constant(false))();
+  BoolColumn get goalRemindersEnabled => boolean()
+      .named('goal_reminders_enabled')
+      .withDefault(const Constant(false))();
   BoolColumn get privacyLockEnabled => boolean()
       .named('privacy_lock_enabled')
       .withDefault(const Constant(false))();
@@ -91,6 +103,32 @@ class Settings extends Table {
   IntColumn get lastBudgetAlertAt =>
       integer().named('last_budget_alert_at').nullable()();
   IntColumn get updatedAt => integer().named('updated_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+class LendEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get personId => text().named('person_id')();
+  TextColumn get type => text()();
+  RealColumn get amount => real()();
+  IntColumn get amountPaise =>
+      integer().named('amount_paise').withDefault(const Constant(0))();
+  IntColumn get date => integer()();
+  IntColumn get dueDate => integer().named('due_date').nullable()();
+  TextColumn get note => text().nullable()();
+  BoolColumn get isSettled =>
+      boolean().named('is_settled').withDefault(const Constant(false))();
+  RealColumn get settledAmount =>
+      real().named('settled_amount').withDefault(const Constant(0))();
+  IntColumn get settledAmountPaise =>
+      integer().named('settled_amount_paise').withDefault(const Constant(0))();
+  IntColumn get settledAt => integer().named('settled_at').nullable()();
+  IntColumn get createdAt => integer().named('created_at')();
+  IntColumn get updatedAt => integer().named('updated_at')();
+  BoolColumn get isDeleted =>
+      boolean().named('is_deleted').withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -115,31 +153,6 @@ class UserProfiles extends Table {
 class LendPeople extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
-  IntColumn get createdAt => integer().named('created_at')();
-  IntColumn get updatedAt => integer().named('updated_at')();
-  BoolColumn get isDeleted =>
-      boolean().named('is_deleted').withDefault(const Constant(false))();
-
-  @override
-  Set<Column<Object>> get primaryKey => {id};
-}
-
-class LendEntries extends Table {
-  TextColumn get id => text()();
-  TextColumn get personId => text().named('person_id')();
-  TextColumn get type => text()();
-  RealColumn get amount => real()();
-  IntColumn get amountPaise =>
-      integer().named('amount_paise').withDefault(const Constant(0))();
-  IntColumn get date => integer()();
-  TextColumn get note => text().nullable()();
-  BoolColumn get isSettled =>
-      boolean().named('is_settled').withDefault(const Constant(false))();
-  RealColumn get settledAmount =>
-      real().named('settled_amount').withDefault(const Constant(0))();
-  IntColumn get settledAmountPaise =>
-      integer().named('settled_amount_paise').withDefault(const Constant(0))();
-  IntColumn get settledAt => integer().named('settled_at').nullable()();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get updatedAt => integer().named('updated_at')();
   BoolColumn get isDeleted =>

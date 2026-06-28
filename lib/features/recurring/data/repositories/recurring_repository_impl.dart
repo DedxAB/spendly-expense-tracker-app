@@ -4,6 +4,7 @@ import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
+import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/features/recurring/domain/entities/recurring_rule_entity.dart';
 import 'package:spendly/features/recurring/domain/repositories/recurring_repository.dart';
@@ -15,11 +16,36 @@ class RecurringRepositoryImpl implements RecurringRepository {
   final Ref _ref;
 
   AppDatabase get _db => _ref.read(appDatabaseProvider);
+  LocalNotificationService get _notif => _ref.read(localNotificationServiceProvider);
+
+  Future<bool> _billNotificationsEnabled() async {
+    final settings = await _db.getSettingsRow();
+    return settings?.recurringBillRemindersEnabled ?? false;
+  }
+
+  Future<void> _scheduleBillNotificationIfEnabled(RecurringRuleEntity rule) async {
+    if (!rule.isActive || rule.isDeleted) return;
+    final enabled = await _billNotificationsEnabled();
+    if (!enabled) return;
+    if (rule.nextDueDate.isBefore(DateTime.now())) return;
+    await _notif.scheduleRecurringBillReminder(
+      ruleId: rule.id,
+      title: rule.title,
+      amount: rule.amount,
+      nextDueDate: rule.nextDueDate,
+    );
+  }
 
   @override
   Future<void> addOrUpdate(RecurringRuleEntity rule) async {
     final normalized = rule.copyWith(amount: Money.normalize(rule.amount));
     await _db.upsertRecurringRule(recurringRuleToCompanion(normalized));
+
+    if (rule.isActive && !rule.isDeleted) {
+      await _scheduleBillNotificationIfEnabled(normalized);
+    } else {
+      await _notif.cancelRecurringBillReminder(rule.id);
+    }
   }
 
   @override
@@ -31,6 +57,14 @@ class RecurringRepositoryImpl implements RecurringRepository {
   @override
   Future<void> setActive(String ruleId, bool isActive) async {
     await _db.setRecurringRuleActive(ruleId, isActive);
+    if (isActive) {
+      final row = await _db.getRecurringRuleById(ruleId);
+      if (row != null) {
+        await _scheduleBillNotificationIfEnabled(row.toEntity());
+      }
+    } else {
+      await _notif.cancelRecurringBillReminder(ruleId);
+    }
   }
 
   @override
@@ -48,11 +82,16 @@ class RecurringRepositoryImpl implements RecurringRepository {
           )
           .toCompanion(true),
     );
+    final updated = await _db.getRecurringRuleById(ruleId);
+    if (updated != null) {
+      await _scheduleBillNotificationIfEnabled(updated.toEntity());
+    }
   }
 
   @override
   Future<void> softDelete(String ruleId) async {
     await _db.softDeleteRecurringRule(ruleId);
+    await _notif.cancelRecurringBillReminder(ruleId);
   }
 
   @override
@@ -72,6 +111,7 @@ class RecurringRepositoryImpl implements RecurringRepository {
         fromDayStart,
       );
     });
+    await _notif.cancelRecurringBillReminder(ruleId);
   }
 
   @override
@@ -159,6 +199,19 @@ class RecurringRepositoryImpl implements RecurringRepository {
         );
       }
     });
+
+    if (createdCount > 0) {
+      final rules = await _db.getRecurringRules();
+      for (final rule in rules) {
+        if (!rule.isActive || rule.isDeleted) continue;
+        final nextDueDate = DateTime.fromMillisecondsSinceEpoch(
+          rule.nextDueDate,
+        );
+        if (nextDueDate.isBefore(DateTime.now())) continue;
+        final entity = rule.toEntity();
+        await _scheduleBillNotificationIfEnabled(entity);
+      }
+    }
 
     return createdCount;
   }

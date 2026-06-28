@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:spendly/app/app_router.dart';
 import 'package:spendly/core/notifications/local_notification_service.dart';
+import 'package:spendly/core/notifications/notification_bootstrap.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_theme.dart';
@@ -24,15 +25,17 @@ class SpendlyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(recurringBootstrapProvider);
+    ref.watch(notificationBootstrapProvider);
     ref.listen(settingsStreamProvider, (previous, next) async {
       final settings = next.valueOrNull;
       if (settings == null) return;
       AmountVisibilityController.setVisible(settings.showAmountsEnabled);
       await PrivacyGuard.setWindowSecure(settings.privacyLockEnabled);
       final notifications = ref.read(localNotificationServiceProvider);
-      await notifications.initialize();
       if (settings.dailyReminderEnabled) {
-        await notifications.scheduleDailyReminder();
+        final hour = settings.dailyReminderTime ~/ 60;
+        final minute = settings.dailyReminderTime % 60;
+        await notifications.scheduleDailyReminder(hour: hour, minute: minute);
       } else {
         await notifications.cancelDailyReminder();
       }

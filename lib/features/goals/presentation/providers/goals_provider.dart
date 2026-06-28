@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
+import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/features/transactions/data/repositories/transactions_repository_impl.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
@@ -222,6 +223,29 @@ class GoalsActions {
     await _ref.read(transactionsRepositoryProvider).add(entity);
   }
 
+  Future<bool> _goalNotificationsEnabled() async {
+    final db = _ref.read(appDatabaseProvider);
+    final settings = await db.getSettingsRow();
+    return settings?.goalRemindersEnabled ?? false;
+  }
+
+  Future<void> _scheduleGoalNotificationIfEnabled({
+    required String goalId,
+    required String title,
+    required DateTime targetDate,
+  }) async {
+    final enabled = await _goalNotificationsEnabled();
+    if (!enabled) return;
+    if (targetDate.isBefore(DateTime.now())) return;
+    await _ref
+        .read(localNotificationServiceProvider)
+        .scheduleGoalReminder(
+          goalId: goalId,
+          title: title,
+          targetDate: targetDate,
+        );
+  }
+
   Future<void> addGoal({
     required String title,
     required String category,
@@ -275,6 +299,12 @@ class GoalsActions {
         note: '→ $title (initial)',
       );
     }
+
+    await _scheduleGoalNotificationIfEnabled(
+      goalId: goalId,
+      title: title,
+      targetDate: targetDate,
+    );
   }
 
   Future<void> updateGoal({
@@ -330,6 +360,14 @@ class GoalsActions {
         note: delta > 0 ? '→ $title' : '← $title',
       );
     }
+
+    await _ref
+        .read(localNotificationServiceProvider)
+        .rescheduleGoalReminder(
+          goalId: goalId,
+          title: title,
+          targetDate: targetDate,
+        );
   }
 
   Future<GoalFund?> _getGoalFundById(String goalId) async {
@@ -398,6 +436,7 @@ class GoalsActions {
     final saved = Money.normalize(initialSaved.clamp(0, targetAmount));
     final expense = Money.normalize(monthlyExpense);
     final goalId = const Uuid().v4();
+    final targetDate = now.add(const Duration(days: 365));
     await db.upsertGoalFund(
       GoalFundsCompanion.insert(
         id: goalId,
@@ -407,7 +446,7 @@ class GoalsActions {
         targetAmountPaise: Value(Money.toPaise(target)),
         savedAmount: const Value(0),
         savedAmountPaise: const Value(0),
-        targetDate: now.add(const Duration(days: 365)).millisecondsSinceEpoch,
+        targetDate: targetDate.millisecondsSinceEpoch,
         monthlyContribution: const Value(0),
         monthlyContributionPaise: const Value(0),
         recentDelta: const Value(0),
@@ -432,6 +471,12 @@ class GoalsActions {
         note: '→ $title (initial)',
       );
     }
+
+    await _scheduleGoalNotificationIfEnabled(
+      goalId: goalId,
+      title: title,
+      targetDate: targetDate,
+    );
   }
 
   Future<void> updateEmergencyFund({
@@ -531,6 +576,9 @@ class GoalsActions {
   Future<void> deleteGoal(String goalId) async {
     final goal = await _getGoalFundById(goalId);
     await _ref.read(appDatabaseProvider).softDeleteGoalFund(goalId);
+    await _ref
+        .read(localNotificationServiceProvider)
+        .cancelGoalReminder(goalId);
     if (goal != null && goal.savedAmount > 0) {
       await _createTransferTransaction(
         amount: goal.savedAmount,

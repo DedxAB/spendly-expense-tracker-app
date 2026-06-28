@@ -338,6 +338,10 @@ class SettingsPage extends ConsumerWidget {
     final transactions = ref.watch(allTransactionsProvider);
     final budgetAlerts = settings?.budgetAlertsEnabled ?? true;
     final dailyReminder = settings?.dailyReminderEnabled ?? false;
+    final dailyReminderTime = settings?.dailyReminderTime ?? 1200;
+    final recurringBillReminders = settings?.recurringBillRemindersEnabled ?? false;
+    final lendDueReminders = settings?.lendDueRemindersEnabled ?? false;
+    final goalReminders = settings?.goalRemindersEnabled ?? false;
     final privacyLock = settings?.privacyLockEnabled ?? false;
     final cloudSync = ref.watch(cloudSyncControllerProvider).valueOrNull;
 
@@ -682,6 +686,8 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
+
+          // ── Notification categories ──
           Container(
             decoration: BoxDecoration(
               color: context.surface,
@@ -690,6 +696,22 @@ class SettingsPage extends ConsumerWidget {
             ),
             child: Column(
               children: [
+                // Notification section header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                  child: Row(
+                    children: [
+                      Icon(AppIcons.notifications, size: 18, color: primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Notifications',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: primary),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                // Budget alerts
                 SwitchListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
@@ -697,7 +719,7 @@ class SettingsPage extends ConsumerWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
                   ),
                   subtitle: Text(
-                    'Show in-app budget warning notifications',
+                    'In-app alert when you exceed your monthly budget',
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
                   value: budgetAlerts,
@@ -707,10 +729,15 @@ class SettingsPage extends ConsumerWidget {
                         .setNotificationPreferences(
                           budgetAlertsEnabled: value,
                           dailyReminderEnabled: dailyReminder,
+                          dailyReminderTime: dailyReminderTime,
+                          recurringBillRemindersEnabled: recurringBillReminders,
+                          lendDueRemindersEnabled: lendDueReminders,
+                          goalRemindersEnabled: goalReminders,
                         );
                   },
                 ),
                 Divider(height: 1, color: divider, indent: 16, endIndent: 16),
+                // Daily reminder
                 SwitchListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
@@ -718,7 +745,7 @@ class SettingsPage extends ConsumerWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
                   ),
                   subtitle: Text(
-                    'Receive a push reminder every day',
+                    'Push reminder to log your daily expenses',
                     style: TextStyle(fontSize: 12, color: muted),
                   ),
                   value: dailyReminder,
@@ -728,6 +755,157 @@ class SettingsPage extends ConsumerWidget {
                         .setNotificationPreferences(
                           budgetAlertsEnabled: budgetAlerts,
                           dailyReminderEnabled: value,
+                          dailyReminderTime: dailyReminderTime,
+                          recurringBillRemindersEnabled: recurringBillReminders,
+                          lendDueRemindersEnabled: lendDueReminders,
+                          goalRemindersEnabled: goalReminders,
+                        );
+                  },
+                ),
+                if (dailyReminder)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: InkWell(
+                      onTap: () async {
+                        final now = DateTime(
+                          2020, 1, 1,
+                          dailyReminderTime ~/ 60,
+                          dailyReminderTime % 60,
+                        );
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(now),
+                        );
+                        if (picked != null) {
+                          final newTime = picked.hour * 60 + picked.minute;
+                          await ref
+                              .read(settingsRepositoryProvider)
+                              .setNotificationPreferences(
+                                budgetAlertsEnabled: budgetAlerts,
+                                dailyReminderEnabled: dailyReminder,
+                                dailyReminderTime: newTime,
+                                recurringBillRemindersEnabled: recurringBillReminders,
+                                lendDueRemindersEnabled: lendDueReminders,
+                                goalRemindersEnabled: goalReminders,
+                              );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(AppRadii.md),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.background,
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          border: Border.all(color: divider),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Reminder time',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${(dailyReminderTime ~/ 60).toString().padLeft(2, '0')}:${(dailyReminderTime % 60).toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: secondary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                Divider(height: 1, color: divider, indent: 16, endIndent: 16),
+                // Recurring bill reminders
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
+                    'Recurring bill reminders',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  ),
+                  subtitle: Text(
+                    'Remind you when a recurring bill is due',
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  value: recurringBillReminders,
+                  onChanged: (value) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .setNotificationPreferences(
+                          budgetAlertsEnabled: budgetAlerts,
+                          dailyReminderEnabled: dailyReminder,
+                          dailyReminderTime: dailyReminderTime,
+                          recurringBillRemindersEnabled: value,
+                          lendDueRemindersEnabled: lendDueReminders,
+                          goalRemindersEnabled: goalReminders,
+                        );
+                  },
+                ),
+                Divider(height: 1, color: divider, indent: 16, endIndent: 16),
+                // Lend/borrow due reminders
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
+                    'Lend / borrow due reminders',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  ),
+                  subtitle: Text(
+                    'Notify when a lent or borrowed amount is due',
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  value: lendDueReminders,
+                  onChanged: (value) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .setNotificationPreferences(
+                          budgetAlertsEnabled: budgetAlerts,
+                          dailyReminderEnabled: dailyReminder,
+                          dailyReminderTime: dailyReminderTime,
+                          recurringBillRemindersEnabled: recurringBillReminders,
+                          lendDueRemindersEnabled: value,
+                          goalRemindersEnabled: goalReminders,
+                        );
+                  },
+                ),
+                Divider(height: 1, color: divider, indent: 16, endIndent: 16),
+                // Goal reminders
+                SwitchListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  title: Text(
+                    'Goal target reminders',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  ),
+                  subtitle: Text(
+                    'Remind you when a savings goal target date is reached',
+                    style: TextStyle(fontSize: 12, color: muted),
+                  ),
+                  value: goalReminders,
+                  onChanged: (value) async {
+                    await ref
+                        .read(settingsRepositoryProvider)
+                        .setNotificationPreferences(
+                          budgetAlertsEnabled: budgetAlerts,
+                          dailyReminderEnabled: dailyReminder,
+                          dailyReminderTime: dailyReminderTime,
+                          recurringBillRemindersEnabled: recurringBillReminders,
+                          lendDueRemindersEnabled: lendDueReminders,
+                          goalRemindersEnabled: value,
                         );
                   },
                 ),

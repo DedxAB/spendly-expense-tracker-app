@@ -2262,6 +2262,62 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _dailyReminderTimeMeta = const VerificationMeta(
+    'dailyReminderTime',
+  );
+  @override
+  late final GeneratedColumn<int> dailyReminderTime = GeneratedColumn<int>(
+    'daily_reminder_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1200),
+  );
+  static const VerificationMeta _recurringBillRemindersEnabledMeta =
+      const VerificationMeta('recurringBillRemindersEnabled');
+  @override
+  late final GeneratedColumn<bool> recurringBillRemindersEnabled =
+      GeneratedColumn<bool>(
+        'recurring_bill_reminders_enabled',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("recurring_bill_reminders_enabled" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _lendDueRemindersEnabledMeta =
+      const VerificationMeta('lendDueRemindersEnabled');
+  @override
+  late final GeneratedColumn<bool> lendDueRemindersEnabled =
+      GeneratedColumn<bool>(
+        'lend_due_reminders_enabled',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("lend_due_reminders_enabled" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
+  static const VerificationMeta _goalRemindersEnabledMeta =
+      const VerificationMeta('goalRemindersEnabled');
+  @override
+  late final GeneratedColumn<bool> goalRemindersEnabled = GeneratedColumn<bool>(
+    'goal_reminders_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("goal_reminders_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _privacyLockEnabledMeta =
       const VerificationMeta('privacyLockEnabled');
   @override
@@ -2321,6 +2377,10 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     themeMode,
     transactionHintsSeen,
     dailyReminderEnabled,
+    dailyReminderTime,
+    recurringBillRemindersEnabled,
+    lendDueRemindersEnabled,
+    goalRemindersEnabled,
     privacyLockEnabled,
     showAmountsEnabled,
     lastBudgetAlertAt,
@@ -2386,6 +2446,42 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         dailyReminderEnabled.isAcceptableOrUnknown(
           data['daily_reminder_enabled']!,
           _dailyReminderEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('daily_reminder_time')) {
+      context.handle(
+        _dailyReminderTimeMeta,
+        dailyReminderTime.isAcceptableOrUnknown(
+          data['daily_reminder_time']!,
+          _dailyReminderTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurring_bill_reminders_enabled')) {
+      context.handle(
+        _recurringBillRemindersEnabledMeta,
+        recurringBillRemindersEnabled.isAcceptableOrUnknown(
+          data['recurring_bill_reminders_enabled']!,
+          _recurringBillRemindersEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('lend_due_reminders_enabled')) {
+      context.handle(
+        _lendDueRemindersEnabledMeta,
+        lendDueRemindersEnabled.isAcceptableOrUnknown(
+          data['lend_due_reminders_enabled']!,
+          _lendDueRemindersEnabledMeta,
+        ),
+      );
+    }
+    if (data.containsKey('goal_reminders_enabled')) {
+      context.handle(
+        _goalRemindersEnabledMeta,
+        goalRemindersEnabled.isAcceptableOrUnknown(
+          data['goal_reminders_enabled']!,
+          _goalRemindersEnabledMeta,
         ),
       );
     }
@@ -2461,6 +2557,22 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.bool,
         data['${effectivePrefix}daily_reminder_enabled'],
       )!,
+      dailyReminderTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}daily_reminder_time'],
+      )!,
+      recurringBillRemindersEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}recurring_bill_reminders_enabled'],
+      )!,
+      lendDueRemindersEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}lend_due_reminders_enabled'],
+      )!,
+      goalRemindersEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}goal_reminders_enabled'],
+      )!,
       privacyLockEnabled: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}privacy_lock_enabled'],
@@ -2494,6 +2606,10 @@ class Setting extends DataClass implements Insertable<Setting> {
   final String themeMode;
   final bool transactionHintsSeen;
   final bool dailyReminderEnabled;
+  final int dailyReminderTime;
+  final bool recurringBillRemindersEnabled;
+  final bool lendDueRemindersEnabled;
+  final bool goalRemindersEnabled;
   final bool privacyLockEnabled;
   final bool showAmountsEnabled;
   final int? lastBudgetAlertAt;
@@ -2506,6 +2622,10 @@ class Setting extends DataClass implements Insertable<Setting> {
     required this.themeMode,
     required this.transactionHintsSeen,
     required this.dailyReminderEnabled,
+    required this.dailyReminderTime,
+    required this.recurringBillRemindersEnabled,
+    required this.lendDueRemindersEnabled,
+    required this.goalRemindersEnabled,
     required this.privacyLockEnabled,
     required this.showAmountsEnabled,
     this.lastBudgetAlertAt,
@@ -2521,6 +2641,12 @@ class Setting extends DataClass implements Insertable<Setting> {
     map['theme_mode'] = Variable<String>(themeMode);
     map['transaction_hints_seen'] = Variable<bool>(transactionHintsSeen);
     map['daily_reminder_enabled'] = Variable<bool>(dailyReminderEnabled);
+    map['daily_reminder_time'] = Variable<int>(dailyReminderTime);
+    map['recurring_bill_reminders_enabled'] = Variable<bool>(
+      recurringBillRemindersEnabled,
+    );
+    map['lend_due_reminders_enabled'] = Variable<bool>(lendDueRemindersEnabled);
+    map['goal_reminders_enabled'] = Variable<bool>(goalRemindersEnabled);
     map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled);
     map['show_amounts_enabled'] = Variable<bool>(showAmountsEnabled);
     if (!nullToAbsent || lastBudgetAlertAt != null) {
@@ -2539,6 +2665,10 @@ class Setting extends DataClass implements Insertable<Setting> {
       themeMode: Value(themeMode),
       transactionHintsSeen: Value(transactionHintsSeen),
       dailyReminderEnabled: Value(dailyReminderEnabled),
+      dailyReminderTime: Value(dailyReminderTime),
+      recurringBillRemindersEnabled: Value(recurringBillRemindersEnabled),
+      lendDueRemindersEnabled: Value(lendDueRemindersEnabled),
+      goalRemindersEnabled: Value(goalRemindersEnabled),
       privacyLockEnabled: Value(privacyLockEnabled),
       showAmountsEnabled: Value(showAmountsEnabled),
       lastBudgetAlertAt: lastBudgetAlertAt == null && nullToAbsent
@@ -2565,6 +2695,16 @@ class Setting extends DataClass implements Insertable<Setting> {
       dailyReminderEnabled: serializer.fromJson<bool>(
         json['dailyReminderEnabled'],
       ),
+      dailyReminderTime: serializer.fromJson<int>(json['dailyReminderTime']),
+      recurringBillRemindersEnabled: serializer.fromJson<bool>(
+        json['recurringBillRemindersEnabled'],
+      ),
+      lendDueRemindersEnabled: serializer.fromJson<bool>(
+        json['lendDueRemindersEnabled'],
+      ),
+      goalRemindersEnabled: serializer.fromJson<bool>(
+        json['goalRemindersEnabled'],
+      ),
       privacyLockEnabled: serializer.fromJson<bool>(json['privacyLockEnabled']),
       showAmountsEnabled: serializer.fromJson<bool>(json['showAmountsEnabled']),
       lastBudgetAlertAt: serializer.fromJson<int?>(json['lastBudgetAlertAt']),
@@ -2582,6 +2722,14 @@ class Setting extends DataClass implements Insertable<Setting> {
       'themeMode': serializer.toJson<String>(themeMode),
       'transactionHintsSeen': serializer.toJson<bool>(transactionHintsSeen),
       'dailyReminderEnabled': serializer.toJson<bool>(dailyReminderEnabled),
+      'dailyReminderTime': serializer.toJson<int>(dailyReminderTime),
+      'recurringBillRemindersEnabled': serializer.toJson<bool>(
+        recurringBillRemindersEnabled,
+      ),
+      'lendDueRemindersEnabled': serializer.toJson<bool>(
+        lendDueRemindersEnabled,
+      ),
+      'goalRemindersEnabled': serializer.toJson<bool>(goalRemindersEnabled),
       'privacyLockEnabled': serializer.toJson<bool>(privacyLockEnabled),
       'showAmountsEnabled': serializer.toJson<bool>(showAmountsEnabled),
       'lastBudgetAlertAt': serializer.toJson<int?>(lastBudgetAlertAt),
@@ -2597,6 +2745,10 @@ class Setting extends DataClass implements Insertable<Setting> {
     String? themeMode,
     bool? transactionHintsSeen,
     bool? dailyReminderEnabled,
+    int? dailyReminderTime,
+    bool? recurringBillRemindersEnabled,
+    bool? lendDueRemindersEnabled,
+    bool? goalRemindersEnabled,
     bool? privacyLockEnabled,
     bool? showAmountsEnabled,
     Value<int?> lastBudgetAlertAt = const Value.absent(),
@@ -2609,6 +2761,12 @@ class Setting extends DataClass implements Insertable<Setting> {
     themeMode: themeMode ?? this.themeMode,
     transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
     dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+    dailyReminderTime: dailyReminderTime ?? this.dailyReminderTime,
+    recurringBillRemindersEnabled:
+        recurringBillRemindersEnabled ?? this.recurringBillRemindersEnabled,
+    lendDueRemindersEnabled:
+        lendDueRemindersEnabled ?? this.lendDueRemindersEnabled,
+    goalRemindersEnabled: goalRemindersEnabled ?? this.goalRemindersEnabled,
     privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
     showAmountsEnabled: showAmountsEnabled ?? this.showAmountsEnabled,
     lastBudgetAlertAt: lastBudgetAlertAt.present
@@ -2633,6 +2791,18 @@ class Setting extends DataClass implements Insertable<Setting> {
       dailyReminderEnabled: data.dailyReminderEnabled.present
           ? data.dailyReminderEnabled.value
           : this.dailyReminderEnabled,
+      dailyReminderTime: data.dailyReminderTime.present
+          ? data.dailyReminderTime.value
+          : this.dailyReminderTime,
+      recurringBillRemindersEnabled: data.recurringBillRemindersEnabled.present
+          ? data.recurringBillRemindersEnabled.value
+          : this.recurringBillRemindersEnabled,
+      lendDueRemindersEnabled: data.lendDueRemindersEnabled.present
+          ? data.lendDueRemindersEnabled.value
+          : this.lendDueRemindersEnabled,
+      goalRemindersEnabled: data.goalRemindersEnabled.present
+          ? data.goalRemindersEnabled.value
+          : this.goalRemindersEnabled,
       privacyLockEnabled: data.privacyLockEnabled.present
           ? data.privacyLockEnabled.value
           : this.privacyLockEnabled,
@@ -2656,6 +2826,12 @@ class Setting extends DataClass implements Insertable<Setting> {
           ..write('themeMode: $themeMode, ')
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
+          ..write('dailyReminderTime: $dailyReminderTime, ')
+          ..write(
+            'recurringBillRemindersEnabled: $recurringBillRemindersEnabled, ',
+          )
+          ..write('lendDueRemindersEnabled: $lendDueRemindersEnabled, ')
+          ..write('goalRemindersEnabled: $goalRemindersEnabled, ')
           ..write('privacyLockEnabled: $privacyLockEnabled, ')
           ..write('showAmountsEnabled: $showAmountsEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
@@ -2673,6 +2849,10 @@ class Setting extends DataClass implements Insertable<Setting> {
     themeMode,
     transactionHintsSeen,
     dailyReminderEnabled,
+    dailyReminderTime,
+    recurringBillRemindersEnabled,
+    lendDueRemindersEnabled,
+    goalRemindersEnabled,
     privacyLockEnabled,
     showAmountsEnabled,
     lastBudgetAlertAt,
@@ -2689,6 +2869,11 @@ class Setting extends DataClass implements Insertable<Setting> {
           other.themeMode == this.themeMode &&
           other.transactionHintsSeen == this.transactionHintsSeen &&
           other.dailyReminderEnabled == this.dailyReminderEnabled &&
+          other.dailyReminderTime == this.dailyReminderTime &&
+          other.recurringBillRemindersEnabled ==
+              this.recurringBillRemindersEnabled &&
+          other.lendDueRemindersEnabled == this.lendDueRemindersEnabled &&
+          other.goalRemindersEnabled == this.goalRemindersEnabled &&
           other.privacyLockEnabled == this.privacyLockEnabled &&
           other.showAmountsEnabled == this.showAmountsEnabled &&
           other.lastBudgetAlertAt == this.lastBudgetAlertAt &&
@@ -2703,6 +2888,10 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<String> themeMode;
   final Value<bool> transactionHintsSeen;
   final Value<bool> dailyReminderEnabled;
+  final Value<int> dailyReminderTime;
+  final Value<bool> recurringBillRemindersEnabled;
+  final Value<bool> lendDueRemindersEnabled;
+  final Value<bool> goalRemindersEnabled;
   final Value<bool> privacyLockEnabled;
   final Value<bool> showAmountsEnabled;
   final Value<int?> lastBudgetAlertAt;
@@ -2715,6 +2904,10 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.themeMode = const Value.absent(),
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
+    this.dailyReminderTime = const Value.absent(),
+    this.recurringBillRemindersEnabled = const Value.absent(),
+    this.lendDueRemindersEnabled = const Value.absent(),
+    this.goalRemindersEnabled = const Value.absent(),
     this.privacyLockEnabled = const Value.absent(),
     this.showAmountsEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
@@ -2728,6 +2921,10 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.themeMode = const Value.absent(),
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
+    this.dailyReminderTime = const Value.absent(),
+    this.recurringBillRemindersEnabled = const Value.absent(),
+    this.lendDueRemindersEnabled = const Value.absent(),
+    this.goalRemindersEnabled = const Value.absent(),
     this.privacyLockEnabled = const Value.absent(),
     this.showAmountsEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
@@ -2741,6 +2938,10 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Expression<String>? themeMode,
     Expression<bool>? transactionHintsSeen,
     Expression<bool>? dailyReminderEnabled,
+    Expression<int>? dailyReminderTime,
+    Expression<bool>? recurringBillRemindersEnabled,
+    Expression<bool>? lendDueRemindersEnabled,
+    Expression<bool>? goalRemindersEnabled,
     Expression<bool>? privacyLockEnabled,
     Expression<bool>? showAmountsEnabled,
     Expression<int>? lastBudgetAlertAt,
@@ -2757,6 +2958,13 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
         'transaction_hints_seen': transactionHintsSeen,
       if (dailyReminderEnabled != null)
         'daily_reminder_enabled': dailyReminderEnabled,
+      if (dailyReminderTime != null) 'daily_reminder_time': dailyReminderTime,
+      if (recurringBillRemindersEnabled != null)
+        'recurring_bill_reminders_enabled': recurringBillRemindersEnabled,
+      if (lendDueRemindersEnabled != null)
+        'lend_due_reminders_enabled': lendDueRemindersEnabled,
+      if (goalRemindersEnabled != null)
+        'goal_reminders_enabled': goalRemindersEnabled,
       if (privacyLockEnabled != null)
         'privacy_lock_enabled': privacyLockEnabled,
       if (showAmountsEnabled != null)
@@ -2774,6 +2982,10 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<String>? themeMode,
     Value<bool>? transactionHintsSeen,
     Value<bool>? dailyReminderEnabled,
+    Value<int>? dailyReminderTime,
+    Value<bool>? recurringBillRemindersEnabled,
+    Value<bool>? lendDueRemindersEnabled,
+    Value<bool>? goalRemindersEnabled,
     Value<bool>? privacyLockEnabled,
     Value<bool>? showAmountsEnabled,
     Value<int?>? lastBudgetAlertAt,
@@ -2787,6 +2999,12 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       themeMode: themeMode ?? this.themeMode,
       transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
+      dailyReminderTime: dailyReminderTime ?? this.dailyReminderTime,
+      recurringBillRemindersEnabled:
+          recurringBillRemindersEnabled ?? this.recurringBillRemindersEnabled,
+      lendDueRemindersEnabled:
+          lendDueRemindersEnabled ?? this.lendDueRemindersEnabled,
+      goalRemindersEnabled: goalRemindersEnabled ?? this.goalRemindersEnabled,
       privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
       showAmountsEnabled: showAmountsEnabled ?? this.showAmountsEnabled,
       lastBudgetAlertAt: lastBudgetAlertAt ?? this.lastBudgetAlertAt,
@@ -2822,6 +3040,24 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
         dailyReminderEnabled.value,
       );
     }
+    if (dailyReminderTime.present) {
+      map['daily_reminder_time'] = Variable<int>(dailyReminderTime.value);
+    }
+    if (recurringBillRemindersEnabled.present) {
+      map['recurring_bill_reminders_enabled'] = Variable<bool>(
+        recurringBillRemindersEnabled.value,
+      );
+    }
+    if (lendDueRemindersEnabled.present) {
+      map['lend_due_reminders_enabled'] = Variable<bool>(
+        lendDueRemindersEnabled.value,
+      );
+    }
+    if (goalRemindersEnabled.present) {
+      map['goal_reminders_enabled'] = Variable<bool>(
+        goalRemindersEnabled.value,
+      );
+    }
     if (privacyLockEnabled.present) {
       map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled.value);
     }
@@ -2847,6 +3083,12 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
           ..write('themeMode: $themeMode, ')
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
+          ..write('dailyReminderTime: $dailyReminderTime, ')
+          ..write(
+            'recurringBillRemindersEnabled: $recurringBillRemindersEnabled, ',
+          )
+          ..write('lendDueRemindersEnabled: $lendDueRemindersEnabled, ')
+          ..write('goalRemindersEnabled: $goalRemindersEnabled, ')
           ..write('privacyLockEnabled: $privacyLockEnabled, ')
           ..write('showAmountsEnabled: $showAmountsEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
@@ -3783,6 +4025,17 @@ class $LendEntriesTable extends LendEntries
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<int> dueDate = GeneratedColumn<int>(
+    'due_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _noteMeta = const VerificationMeta('note');
   @override
   late final GeneratedColumn<String> note = GeneratedColumn<String>(
@@ -3886,6 +4139,7 @@ class $LendEntriesTable extends LendEntries
     amount,
     amountPaise,
     date,
+    dueDate,
     note,
     isSettled,
     settledAmount,
@@ -3952,6 +4206,12 @@ class $LendEntriesTable extends LendEntries
       );
     } else if (isInserting) {
       context.missing(_dateMeta);
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
     }
     if (data.containsKey('note')) {
       context.handle(
@@ -4044,6 +4304,10 @@ class $LendEntriesTable extends LendEntries
         DriftSqlType.int,
         data['${effectivePrefix}date'],
       )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}due_date'],
+      ),
       note: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}note'],
@@ -4092,6 +4356,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
   final double amount;
   final int amountPaise;
   final int date;
+  final int? dueDate;
   final String? note;
   final bool isSettled;
   final double settledAmount;
@@ -4107,6 +4372,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
     required this.amount,
     required this.amountPaise,
     required this.date,
+    this.dueDate,
     this.note,
     required this.isSettled,
     required this.settledAmount,
@@ -4125,6 +4391,9 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
     map['amount'] = Variable<double>(amount);
     map['amount_paise'] = Variable<int>(amountPaise);
     map['date'] = Variable<int>(date);
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<int>(dueDate);
+    }
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
@@ -4148,6 +4417,9 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
       amount: Value(amount),
       amountPaise: Value(amountPaise),
       date: Value(date),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       isSettled: Value(isSettled),
       settledAmount: Value(settledAmount),
@@ -4173,6 +4445,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
       amount: serializer.fromJson<double>(json['amount']),
       amountPaise: serializer.fromJson<int>(json['amountPaise']),
       date: serializer.fromJson<int>(json['date']),
+      dueDate: serializer.fromJson<int?>(json['dueDate']),
       note: serializer.fromJson<String?>(json['note']),
       isSettled: serializer.fromJson<bool>(json['isSettled']),
       settledAmount: serializer.fromJson<double>(json['settledAmount']),
@@ -4193,6 +4466,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
       'amount': serializer.toJson<double>(amount),
       'amountPaise': serializer.toJson<int>(amountPaise),
       'date': serializer.toJson<int>(date),
+      'dueDate': serializer.toJson<int?>(dueDate),
       'note': serializer.toJson<String?>(note),
       'isSettled': serializer.toJson<bool>(isSettled),
       'settledAmount': serializer.toJson<double>(settledAmount),
@@ -4211,6 +4485,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
     double? amount,
     int? amountPaise,
     int? date,
+    Value<int?> dueDate = const Value.absent(),
     Value<String?> note = const Value.absent(),
     bool? isSettled,
     double? settledAmount,
@@ -4226,6 +4501,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
     amount: amount ?? this.amount,
     amountPaise: amountPaise ?? this.amountPaise,
     date: date ?? this.date,
+    dueDate: dueDate.present ? dueDate.value : this.dueDate,
     note: note.present ? note.value : this.note,
     isSettled: isSettled ?? this.isSettled,
     settledAmount: settledAmount ?? this.settledAmount,
@@ -4245,6 +4521,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
           ? data.amountPaise.value
           : this.amountPaise,
       date: data.date.present ? data.date.value : this.date,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
       note: data.note.present ? data.note.value : this.note,
       isSettled: data.isSettled.present ? data.isSettled.value : this.isSettled,
       settledAmount: data.settledAmount.present
@@ -4269,6 +4546,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
           ..write('amount: $amount, ')
           ..write('amountPaise: $amountPaise, ')
           ..write('date: $date, ')
+          ..write('dueDate: $dueDate, ')
           ..write('note: $note, ')
           ..write('isSettled: $isSettled, ')
           ..write('settledAmount: $settledAmount, ')
@@ -4289,6 +4567,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
     amount,
     amountPaise,
     date,
+    dueDate,
     note,
     isSettled,
     settledAmount,
@@ -4308,6 +4587,7 @@ class LendEntry extends DataClass implements Insertable<LendEntry> {
           other.amount == this.amount &&
           other.amountPaise == this.amountPaise &&
           other.date == this.date &&
+          other.dueDate == this.dueDate &&
           other.note == this.note &&
           other.isSettled == this.isSettled &&
           other.settledAmount == this.settledAmount &&
@@ -4325,6 +4605,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
   final Value<double> amount;
   final Value<int> amountPaise;
   final Value<int> date;
+  final Value<int?> dueDate;
   final Value<String?> note;
   final Value<bool> isSettled;
   final Value<double> settledAmount;
@@ -4341,6 +4622,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
     this.amount = const Value.absent(),
     this.amountPaise = const Value.absent(),
     this.date = const Value.absent(),
+    this.dueDate = const Value.absent(),
     this.note = const Value.absent(),
     this.isSettled = const Value.absent(),
     this.settledAmount = const Value.absent(),
@@ -4358,6 +4640,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
     required double amount,
     this.amountPaise = const Value.absent(),
     required int date,
+    this.dueDate = const Value.absent(),
     this.note = const Value.absent(),
     this.isSettled = const Value.absent(),
     this.settledAmount = const Value.absent(),
@@ -4381,6 +4664,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
     Expression<double>? amount,
     Expression<int>? amountPaise,
     Expression<int>? date,
+    Expression<int>? dueDate,
     Expression<String>? note,
     Expression<bool>? isSettled,
     Expression<double>? settledAmount,
@@ -4398,6 +4682,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
       if (amount != null) 'amount': amount,
       if (amountPaise != null) 'amount_paise': amountPaise,
       if (date != null) 'date': date,
+      if (dueDate != null) 'due_date': dueDate,
       if (note != null) 'note': note,
       if (isSettled != null) 'is_settled': isSettled,
       if (settledAmount != null) 'settled_amount': settledAmount,
@@ -4418,6 +4703,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
     Value<double>? amount,
     Value<int>? amountPaise,
     Value<int>? date,
+    Value<int?>? dueDate,
     Value<String?>? note,
     Value<bool>? isSettled,
     Value<double>? settledAmount,
@@ -4435,6 +4721,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
       amount: amount ?? this.amount,
       amountPaise: amountPaise ?? this.amountPaise,
       date: date ?? this.date,
+      dueDate: dueDate ?? this.dueDate,
       note: note ?? this.note,
       isSettled: isSettled ?? this.isSettled,
       settledAmount: settledAmount ?? this.settledAmount,
@@ -4467,6 +4754,9 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
     }
     if (date.present) {
       map['date'] = Variable<int>(date.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<int>(dueDate.value);
     }
     if (note.present) {
       map['note'] = Variable<String>(note.value);
@@ -4507,6 +4797,7 @@ class LendEntriesCompanion extends UpdateCompanion<LendEntry> {
           ..write('amount: $amount, ')
           ..write('amountPaise: $amountPaise, ')
           ..write('date: $date, ')
+          ..write('dueDate: $dueDate, ')
           ..write('note: $note, ')
           ..write('isSettled: $isSettled, ')
           ..write('settledAmount: $settledAmount, ')
@@ -8905,6 +9196,10 @@ typedef $$SettingsTableCreateCompanionBuilder =
       Value<String> themeMode,
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
+      Value<int> dailyReminderTime,
+      Value<bool> recurringBillRemindersEnabled,
+      Value<bool> lendDueRemindersEnabled,
+      Value<bool> goalRemindersEnabled,
       Value<bool> privacyLockEnabled,
       Value<bool> showAmountsEnabled,
       Value<int?> lastBudgetAlertAt,
@@ -8919,6 +9214,10 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<String> themeMode,
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
+      Value<int> dailyReminderTime,
+      Value<bool> recurringBillRemindersEnabled,
+      Value<bool> lendDueRemindersEnabled,
+      Value<bool> goalRemindersEnabled,
       Value<bool> privacyLockEnabled,
       Value<bool> showAmountsEnabled,
       Value<int?> lastBudgetAlertAt,
@@ -8966,6 +9265,26 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<bool> get dailyReminderEnabled => $composableBuilder(
     column: $table.dailyReminderEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dailyReminderTime => $composableBuilder(
+    column: $table.dailyReminderTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get recurringBillRemindersEnabled => $composableBuilder(
+    column: $table.recurringBillRemindersEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get lendDueRemindersEnabled => $composableBuilder(
+    column: $table.lendDueRemindersEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get goalRemindersEnabled => $composableBuilder(
+    column: $table.goalRemindersEnabled,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9034,6 +9353,26 @@ class $$SettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get dailyReminderTime => $composableBuilder(
+    column: $table.dailyReminderTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get recurringBillRemindersEnabled => $composableBuilder(
+    column: $table.recurringBillRemindersEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get lendDueRemindersEnabled => $composableBuilder(
+    column: $table.lendDueRemindersEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get goalRemindersEnabled => $composableBuilder(
+    column: $table.goalRemindersEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get privacyLockEnabled => $composableBuilder(
     column: $table.privacyLockEnabled,
     builder: (column) => ColumnOrderings(column),
@@ -9093,6 +9432,26 @@ class $$SettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get dailyReminderTime => $composableBuilder(
+    column: $table.dailyReminderTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get recurringBillRemindersEnabled => $composableBuilder(
+    column: $table.recurringBillRemindersEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get lendDueRemindersEnabled => $composableBuilder(
+    column: $table.lendDueRemindersEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get goalRemindersEnabled => $composableBuilder(
+    column: $table.goalRemindersEnabled,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get privacyLockEnabled => $composableBuilder(
     column: $table.privacyLockEnabled,
     builder: (column) => column,
@@ -9147,6 +9506,11 @@ class $$SettingsTableTableManager
                 Value<String> themeMode = const Value.absent(),
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
+                Value<int> dailyReminderTime = const Value.absent(),
+                Value<bool> recurringBillRemindersEnabled =
+                    const Value.absent(),
+                Value<bool> lendDueRemindersEnabled = const Value.absent(),
+                Value<bool> goalRemindersEnabled = const Value.absent(),
                 Value<bool> privacyLockEnabled = const Value.absent(),
                 Value<bool> showAmountsEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
@@ -9159,6 +9523,10 @@ class $$SettingsTableTableManager
                 themeMode: themeMode,
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
+                dailyReminderTime: dailyReminderTime,
+                recurringBillRemindersEnabled: recurringBillRemindersEnabled,
+                lendDueRemindersEnabled: lendDueRemindersEnabled,
+                goalRemindersEnabled: goalRemindersEnabled,
                 privacyLockEnabled: privacyLockEnabled,
                 showAmountsEnabled: showAmountsEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
@@ -9173,6 +9541,11 @@ class $$SettingsTableTableManager
                 Value<String> themeMode = const Value.absent(),
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
+                Value<int> dailyReminderTime = const Value.absent(),
+                Value<bool> recurringBillRemindersEnabled =
+                    const Value.absent(),
+                Value<bool> lendDueRemindersEnabled = const Value.absent(),
+                Value<bool> goalRemindersEnabled = const Value.absent(),
                 Value<bool> privacyLockEnabled = const Value.absent(),
                 Value<bool> showAmountsEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
@@ -9185,6 +9558,10 @@ class $$SettingsTableTableManager
                 themeMode: themeMode,
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
+                dailyReminderTime: dailyReminderTime,
+                recurringBillRemindersEnabled: recurringBillRemindersEnabled,
+                lendDueRemindersEnabled: lendDueRemindersEnabled,
+                goalRemindersEnabled: goalRemindersEnabled,
                 privacyLockEnabled: privacyLockEnabled,
                 showAmountsEnabled: showAmountsEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
@@ -9673,6 +10050,7 @@ typedef $$LendEntriesTableCreateCompanionBuilder =
       required double amount,
       Value<int> amountPaise,
       required int date,
+      Value<int?> dueDate,
       Value<String?> note,
       Value<bool> isSettled,
       Value<double> settledAmount,
@@ -9691,6 +10069,7 @@ typedef $$LendEntriesTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<int> amountPaise,
       Value<int> date,
+      Value<int?> dueDate,
       Value<String?> note,
       Value<bool> isSettled,
       Value<double> settledAmount,
@@ -9738,6 +10117,11 @@ class $$LendEntriesTableFilterComposer
 
   ColumnFilters<int> get date => $composableBuilder(
     column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dueDate => $composableBuilder(
+    column: $table.dueDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9821,6 +10205,11 @@ class $$LendEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get note => $composableBuilder(
     column: $table.note,
     builder: (column) => ColumnOrderings(column),
@@ -9891,6 +10280,9 @@ class $$LendEntriesTableAnnotationComposer
   GeneratedColumn<int> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
+  GeneratedColumn<int> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
 
@@ -9957,6 +10349,7 @@ class $$LendEntriesTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<int> amountPaise = const Value.absent(),
                 Value<int> date = const Value.absent(),
+                Value<int?> dueDate = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<bool> isSettled = const Value.absent(),
                 Value<double> settledAmount = const Value.absent(),
@@ -9973,6 +10366,7 @@ class $$LendEntriesTableTableManager
                 amount: amount,
                 amountPaise: amountPaise,
                 date: date,
+                dueDate: dueDate,
                 note: note,
                 isSettled: isSettled,
                 settledAmount: settledAmount,
@@ -9991,6 +10385,7 @@ class $$LendEntriesTableTableManager
                 required double amount,
                 Value<int> amountPaise = const Value.absent(),
                 required int date,
+                Value<int?> dueDate = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<bool> isSettled = const Value.absent(),
                 Value<double> settledAmount = const Value.absent(),
@@ -10007,6 +10402,7 @@ class $$LendEntriesTableTableManager
                 amount: amount,
                 amountPaise: amountPaise,
                 date: date,
+                dueDate: dueDate,
                 note: note,
                 isSettled: isSettled,
                 settledAmount: settledAmount,

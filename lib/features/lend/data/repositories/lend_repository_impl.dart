@@ -4,6 +4,7 @@ import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/database/mappers.dart';
+import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_person_entity.dart';
@@ -17,6 +18,38 @@ class LendRepositoryImpl implements LendRepository {
   final Ref _ref;
 
   AppDatabase get _db => _ref.read(appDatabaseProvider);
+  LocalNotificationService get _notif => _ref.read(localNotificationServiceProvider);
+
+  Future<bool> _lendNotificationsEnabled() async {
+    final settings = await _db.getSettingsRow();
+    return settings?.lendDueRemindersEnabled ?? false;
+  }
+
+  Future<String?> _personName(String personId) async {
+    final person = await _db.getLendPersonById(personId);
+    return person?.name;
+  }
+
+  Future<void> _scheduleLendNotificationIfEnabled({
+    required String entryId,
+    required String personId,
+    required LendEntryType type,
+    required double amount,
+    required DateTime? dueDate,
+  }) async {
+    if (dueDate == null) return;
+    final enabled = await _lendNotificationsEnabled();
+    if (!enabled) return;
+    final name = await _personName(personId);
+    if (name == null) return;
+    await _notif.scheduleLendDueReminder(
+      entryId: entryId,
+      personName: name,
+      entryType: type,
+      amount: amount,
+      dueDate: dueDate,
+    );
+  }
 
   @override
   Stream<List<LendPersonEntity>> watchPeople() {
@@ -82,20 +115,23 @@ class LendRepositoryImpl implements LendRepository {
     required LendEntryType type,
     required double amount,
     required DateTime date,
+    DateTime? dueDate,
     String? note,
   }) async {
     final normalizedAmount = Money.normalize(amount);
     if (normalizedAmount <= 0) return;
     final now = DateTime.now();
     final normalizedNote = note?.trim().isEmpty == true ? null : note?.trim();
+    final entryId = const Uuid().v4();
     await _db.upsertLendEntry(
       LendEntriesCompanion.insert(
-        id: const Uuid().v4(),
+        id: entryId,
         personId: personId,
         type: type.value,
         amount: normalizedAmount,
         amountPaise: Value(Money.toPaise(normalizedAmount)),
         date: date.millisecondsSinceEpoch,
+        dueDate: Value(dueDate?.millisecondsSinceEpoch),
         note: Value(normalizedNote),
         isSettled: const Value(false),
         settledAmount: const Value(0),
@@ -104,6 +140,13 @@ class LendRepositoryImpl implements LendRepository {
         updatedAt: now.millisecondsSinceEpoch,
         isDeleted: const Value(false),
       ),
+    );
+    await _scheduleLendNotificationIfEnabled(
+      entryId: entryId,
+      personId: personId,
+      type: type,
+      amount: normalizedAmount,
+      dueDate: dueDate,
     );
   }
 
@@ -114,6 +157,7 @@ class LendRepositoryImpl implements LendRepository {
     required LendEntryType type,
     required double amount,
     required DateTime date,
+    DateTime? dueDate,
     String? note,
   }) async {
     final current = await _db.getLendEntryById(entryId);
@@ -145,6 +189,7 @@ class LendRepositoryImpl implements LendRepository {
         amount: Value(effectiveAmount),
         amountPaise: Value(Money.toPaise(effectiveAmount)),
         date: Value(date.millisecondsSinceEpoch),
+        dueDate: Value(dueDate?.millisecondsSinceEpoch),
         note: Value(normalizedNote),
         isSettled: Value(isSettled),
         settledAmount: Value(settledTotal),
@@ -153,6 +198,18 @@ class LendRepositoryImpl implements LendRepository {
         updatedAt: Value(now.millisecondsSinceEpoch),
       ),
     );
+
+    if (isSettled) {
+      await _notif.cancelLendDueReminder(entryId);
+    } else {
+      await _scheduleLendNotificationIfEnabled(
+        entryId: entryId,
+        personId: personId,
+        type: type,
+        amount: effectiveAmount,
+        dueDate: dueDate,
+      );
+    }
   }
 
   @override
@@ -194,6 +251,10 @@ class LendRepositoryImpl implements LendRepository {
       settledAmount: normalizedSettled,
       settledAtEpoch: settledAt.millisecondsSinceEpoch,
     );
+
+    if (isFullySettled) {
+      await _notif.cancelLendDueReminder(entryId);
+    }
   }
 
   @override
@@ -220,6 +281,7 @@ class LendRepositoryImpl implements LendRepository {
   @override
   Future<void> deleteEntry(String entryId) async {
     await _db.softDeleteLendEntry(entryId);
+    await _notif.cancelLendDueReminder(entryId);
   }
 
   @override

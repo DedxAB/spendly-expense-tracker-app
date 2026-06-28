@@ -9,6 +9,10 @@ abstract class SettingsRepository {
   Future<void> setNotificationPreferences({
     required bool budgetAlertsEnabled,
     required bool dailyReminderEnabled,
+    int? dailyReminderTime,
+    bool? recurringBillRemindersEnabled,
+    bool? lendDueRemindersEnabled,
+    bool? goalRemindersEnabled,
   });
 
   Future<void> markBudgetAlertNotified(DateTime at);

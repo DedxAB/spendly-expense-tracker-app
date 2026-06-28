@@ -38,11 +38,13 @@ class NotificationsPage extends ConsumerWidget {
           Text('Notifications', style: AppTypography.screenTitle(context)),
           const SizedBox(height: 8),
           Text(
-            'Recent alerts and activity updates.',
+            'Recent alerts and notification status.',
             style: TextStyle(color: context.textSecondary, fontSize: 14),
           ),
           const SizedBox(height: 18),
           Divider(color: context.border),
+
+          // Budget exceeded alert
           if (summary != null && summary.remainingBudget < 0)
             _NoticeTile(
               title: 'Budget exceeded',
@@ -50,6 +52,8 @@ class NotificationsPage extends ConsumerWidget {
                   'You are over budget by ${Formatters.currency(summary.remainingBudget.abs())} this month.',
               color: const Color(0xFFF55C5C),
             ),
+
+          // Latest transaction
           if (recent.isNotEmpty)
             _NoticeTile(
               title: 'Latest transaction',
@@ -57,11 +61,46 @@ class NotificationsPage extends ConsumerWidget {
                   '${recent.first.type.name == 'income' ? 'Income' : 'Expense'} of ${Formatters.currency(recent.first.amount)} added.',
               color: const Color(0xFF3DD07B),
             ),
+
+          // Notification status
           _NoticeTile(
             title: 'Push notifications',
-            message:
-                'Daily reminder: ${(settings?.dailyReminderEnabled ?? false) ? 'ON' : 'OFF'} | Budget alerts: ${(settings?.budgetAlertsEnabled ?? false) ? 'ON' : 'OFF'}',
+            message: _buildStatusSummary(settings),
             color: context.textSecondary,
+          ),
+
+          const SizedBox(height: 18),
+          Text(
+            'Notification categories',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: context.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _StatusRow(
+            label: 'Budget alerts',
+            enabled: settings?.budgetAlertsEnabled ?? false,
+          ),
+          _StatusRow(
+            label: 'Daily reminder',
+            enabled: settings?.dailyReminderEnabled ?? false,
+            detail: settings?.dailyReminderEnabled == true
+                ? 'at ${_formatTime(settings!.dailyReminderTime)}'
+                : null,
+          ),
+          _StatusRow(
+            label: 'Recurring bill reminders',
+            enabled: settings?.recurringBillRemindersEnabled ?? false,
+          ),
+          _StatusRow(
+            label: 'Lend/borrow due reminders',
+            enabled: settings?.lendDueRemindersEnabled ?? false,
+          ),
+          _StatusRow(
+            label: 'Goal target reminders',
+            enabled: settings?.goalRemindersEnabled ?? false,
           ),
           const SizedBox(height: 12),
           Align(
@@ -78,6 +117,69 @@ class NotificationsPage extends ConsumerWidget {
               child: const Text('Open Notification Settings'),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  String _buildStatusSummary(dynamic settings) {
+    final parts = <String>[];
+    if (settings?.budgetAlertsEnabled == true) parts.add('Budget alerts');
+    if (settings?.dailyReminderEnabled == true) parts.add('Daily reminder');
+    if (settings?.recurringBillRemindersEnabled == true) parts.add('Recurring bills');
+    if (settings?.lendDueRemindersEnabled == true) parts.add('Lend/borrow');
+    if (settings?.goalRemindersEnabled == true) parts.add('Goals');
+    if (parts.isEmpty) return 'All notification categories are OFF';
+    return 'ON: ${parts.join(', ')}';
+  }
+
+  String _formatTime(int minutesSinceMidnight) {
+    final h = minutesSinceMidnight ~/ 60;
+    final m = minutesSinceMidnight % 60;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+  }
+}
+
+class _StatusRow extends StatelessWidget {
+  const _StatusRow({
+    required this.label,
+    required this.enabled,
+    this.detail,
+  });
+
+  final String label;
+  final bool enabled;
+  final String? detail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            enabled ? Icons.check_circle : Icons.cancel,
+            size: 16,
+            color: enabled ? const Color(0xFF3DD07B) : context.textSecondary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: context.textPrimary,
+              ),
+            ),
+          ),
+          if (detail != null)
+            Text(
+              detail!,
+              style: TextStyle(
+                fontSize: 12,
+                color: context.textSecondary,
+              ),
+            ),
         ],
       ),
     );
@@ -150,7 +252,11 @@ class _NoticeTile extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       message,
-                      style: TextStyle(fontSize: 13, color: context.textSecondary, height: 1.4),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.textSecondary,
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),

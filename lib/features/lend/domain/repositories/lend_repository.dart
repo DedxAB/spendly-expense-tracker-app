@@ -21,6 +21,7 @@ abstract class LendRepository {
     required LendEntryType type,
     required double amount,
     required DateTime date,
+    DateTime? dueDate,
     String? note,
   });
 
@@ -30,6 +31,7 @@ abstract class LendRepository {
     required LendEntryType type,
     required double amount,
     required DateTime date,
+    DateTime? dueDate,
     String? note,
   });
 

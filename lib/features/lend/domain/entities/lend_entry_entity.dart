@@ -7,6 +7,7 @@ class LendEntryEntity {
     required this.type,
     required this.amount,
     required this.date,
+    this.dueDate,
     this.note,
     this.isSettled = false,
     this.settledAmount = 0,
@@ -21,6 +22,7 @@ class LendEntryEntity {
   final LendEntryType type;
   final double amount;
   final DateTime date;
+  final DateTime? dueDate;
   final String? note;
   final bool isSettled;
   final double settledAmount;
@@ -35,6 +37,7 @@ class LendEntryEntity {
     LendEntryType? type,
     double? amount,
     DateTime? date,
+    DateTime? dueDate,
     String? note,
     bool? isSettled,
     double? settledAmount,
@@ -49,6 +52,7 @@ class LendEntryEntity {
       type: type ?? this.type,
       amount: amount ?? this.amount,
       date: date ?? this.date,
+      dueDate: dueDate ?? this.dueDate,
       note: note ?? this.note,
       isSettled: isSettled ?? this.isSettled,
       settledAmount: settledAmount ?? this.settledAmount,
@@ -66,6 +70,7 @@ class LendEntryEntity {
       'type': type.value,
       'amount': amount,
       'date': date.toIso8601String(),
+      'dueDate': dueDate?.toIso8601String(),
       'note': note,
       'isSettled': isSettled,
       'settledAmount': settledAmount,
@@ -83,6 +88,9 @@ class LendEntryEntity {
       type: LendEntryTypeX.fromValue(json['type'] as String),
       amount: (json['amount'] as num).toDouble(),
       date: DateTime.parse(json['date'] as String),
+      dueDate: json['dueDate'] == null
+          ? null
+          : DateTime.parse(json['dueDate'] as String),
       note: json['note'] as String?,
       isSettled: json['isSettled'] as bool? ?? false,
       settledAmount: (json['settledAmount'] as num?)?.toDouble() ?? 0,
