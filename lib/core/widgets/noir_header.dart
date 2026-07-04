@@ -23,27 +23,30 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
   final String? title;
 
   @override
-  Size get preferredSize => const Size.fromHeight(72);
+  Size get preferredSize => const Size.fromHeight(70);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AppBar(
-      toolbarHeight: 72,
-      centerTitle: true,
-      automaticallyImplyLeading: false,
+      toolbarHeight: 70,
+      centerTitle: false,
+      titleSpacing: 0,
       title: title != null
-          ? Text(
-              title!,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.9,
+          ? Padding(
+              padding: const EdgeInsets.only(left: AppSpacing.sm),
+              child: Text(
+                title!,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             )
           : null,
       leading: showLeading
           ? leadingAsCard
-              ? Center(
+              ? Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.sm),
                   child: _IconCard(
                     icon: leadingIcon,
                     onTap: onLeadingTap ?? () {},
@@ -62,23 +65,19 @@ class NoirHeader extends ConsumerWidget implements PreferredSizeWidget {
                   onPressed: onLeadingTap,
                 )
           : const SizedBox.shrink(),
-      leadingWidth: showLeading ? (leadingAsCard ? 62 : 56) : 0,
+      leadingWidth: showLeading ? (leadingAsCard ? 64 : 56) : 0,
       actions: [
         _IconCard(
           icon: AppIcons.settings,
           onTap: () => context.push('/settings'),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 8),
         _IconCard(
           icon: AppIcons.bell,
           onTap: () => context.push('/notifications'),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: AppSpacing.sm),
       ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(height: 1, thickness: 1, color: context.border),
-      ),
     );
   }
 }
@@ -93,20 +92,16 @@ class _IconCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        width: 38,
-        height: 38,
+        width: 48,
+        height: 48,
         decoration: BoxDecoration(
           color: context.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: context.border),
         ),
-        child: Icon(
-          icon,
-          size: 20,
-          color: context.textPrimary,
-        ),
+        child: Icon(icon, size: 20, color: context.textPrimary),
       ),
     );
   }

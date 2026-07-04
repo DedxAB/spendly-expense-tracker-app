@@ -46,7 +46,7 @@ class GoalsPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Goals',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -315,7 +315,7 @@ class GoalsPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: context.surface,
                   border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  borderRadius: BorderRadius.circular(AppRadii.card),
                 ),
                 child: Row(
                   children: [
@@ -975,7 +975,7 @@ class _EmergencyFundCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1162,7 +1162,7 @@ class _AggregateInsightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1254,7 +1254,7 @@ class _UrgencyStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Row(
         children: [
@@ -1297,7 +1297,7 @@ class _GoalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1420,17 +1420,19 @@ class _CreateGoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onCreate,
-      child: Container(
-        height: 220,
-        decoration: BoxDecoration(
-          color: context.surface,
-          border: Border.all(color: context.border),
-          borderRadius: BorderRadius.circular(AppRadii.md),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CustomPaint(painter: _DotGridPainter(color: context.border)),
+        child: Container(
+          height: 220,
+          decoration: BoxDecoration(
+            color: context.surface,
+            border: Border.all(color: context.border),
+            borderRadius: BorderRadius.circular(AppRadii.card),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadii.card),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _DotGridPainter(color: context.border)),
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1459,6 +1461,7 @@ class _CreateGoalCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -279,7 +279,7 @@ class RecurringPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Recurring',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -425,7 +425,7 @@ class RecurringPage extends ConsumerWidget {
                                   border: Border.all(
                                     color: context.border,
                                   ),
-                                  borderRadius: BorderRadius.circular(AppRadii.md),
+                                  borderRadius: BorderRadius.circular(AppRadii.card),
                                 ),
                                 padding: const EdgeInsets.all(AppSpacing.sm),
                                 child: Column(

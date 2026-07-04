@@ -352,7 +352,7 @@ class SettingsPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Settings',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -410,7 +410,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [
@@ -509,7 +509,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [
@@ -571,7 +571,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               border: Border.all(color: divider),
               color: context.surface,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -683,7 +683,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [

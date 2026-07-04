@@ -95,7 +95,7 @@ class CategoriesPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Categories',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       floatingActionButton: SizedBox(
@@ -206,7 +206,7 @@ class CategoriesPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: surface,
                   border: Border.all(color: border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  borderRadius: BorderRadius.circular(AppRadii.card),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(

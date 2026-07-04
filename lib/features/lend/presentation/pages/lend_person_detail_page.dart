@@ -333,7 +333,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       backgroundColor: context.background,
       appBar: NoirHeader(
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -368,16 +368,16 @@ class LendPersonDetailPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: context.surface,
-              border: Border.all(color: context.border),
-              borderRadius: BorderRadius.circular(AppRadii.md),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: context.surface,
+                border: Border.all(color: context.border),
+                borderRadius: BorderRadius.circular(AppRadii.card),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Text(
                   person?.name ?? 'Unknown',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -427,7 +427,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: context.surface,
                     border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    borderRadius: BorderRadius.circular(AppRadii.card),
                   ),
                   child: const Text('No entries yet. Add your first entry.'),
                 );
@@ -829,7 +829,7 @@ class _EntryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

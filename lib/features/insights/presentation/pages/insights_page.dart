@@ -52,7 +52,7 @@ class InsightsPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Analytics',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -97,13 +97,13 @@ class InsightsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               border: Border.all(color: context.border),
-              color: context.surface,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            color: context.surface,
+            borderRadius: BorderRadius.circular(AppRadii.card),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                   children: [
                     Text('Trend', style: AppTypography.sectionTitle(context)),
                     const Spacer(),
@@ -405,7 +405,7 @@ class _YearPickerDialog extends StatelessWidget {
       backgroundColor: context.surface,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: SizedBox(
         height: 400,
@@ -491,7 +491,7 @@ class _BurnRateCard extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -635,7 +635,7 @@ class _SummaryStrip extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
@@ -760,7 +760,7 @@ class _CategoryWatch extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -855,7 +855,7 @@ class _CategoryWatchSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: const SizedBox(
         height: 120,
@@ -965,7 +965,7 @@ class _WhatsChanged extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1383,7 +1383,7 @@ class _SnapshotTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

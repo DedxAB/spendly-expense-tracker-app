@@ -51,6 +51,7 @@ class AppIcons {
   static const health = LucideIcons.heartPulse;
   static const eye = LucideIcons.eye;
   static const eyeOff = LucideIcons.eyeOff;
+  static const arrowBack = LucideIcons.arrowLeft;
 
   static IconData getIconForCategory(
     String categoryName, [

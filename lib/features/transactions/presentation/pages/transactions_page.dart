@@ -403,7 +403,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     decoration: BoxDecoration(
                       color: context.surface,
                       border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(AppRadii.md),
+                      borderRadius: BorderRadius.circular(AppRadii.card),
                     ),
                     child: Row(
                       children: [
@@ -1140,7 +1140,7 @@ class _ActiveFilterBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1420,7 +1420,7 @@ class _AccountBreakupCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

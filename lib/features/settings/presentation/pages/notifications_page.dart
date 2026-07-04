@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/noir_header.dart';
@@ -24,7 +25,7 @@ class NotificationsPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Notifications',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -102,7 +103,7 @@ class _NoticeTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: IntrinsicHeight(
         child: Row(

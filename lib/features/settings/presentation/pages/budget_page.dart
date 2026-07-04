@@ -71,7 +71,7 @@ class BudgetPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Budget',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -96,11 +96,11 @@ class BudgetPage extends ConsumerWidget {
             decoration: BoxDecoration(
               border: Border.all(color: context.border),
               color: context.surface,
-              borderRadius: BorderRadius.circular(AppRadii.md),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+                borderRadius: BorderRadius.circular(AppRadii.card),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Text('Monthly Health', style: AppTypography.cardTitle(context)),
                 const SizedBox(height: 6),
                   Text(
@@ -529,7 +529,7 @@ class _BudgetCategoryCard extends StatelessWidget {
         border: Border.all(
           color: overBudget ? const Color(0xFFFF8A7A) : context.border,
         ),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

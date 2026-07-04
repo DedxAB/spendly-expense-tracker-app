@@ -74,7 +74,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       appBar: NoirHeader(
         title: 'Calendar',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(

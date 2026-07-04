@@ -57,7 +57,7 @@ class LendPage extends ConsumerWidget {
       appBar: NoirHeader(
         title: 'Lend',
         showLeading: true,
-        leadingIcon: Icons.arrow_back,
+        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: overview.when(
@@ -98,18 +98,18 @@ class LendPage extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Overview', style: AppTypography.cardTitle(context)),
-                    const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: context.surface,
+                    border: Border.all(color: context.border),
+                    borderRadius: BorderRadius.circular(AppRadii.card),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Overview', style: AppTypography.cardTitle(context)),
+                      const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         Expanded(
@@ -141,7 +141,7 @@ class LendPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: context.surface,
                     border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    borderRadius: BorderRadius.circular(AppRadii.card),
                   ),
                   child: const Text(
                     'No people added yet. Tap + to add your first person.',
@@ -222,25 +222,25 @@ class LendPage extends ConsumerWidget {
                     ),
                     child: InkWell(
                       onTap: () => context.push('/lend/${item.person.id}'),
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: context.surface,
-                          border: Border.all(color: context.border),
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: context.surfaceAlt,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.md,
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: context.surface,
+                            border: Border.all(color: context.border),
+                            borderRadius: BorderRadius.circular(AppRadii.card),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: context.surfaceAlt,
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadii.md,
+                                  ),
                                 ),
-                              ),
                               child: Icon(
                                 isPositive
                                     ? AppIcons.download
@@ -336,7 +336,7 @@ class _SummaryMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
         color: color.withValues(alpha: 0.16),
       ),
       child: Column(
