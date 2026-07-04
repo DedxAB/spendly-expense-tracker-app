@@ -6,7 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -206,7 +210,7 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
                 0.0)
             .toDouble();
 
-    await service.exportPdf(
+    final pdfBytes = await service.exportPdf(
       month: month,
       isYearly: isYearly,
       userName: userName,
@@ -225,8 +229,14 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
     );
     if (context.mounted) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF saved to app documents')),
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
+      final tempFile = File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(pdfBytes);
+      await Share.shareXFiles(
+        [XFile(tempFile.path, mimeType: 'application/pdf')],
+        subject: 'Spendly Report',
+        text: 'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
       );
     }
   } catch (e) {
