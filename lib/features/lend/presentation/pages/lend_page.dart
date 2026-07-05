@@ -6,9 +6,10 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
@@ -17,7 +18,7 @@ class LendPage extends ConsumerWidget {
 
   Future<void> _editPerson(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     required String personId,
     required String personName,
   }) async {
@@ -30,12 +31,13 @@ class LendPage extends ConsumerWidget {
       initialValue: personName,
     );
     if (renamed == null || renamed.trim().isEmpty) return;
-    await ref
-        .read(lendRepositoryProvider)
-        .renamePerson(personId: personId, name: renamed.trim());
+    await repository.renamePerson(personId: personId, name: renamed.trim());
   }
 
-  Future<void> _showAddPersonDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _showAddPersonDialog(
+    BuildContext context,
+    LendRepository repository,
+  ) async {
     final name = await showAppTextInputDialog(
       context,
       title: 'Add Person',
@@ -45,7 +47,7 @@ class LendPage extends ConsumerWidget {
       requiredLabel: 'Name',
     );
     if (name == null) return;
-    await ref.read(lendRepositoryProvider).addPerson(name.trim());
+    await repository.addPerson(name.trim());
   }
 
   @override
@@ -54,10 +56,9 @@ class LendPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.background,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Lend',
-        showLeading: true,
-        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: overview.when(
@@ -84,16 +85,6 @@ class LendPage extends ConsumerWidget {
                     title: 'Lend & Borrow actions',
                     message:
                         'People can be swiped to edit or delete from the list.',
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _showAddPersonDialog(context, ref),
-                    icon: Icon(
-                      AppIcons.personAdd,
-                      size: 16,
-                      color: AppIcons.getColorForIcon(AppIcons.personAdd),
-                    ),
-                    label: const Text('ADD'),
                   ),
                 ],
               ),
@@ -156,9 +147,10 @@ class LendPage extends ConsumerWidget {
                     direction: DismissDirection.horizontal,
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.startToEnd) {
+                        final repo = ref.read(lendRepositoryProvider);
                         await _editPerson(
                           context,
-                          ref,
+                          repo,
                           personId: item.person.id,
                           personName: item.person.name,
                         );
@@ -172,9 +164,8 @@ class LendPage extends ConsumerWidget {
                       );
                     },
                     onDismissed: (_) {
-                      ref
-                          .read(lendRepositoryProvider)
-                          .deletePerson(item.person.id);
+                      final repo = ref.read(lendRepositoryProvider);
+                      repo.deletePerson(item.person.id);
                     },
                     background: Container(
                       alignment: Alignment.centerLeft,
@@ -222,33 +213,29 @@ class LendPage extends ConsumerWidget {
                     ),
                     child: InkWell(
                       onTap: () => context.push('/lend/${item.person.id}'),
-                        child: Container(
-                          padding: const EdgeInsets.all(AppSpacing.sm),
-                          decoration: BoxDecoration(
-                            color: context.surface,
-                            border: Border.all(color: context.border),
-                            borderRadius: BorderRadius.circular(AppRadii.card),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: context.surfaceAlt,
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.md,
-                                  ),
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: context.surface,
+                          border: Border.all(color: context.border),
+                          borderRadius: BorderRadius.circular(AppRadii.premiumCard),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: context.surfaceAlt,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.md,
                                 ),
+                              ),
                               child: Icon(
-                                isPositive
-                                    ? AppIcons.download
-                                    : AppIcons.upload,
+                                AppIcons.usersRound,
                                 color: AppIcons.getColorForIcon(
-                                  isPositive
-                                      ? AppIcons.download
-                                      : AppIcons.upload,
+                                  AppIcons.usersRound,
                                 ),
                                 size: 20,
                               ),
@@ -309,10 +296,13 @@ class LendPage extends ConsumerWidget {
         error: (error, _) => Center(child: Text('Failed to load: $error')),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddPersonDialog(context, ref),
+        onPressed: () {
+          final repo = ref.read(lendRepositoryProvider);
+          _showAddPersonDialog(context, repo);
+        },
         icon: Icon(
-          AppIcons.personAdd,
-          color: AppIcons.getColorForIcon(AppIcons.personAdd),
+          AppIcons.userRoundPlus,
+          color: AppIcons.getColorForIcon(AppIcons.userRoundPlus),
         ),
         label: const Text('Add person'),
       ),
@@ -336,7 +326,7 @@ class _SummaryMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
         color: color.withValues(alpha: 0.16),
       ),
       child: Column(

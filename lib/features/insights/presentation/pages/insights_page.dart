@@ -16,7 +16,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/insights/domain/entities/expense_slice.dart';
 import 'package:spendly/features/insights/domain/entities/insight_point.dart';
 import 'package:spendly/features/insights/presentation/providers/insights_provider.dart';
@@ -49,10 +49,9 @@ class InsightsPage extends ConsumerWidget {
         ((prevIncomeExpense?['expense'] ?? 0).toDouble());
 
     return Scaffold(
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Analytics',
-        showLeading: true,
-        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -233,10 +232,12 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
       final fileName = 'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
       final tempFile = File('${tempDir.path}/$fileName');
       await tempFile.writeAsBytes(pdfBytes);
-      await Share.shareXFiles(
-        [XFile(tempFile.path, mimeType: 'application/pdf')],
-        subject: 'Spendly Report',
-        text: 'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(tempFile.path, mimeType: 'application/pdf')],
+          subject: 'Spendly Report',
+          text: 'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
+        ),
       );
     }
   } catch (e) {
@@ -1383,7 +1384,7 @@ class _SnapshotTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

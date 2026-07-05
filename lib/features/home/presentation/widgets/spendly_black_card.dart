@@ -10,16 +10,12 @@ class SpendlyBlackCard extends StatelessWidget {
     required this.balance,
     required this.showValues,
     required this.onToggleValues,
-    this.dailyIncome = const [],
-    this.dailyExpense = const [],
     this.onTap,
   });
 
   final double balance;
   final bool showValues;
   final VoidCallback onToggleValues;
-  final List<double> dailyIncome;
-  final List<double> dailyExpense;
   final VoidCallback? onTap;
 
   @override
@@ -27,141 +23,131 @@ class SpendlyBlackCard extends StatelessWidget {
     return HomeSurfaceCard(
       onTap: onTap,
       borderRadius: 28,
-      padding: const EdgeInsets.fromLTRB(18, 18, 14, 14),
+      padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
       child: SizedBox(
-        height: 190,
+        height: 188,
         child: Stack(
+          fit: StackFit.expand,
           children: [
-            Positioned.fill(
+            Positioned(
+              right: -10,
+              top: 26,
+              bottom: 0,
               child: IgnorePointer(
-                child: CustomPaint(
-                  painter: _BackgroundGraphPainter(
-                    accent: context.homeAccentGreen,
-                    gridColor: context.border.withValues(alpha: 0.55),
-                  ),
+                child: _SpendGraphArea(
+                  width: 204,
+                  height: 136,
+                  lineColor: context.homeAccentGreen,
+                  fillColor: context.homeAccentGreen.withValues(alpha: 0.16),
+                  dashedColor: context.border.withValues(alpha: 0.6),
                 ),
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            Positioned.fill(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      'SPEND SNAPSHOT',
-                      style: TextStyle(
-                        color: context.textSecondary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.6,
+                    Row(
+                      children: [
+                        Text(
+                          'SPEND SNAPSHOT',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: onToggleValues,
+                          visualDensity: VisualDensity.compact,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 28,
+                            height: 28,
+                          ),
+                          padding: EdgeInsets.zero,
+                          icon: Icon(
+                            showValues ? AppIcons.eye : AppIcons.eyeOff,
+                            size: 16,
+                            color: context.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 180),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Total Balance',
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              showValues
+                                  ? FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        Formatters.currency(balance),
+                                        style: TextStyle(
+                                          color: context.textPrimary,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w700,
+                                          letterSpacing: -1.1,
+                                          height: 1,
+                                        ),
+                                      ),
+                                    )
+                                  : Text(
+                                      '******',
+                                      style: TextStyle(
+                                        color: context.textPrimary,
+                                        fontSize: 34,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 4,
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     const Spacer(),
-                    IconButton(
-                      onPressed: onToggleValues,
-                      visualDensity: VisualDensity.compact,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 28,
-                        height: 28,
-                      ),
-                      padding: EdgeInsets.zero,
-                      icon: Icon(
-                        showValues ? AppIcons.eye : AppIcons.eyeOff,
-                        size: 16,
-                        color: context.textSecondary,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          'Tap for transactions',
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Icon(
+                          AppIcons.chevronRight,
+                          size: 19,
+                          color: context.textPrimary,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Total Balance',
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            showValues
-                                ? FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      Formatters.currency(balance),
-                                      style: TextStyle(
-                                        color: context.textPrimary,
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -1,
-                                        height: 1,
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    '******',
-                                    style: TextStyle(
-                                      color: context.textPrimary,
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 4,
-                                    ),
-                                  ),
-                            const Spacer(),
-                            Row(
-                              children: [
-                                Text(
-                                  'Tap for transactions',
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  AppIcons.chevronRight,
-                                  size: 18,
-                                  color: context.textPrimary,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      SizedBox(
-                        width: 120,
-                        height: 120,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: CustomPaint(
-                            size: const Size(120, 120),
-                            painter: _HeroGraphPainter(
-                              incomeColor: context.homeAccentGreen,
-                              expenseColor: AppColors.expense,
-                              dailyIncome: dailyIncome,
-                              dailyExpense: dailyExpense,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -170,127 +156,162 @@ class SpendlyBlackCard extends StatelessWidget {
   }
 }
 
-class _BackgroundGraphPainter extends CustomPainter {
-  const _BackgroundGraphPainter({
-    required this.accent,
-    required this.gridColor,
+class _SpendGraphArea extends StatelessWidget {
+  const _SpendGraphArea({
+    required this.width,
+    required this.height,
+    required this.lineColor,
+    required this.fillColor,
+    required this.dashedColor,
   });
 
-  final Color accent;
-  final Color gridColor;
+  final double width;
+  final double height;
+  final Color lineColor;
+  final Color fillColor;
+  final Color dashedColor;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()
-      ..color = accent.withValues(alpha: 0.07)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path()
-      ..moveTo(w * 0.1, h * 0.65)
-      ..cubicTo(w * 0.3, h * 0.8, w * 0.45, h * 0.4, w * 0.6, h * 0.55)
-      ..cubicTo(w * 0.75, h * 0.7, w * 0.85, h * 0.35, w * 0.92, h * 0.3);
-
-    canvas.drawPath(path, paint);
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: CustomPaint(
+        size: Size(width, height),
+        painter: _SpendGraphPainter(
+          lineColor: lineColor,
+          fillColor: fillColor,
+          dashedColor: dashedColor,
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant _BackgroundGraphPainter oldDelegate) =>
-      oldDelegate.accent != accent || oldDelegate.gridColor != gridColor;
 }
 
-class _HeroGraphPainter extends CustomPainter {
-  const _HeroGraphPainter({
-    required this.incomeColor,
-    required this.expenseColor,
-    required this.dailyIncome,
-    required this.dailyExpense,
+class _SpendGraphPainter extends CustomPainter {
+  const _SpendGraphPainter({
+    required this.lineColor,
+    required this.fillColor,
+    required this.dashedColor,
   });
 
-  final Color incomeColor;
-  final Color expenseColor;
-  final List<double> dailyIncome;
-  final List<double> dailyExpense;
+  final Color lineColor;
+  final Color fillColor;
+  final Color dashedColor;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
+    final width = size.width;
+    final height = size.height;
 
-    final padX = w * 0.06;
-    final padY = h * 0.06;
-    final chartW = w - padX * 2;
-    final chartH = h - padY * 2;
+    final linePath = Path()
+      ..moveTo(width * 0.08, height * 0.77)
+      ..cubicTo(
+        width * 0.18,
+        height * 0.62,
+        width * 0.26,
+        height * 0.48,
+        width * 0.38,
+        height * 0.64,
+      )
+      ..cubicTo(
+        width * 0.50,
+        height * 0.82,
+        width * 0.60,
+        height * 0.38,
+        width * 0.72,
+        height * 0.34,
+      )
+      ..cubicTo(
+        width * 0.82,
+        height * 0.30,
+        width * 0.90,
+        height * 0.44,
+        width * 0.96,
+        height * 0.20,
+      );
 
-    final maxVal = _maxAcross(dailyIncome, dailyExpense);
-    if (maxVal <= 0) {
-      _drawEmptyState(canvas, w, h);
-      return;
-    }
+    final fillPath = Path.from(linePath)
+      ..lineTo(width * 0.96, height * 0.98)
+      ..lineTo(width * 0.08, height * 0.98)
+      ..close();
 
-    _drawLine(canvas, dailyIncome, incomeColor, padX, padY, chartW, chartH, maxVal);
-    _drawLine(canvas, dailyExpense, expenseColor, padX, padY, chartW, chartH, maxVal);
-  }
+    final fillPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [fillColor, fillColor.withValues(alpha: 0.02)],
+      ).createShader(Rect.fromLTWH(0, 0, width, height));
 
-  double _maxAcross(List<double> a, List<double> b) {
-    double m = 0;
-    for (final v in a) { if (v > m) m = v; }
-    for (final v in b) { if (v > m) m = v; }
-    return m;
-  }
+    canvas.drawPath(fillPath, fillPaint);
 
-  void _drawLine(Canvas canvas, List<double> values, Color color,
-      double padX, double padY, double chartW, double chartH, double maxVal) {
-    if (values.isEmpty) return;
-
-    final paint = Paint()
-      ..color = color
+    final glowPaint = Paint()
+      ..color = lineColor.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final maxIdx = values.length - 1;
-    final dots = <Offset>[];
-    for (var i = 0; i < values.length; i++) {
-      final x = padX + (i / (maxIdx > 0 ? maxIdx : 1)) * chartW;
-      final y = padY + chartH - (values[i] / maxVal) * chartH;
-      dots.add(Offset(x, y));
-    }
-
-    if (dots.isEmpty) return;
-
-    final path = Path()..moveTo(dots.first.dx, dots.first.dy);
-    for (var i = 1; i < dots.length; i++) {
-      path.lineTo(dots[i].dx, dots[i].dy);
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  void _drawEmptyState(Canvas canvas, double w, double h) {
-    final paint = Paint()
-      ..color = incomeColor.withValues(alpha: 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
+      ..strokeWidth = 10
       ..strokeCap = StrokeCap.round;
+    canvas.drawPath(linePath, glowPaint);
 
-    final path = Path()
-      ..moveTo(w * 0.15, h * 0.6)
-      ..cubicTo(w * 0.3, h * 0.75, w * 0.45, h * 0.45, w * 0.6, h * 0.55)
-      ..cubicTo(w * 0.75, h * 0.65, w * 0.85, h * 0.35, w * 0.88, h * 0.3);
+    final linePaint = Paint()
+      ..color = lineColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawPath(linePath, linePaint);
 
-    canvas.drawPath(path, paint);
-    canvas.drawCircle(Offset(w * 0.88, h * 0.3), 4, paint);
+    final dashedPaint = Paint()
+      ..color = dashedColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    final dashedSegments = <Offset>[
+      Offset(width * 0.12, height * 0.88),
+      Offset(width * 0.30, height * 0.74),
+      Offset(width * 0.48, height * 0.62),
+      Offset(width * 0.66, height * 0.50),
+      Offset(width * 0.84, height * 0.40),
+      Offset(width * 0.96, height * 0.30),
+    ];
+    for (var i = 0; i < dashedSegments.length - 1; i++) {
+      canvas.drawLine(dashedSegments[i], dashedSegments[i + 1], dashedPaint);
+    }
+
+    final barsPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          lineColor.withValues(alpha: 0.18),
+          lineColor.withValues(alpha: 0.02),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, width, height));
+
+    const barXs = [106.0, 114.0, 122.0, 130.0, 138.0, 146.0, 154.0, 162.0];
+    final barHeights = [54.0, 62.0, 68.0, 72.0, 68.0, 78.0, 84.0, 92.0];
+    for (var i = 0; i < barXs.length; i++) {
+      final x = barXs[i];
+      final h = barHeights[i];
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, height - h - 4, 4, h),
+          const Radius.circular(999),
+        ),
+        barsPaint,
+      );
+    }
+
+    canvas.drawCircle(
+      Offset(width * 0.96, height * 0.20),
+      4.5,
+      Paint()..color = lineColor,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _HeroGraphPainter oldDelegate) {
-    return oldDelegate.incomeColor != incomeColor ||
-        oldDelegate.expenseColor != expenseColor ||
-        oldDelegate.dailyIncome != dailyIncome ||
-        oldDelegate.dailyExpense != dailyExpense;
+  bool shouldRepaint(covariant _SpendGraphPainter oldDelegate) {
+    return oldDelegate.lineColor != lineColor ||
+        oldDelegate.fillColor != fillColor ||
+        oldDelegate.dashedColor != dashedColor;
   }
 }

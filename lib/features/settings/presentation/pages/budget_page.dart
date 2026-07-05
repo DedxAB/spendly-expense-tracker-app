@@ -13,7 +13,7 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
@@ -68,10 +68,9 @@ class BudgetPage extends ConsumerWidget {
     };
 
     return Scaffold(
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Budget',
-        showLeading: true,
-        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(

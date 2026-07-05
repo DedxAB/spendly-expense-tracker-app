@@ -10,8 +10,9 @@ import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
@@ -24,7 +25,7 @@ class LendPersonDetailPage extends ConsumerWidget {
 
   Future<void> _confirmDeletePerson(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     required String personName,
   }) async {
     final shouldDelete = await showAppDeleteConfirmDialog(
@@ -33,7 +34,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       message: 'Delete $personName and all related lend/borrow entries?',
     );
     if (!shouldDelete) return;
-    await ref.read(lendRepositoryProvider).deletePerson(personId);
+    await repository.deletePerson(personId);
     if (context.mounted) {
       context.go('/lend');
     }
@@ -54,7 +55,7 @@ class LendPersonDetailPage extends ConsumerWidget {
 
   Future<void> _showSettleDialog(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     required String entryId,
     required double remainingAmount,
   }) async {
@@ -64,7 +65,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     var selectedDate = DateTime.now();
     var formAttempted = false;
 
-    await showDialog<void>(
+    final settleResult = await showDialog<_SettleDialogResult>(
       context: context,
       builder: (_) => StatefulBuilder(
           builder: (context, setState) => AlertDialog(
@@ -121,30 +122,39 @@ class LendPersonDetailPage extends ConsumerWidget {
                 cancelText: 'Cancel',
                 confirmText: 'Settle',
                 onCancel: () => Navigator.pop(context),
-                onConfirm: () async {
-                  formAttempted = true;
-                  setState(() {});
+                onConfirm: () {
                   final amount = Money.tryParse(amountController.text.trim());
-                  if (amount == null || amount <= 0) return;
-                  await ref
-                      .read(lendRepositoryProvider)
-                      .applySettlement(
-                        entryId: entryId,
-                        amount: amount,
-                        settledAt: selectedDate,
-                      );
-                  if (context.mounted) Navigator.pop(context);
+                  if (amount == null || amount <= 0) {
+                    formAttempted = true;
+                    setState(() {});
+                    return;
+                  }
+                  Navigator.pop(
+                    context,
+                    _SettleDialogResult(
+                      amount: amount,
+                      date: selectedDate,
+                    ),
+                  );
                 },
               ),
             ],
           ),
         ),
     );
+
+    if (settleResult != null) {
+      await repository.applySettlement(
+        entryId: entryId,
+        amount: settleResult.amount,
+        settledAt: settleResult.date,
+      );
+    }
   }
 
   Future<void> _showEntryDialog(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     LendEntryEntity? existing,
   }) async {
     final amountController = TextEditingController(
@@ -157,7 +167,7 @@ class LendPersonDetailPage extends ConsumerWidget {
     var formAttempted = false;
 
     try {
-      await showDialog<void>(
+      final result = await showDialog<_EntryDialogResult>(
         context: context,
         builder: (_) => StatefulBuilder(
             builder: (context, setState) => AlertDialog(
@@ -193,6 +203,16 @@ class LendPersonDetailPage extends ConsumerWidget {
                         onSelectionChanged: (value) {
                           setState(() => selectedType = value.first);
                         },
+                        style: SegmentedButton.styleFrom(
+                          foregroundColor: context.textSecondary,
+                          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor: context.surface,
+                          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+                          side: BorderSide(color: context.border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadii.md),
+                          ),
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       const _ModalFieldLabel('Amount', required_: true),
@@ -253,37 +273,49 @@ class LendPersonDetailPage extends ConsumerWidget {
                   cancelText: 'Cancel',
                   confirmText: isEditing ? 'Save' : 'Add',
                   onCancel: () => Navigator.pop(context),
-                  onConfirm: () async {
-                    formAttempted = true;
-                    setState(() {});
+                  onConfirm: () {
                     final amount = Money.tryParse(amountController.text.trim());
-                    if (amount == null || amount <= 0) return;
-                    final repository = ref.read(lendRepositoryProvider);
-                    if (isEditing) {
-                      await repository.updateEntry(
-                        entryId: existing.id,
-                        personId: personId,
-                        type: selectedType,
-                        amount: amount,
-                        date: selectedDate,
-                        note: noteController.text.trim(),
-                      );
-                    } else {
-                      await repository.addEntry(
-                        personId: personId,
-                        type: selectedType,
-                        amount: amount,
-                        date: selectedDate,
-                        note: noteController.text.trim(),
-                      );
+                    if (amount == null || amount <= 0) {
+                      formAttempted = true;
+                      setState(() {});
+                      return;
                     }
-                    if (context.mounted) Navigator.pop(context);
+                    Navigator.pop(
+                      context,
+                      _EntryDialogResult(
+                        amount: amount,
+                        note: noteController.text.trim(),
+                        date: selectedDate,
+                        type: selectedType,
+                      ),
+                    );
                   },
                 ),
               ],
             ),
           ),
       );
+
+      if (result != null) {
+        if (isEditing) {
+          await repository.updateEntry(
+            entryId: existing.id,
+            personId: personId,
+            type: result.type,
+            amount: result.amount,
+            date: result.date,
+            note: result.note,
+          );
+        } else {
+          await repository.addEntry(
+            personId: personId,
+            type: result.type,
+            amount: result.amount,
+            date: result.date,
+            note: result.note,
+          );
+        }
+      }
     } finally {
       amountController.dispose();
       noteController.dispose();
@@ -292,7 +324,7 @@ class LendPersonDetailPage extends ConsumerWidget {
 
   Future<bool> _deleteEntry(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     required String entryId,
     required String title,
   }) async {
@@ -302,7 +334,7 @@ class LendPersonDetailPage extends ConsumerWidget {
       message: 'Delete this $title entry and its settlements?',
     );
     if (!shouldDelete) return false;
-    await ref.read(lendRepositoryProvider).deleteEntry(entryId);
+    await repository.deleteEntry(entryId);
     return true;
   }
 
@@ -328,12 +360,17 @@ class LendPersonDetailPage extends ConsumerWidget {
       if (e.type == LendEntryType.lent) return sum + remaining;
       return sum - remaining;
     });
+    final totalLent = activeEntries
+        .where((e) => e.type == LendEntryType.lent)
+        .fold<double>(0, (sum, e) => sum + (e.amount - e.settledAmount).clamp(0, e.amount));
+    final totalBorrowed = activeEntries
+        .where((e) => e.type == LendEntryType.borrowed)
+        .fold<double>(0, (sum, e) => sum + (e.amount - e.settledAmount).clamp(0, e.amount));
 
     return Scaffold(
       backgroundColor: context.background,
-      appBar: NoirHeader(
-        showLeading: true,
-        leadingIcon: AppIcons.arrowBack,
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -355,11 +392,14 @@ class LendPersonDetailPage extends ConsumerWidget {
               if (person != null)
                 IconButton(
                   tooltip: 'Delete person',
-                  onPressed: () => _confirmDeletePerson(
-                    context,
-                    ref,
-                    personName: person.name,
-                  ),
+                  onPressed: () {
+                    final repo = ref.read(lendRepositoryProvider);
+                    _confirmDeletePerson(
+                      context,
+                      repo,
+                      personName: person.name,
+                    );
+                  },
                   icon: Icon(
                     AppIcons.trash,
                     color: AppIcons.getColorForIcon(AppIcons.trash),
@@ -368,39 +408,32 @@ class LendPersonDetailPage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: context.surface,
-                border: Border.all(color: context.border),
-                borderRadius: BorderRadius.circular(AppRadii.card),
+          Row(
+            children: [
+              Expanded(
+                child: _PersonMetric(
+                  label: 'You Lent',
+                  value: Formatters.currency(totalLent),
+                  color: AppColors.income,
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                Text(
-                  person?.name ?? 'Unknown',
-                  style: Theme.of(context).textTheme.titleLarge,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _PersonMetric(
+                  label: 'You Borrowed',
+                  value: Formatters.currency(totalBorrowed),
+                  color: AppColors.expense,
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Net Balance',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: context.textSecondary,
-                  ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _PersonMetric(
+                  label: 'Net',
+                  value: Formatters.currency(net.abs()),
+                  color: net >= 0 ? AppColors.income : AppColors.expense,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  Formatters.currency(net.abs()),
-                  style: AppTypography.amount(
-                    context,
-                    fontSize: 20,
-                    color: net >= 0 ? AppColors.income : AppColors.expense,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -427,7 +460,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: context.surface,
                     border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.card),
+                    borderRadius: BorderRadius.circular(AppRadii.premiumCard),
                   ),
                   child: const Text('No entries yet. Add your first entry.'),
                 );
@@ -477,16 +510,18 @@ class LendPersonDetailPage extends ConsumerWidget {
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.startToEnd) {
+                            final repo = ref.read(lendRepositoryProvider);
                             await _showEntryDialog(
                               context,
-                              ref,
+                              repo,
                               existing: entry,
                             );
                             return false;
                           }
+                          final repo = ref.read(lendRepositoryProvider);
                           return _deleteEntry(
                             context,
-                            ref,
+                            repo,
                             entryId: entry.id,
                             title: isLent ? 'lent' : 'borrowed',
                           );
@@ -552,10 +587,11 @@ class LendPersonDetailPage extends ConsumerWidget {
                             children: [
                               InkWell(
                                 borderRadius: BorderRadius.circular(AppRadii.md),
-                                onTap: () async {
-                                  await _showSettleDialog(
+                                onTap: () {
+                                  final repo = ref.read(lendRepositoryProvider);
+                                  _showSettleDialog(
                                     context,
-                                    ref,
+                                    repo,
                                     entryId: entry.id,
                                     remainingAmount: remaining,
                                   );
@@ -606,16 +642,18 @@ class LendPersonDetailPage extends ConsumerWidget {
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.startToEnd) {
+                            final repo = ref.read(lendRepositoryProvider);
                             await _showEntryDialog(
                               context,
-                              ref,
+                              repo,
                               existing: entry,
                             );
                             return false;
                           }
+                          final repo = ref.read(lendRepositoryProvider);
                           return _deleteEntry(
                             context,
-                            ref,
+                            repo,
                             entryId: entry.id,
                             title: isLent ? 'lent' : 'borrowed',
                           );
@@ -705,10 +743,9 @@ class LendPersonDetailPage extends ConsumerWidget {
                               const SizedBox(width: 6),
                               InkWell(
                                 borderRadius: BorderRadius.circular(AppRadii.md),
-                                onTap: () async {
-                                  await ref
-                                      .read(lendRepositoryProvider)
-                                      .clearSettlement(entry.id);
+                                onTap: () {
+                                  final repo = ref.read(lendRepositoryProvider);
+                                  repo.clearSettlement(entry.id);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(4),
@@ -736,7 +773,12 @@ class LendPersonDetailPage extends ConsumerWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: person == null ? null : () => _showEntryDialog(context, ref),
+        onPressed: person == null
+            ? null
+            : () {
+                final repo = ref.read(lendRepositoryProvider);
+                _showEntryDialog(context, repo);
+              },
         icon: const Icon(Icons.add),
         label: const Text('Add entry'),
       ),
@@ -771,6 +813,27 @@ class _ModalFieldLabel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EntryDialogResult {
+  const _EntryDialogResult({
+    required this.amount,
+    required this.note,
+    required this.date,
+    required this.type,
+  });
+
+  final double amount;
+  final String note;
+  final DateTime date;
+  final LendEntryType type;
+}
+
+class _SettleDialogResult {
+  const _SettleDialogResult({required this.amount, required this.date});
+
+  final double amount;
+  final DateTime date;
 }
 
 List<Widget> _buildEventChips(BuildContext context, List<dynamic> entryEvents) {
@@ -829,7 +892,7 @@ class _EntryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -904,6 +967,44 @@ class _EntryCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           trailing,
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonMetric extends StatelessWidget {
+  const _PersonMetric({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
+        color: color.withValues(alpha: 0.16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w800,
+              fontSize: 18,
+            ),
+          ),
         ],
       ),
     );

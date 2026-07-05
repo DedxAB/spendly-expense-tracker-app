@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -11,13 +12,14 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
-import 'package:spendly/features/home/presentation/widgets/home_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
+import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
 class HomePage extends ConsumerWidget {
@@ -26,7 +28,6 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider);
-    final dailyGraph = ref.watch(currentMonthDailyIncomeExpenseProvider).valueOrNull ?? (income: <double>[], expense: <double>[]);
     final todaySpent = ref.watch(todaySpentProvider).valueOrNull ?? 0;
     final yesterdaySpent = ref.watch(yesterdaySpentProvider).valueOrNull ?? 0;
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
@@ -39,7 +40,7 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.background,
-      appBar: const HomeHeader(),
+      appBar: const AppHeader(mode: AppHeaderMode.home),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
         backgroundColor: Colors.white,
@@ -50,9 +51,9 @@ class HomePage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
+          AppSpacing.smPlus,
           AppSpacing.sm,
-          AppSpacing.sm,
-          AppSpacing.sm,
+          AppSpacing.smPlus,
           28,
         ),
         children: [
@@ -60,8 +61,6 @@ class HomePage extends ConsumerWidget {
             data: (data) => SpendlyBlackCard(
               balance: data.currentBalance,
               showValues: showAmounts,
-              dailyIncome: dailyGraph.income,
-              dailyExpense: dailyGraph.expense,
               onToggleValues: () async {
                 final nextValue = !showAmounts;
                 AmountVisibilityController.setVisible(nextValue);
@@ -97,7 +96,6 @@ class HomePage extends ConsumerWidget {
                   value: Formatters.currency(todaySpent),
                   note: todayComparison.label,
                   noteColor: todayComparison.color,
-                  trailing: const _SpendBagSketch(),
                 ),
               ),
               const SizedBox(width: 14),
@@ -155,7 +153,7 @@ class HomePage extends ConsumerWidget {
                 child: Column(
                   children: [
                     for (var i = 0; i < items.length; i++)
-                      _TransactionRow(
+                      TransactionRow(
                         title: items[i].note?.trim().isNotEmpty == true
                             ? items[i].note!.trim()
                             : (categoryById[items[i].categoryId]?.name ??
@@ -175,6 +173,8 @@ class HomePage extends ConsumerWidget {
                           categoryById[items[i].categoryId],
                           items[i].type,
                         ),
+                        paymentMode: items[i].paymentMode,
+                        cardType: items[i].cardType,
                       ),
                   ],
                 ),
@@ -314,7 +314,6 @@ class _MetricCard extends StatelessWidget {
     required this.value,
     required this.note,
     required this.noteColor,
-    required this.trailing,
   });
 
   final String title;
@@ -323,42 +322,49 @@ class _MetricCard extends StatelessWidget {
   final String value;
   final String note;
   final Color noteColor;
-  final Widget trailing;
 
   @override
   Widget build(BuildContext context) {
     return HomeSurfaceCard(
       borderRadius: AppRadii.card,
       topAccent: accent,
-      padding: const EdgeInsets.all(14),
       child: SizedBox(
         height: 170,
         child: Stack(
           children: [
             Positioned(
-              right: 0,
-              bottom: 0,
-              child: Opacity(opacity: 0.25, child: trailing),
+              right: -10,
+              bottom: -10,
+              child: IgnorePointer(
+                  child: Icon(
+                    LucideIcons.walletCards100,
+                    size: 100,
+                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2E) : const Color(0xFFE0E0E3),
+                ),
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _TitleChip(icon: icon, title: title, tint: accent),
-                const Spacer(),
-                Text(
-                  value,
-                  style: AppTypography.amount(
-                    context,
-                    fontSize: 26,
-                    color: context.textPrimary,
-                  ).copyWith(letterSpacing: -0.5),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  note,
-                  style: TextStyle(color: noteColor, fontSize: 13, height: 1.2),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TitleChip(icon: icon, title: title, tint: accent),
+                  const Spacer(),
+                  Text(
+                    value,
+                    style: AppTypography.amount(
+                      context,
+                      fontSize: 20,
+                      color: context.textPrimary,
+                    ).copyWith(letterSpacing: -0.5),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    note,
+                    style: TextStyle(color: noteColor, fontSize: 13, height: 1.2),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -387,44 +393,54 @@ class _RemainingCard extends StatelessWidget {
     return HomeSurfaceCard(
       borderRadius: AppRadii.card,
       topAccent: accent,
-      padding: const EdgeInsets.all(14),
       child: SizedBox(
         height: 170,
         child: Stack(
           children: [
             Positioned(
-              top: 52,
-              left: 0,
-              right: 0,
-              child: Center(child: _RingIndicator(value: percent, accent: accent)),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _TitleChip(
-                  icon: AppIcons.budget,
-                  title: 'REMAINING',
-                  tint: AppColors.homeAccentPurple,
-                ),
-                const Spacer(),
-                Text(
-                  value,
-                  style: AppTypography.amount(
-                    context,
-                    fontSize: 26,
-                    color: context.textPrimary,
-                  ).copyWith(letterSpacing: -0.5),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  note,
-                  style: TextStyle(
-                    color: context.homeAccentGreen,
-                    fontSize: 13,
-                    height: 1.2,
+              right: -10,
+              bottom: -10,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.35,
+                  child: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: _RingIndicator(value: percent, accent: accent),
                   ),
                 ),
-              ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _TitleChip(
+                    icon: AppIcons.budget,
+                    title: 'REMAINING',
+                    tint: AppColors.homeAccentPurple,
+                  ),
+                  const Spacer(),
+                  Text(
+                    value,
+                    style: AppTypography.amount(
+                      context,
+                      fontSize: 20,
+                      color: context.textPrimary,
+                    ).copyWith(letterSpacing: -0.5),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    note,
+                    style: TextStyle(
+                      color: context.homeAccentGreen,
+                      fontSize: 13,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -487,7 +503,7 @@ class _RingIndicator extends StatelessWidget {
         painter: _RingPainter(
           value: value,
           accent: accent,
-          trackColor: context.border.withValues(alpha: 0.6),
+          trackColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2E) : const Color(0xFFE0E0E3),
         ),
         child: Center(
           child: Text(
@@ -565,6 +581,28 @@ class _LendBorrowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final greenBg = isDark
+        ? const Color(0xFF121C14)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.06);
+    final greenBorder = isDark
+        ? const Color(0xFF1B3420)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.15);
+    final greenIconBg = isDark
+        ? const Color(0xFF17311F)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.12);
+
+    final redBg = isDark
+        ? const Color(0xFF1A1314)
+        : AppColors.homeAccentRed.withValues(alpha: 0.06);
+    final redBorder = isDark
+        ? const Color(0xFF352224)
+        : AppColors.homeAccentRed.withValues(alpha: 0.15);
+    final redIconBg = isDark
+        ? const Color(0xFF332122)
+        : AppColors.homeAccentRed.withValues(alpha: 0.12);
+
     return HomeSurfaceCard(
       onTap: onTap,
       borderRadius: AppRadii.card,
@@ -575,7 +613,7 @@ class _LendBorrowCard extends StatelessWidget {
           Row(
             children: [
               _SectionIconChip(
-                icon: AppIcons.personAdd,
+                icon: AppIcons.usersRound,
                 tint: context.homeAccentGreen,
               ),
               const SizedBox(width: 10),
@@ -610,9 +648,9 @@ class _LendBorrowCard extends StatelessWidget {
                   value: Formatters.currency(toReceive),
                   tint: AppColors.homeAccentGreen,
                   icon: AppIcons.download,
-                  backgroundColor: const Color(0xFF121C14),
-                  borderColor: const Color(0xFF1B3420),
-                  iconBackgroundColor: const Color(0xFF17311F),
+                  backgroundColor: greenBg,
+                  borderColor: greenBorder,
+                  iconBackgroundColor: greenIconBg,
                 ),
               ),
               const SizedBox(width: 10),
@@ -622,9 +660,9 @@ class _LendBorrowCard extends StatelessWidget {
                   value: Formatters.currency(toPay),
                   tint: AppColors.homeAccentRed,
                   icon: AppIcons.upload,
-                  backgroundColor: const Color(0xFF1A1314),
-                  borderColor: const Color(0xFF352224),
-                  iconBackgroundColor: const Color(0xFF332122),
+                  backgroundColor: redBg,
+                  borderColor: redBorder,
+                  iconBackgroundColor: redIconBg,
                 ),
               ),
             ],
@@ -649,7 +687,7 @@ class _LendBorrowCard extends StatelessWidget {
                     ),
                   ),
                   child: Icon(
-                    AppIcons.personAdd,
+                    AppIcons.usersRound,
                     color: context.homeAccentGreen,
                     size: 18,
                   ),
@@ -729,8 +767,8 @@ class _MiniMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 82,
-      padding: const EdgeInsets.all(10),
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
@@ -757,7 +795,7 @@ class _MiniMetricCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -766,7 +804,7 @@ class _MiniMetricCard extends StatelessWidget {
                   value,
                   style: TextStyle(
                     color: tint,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
                   ),
@@ -780,147 +818,6 @@ class _MiniMetricCard extends StatelessWidget {
   }
 }
 
-class _TransactionRow extends StatelessWidget {
-  const _TransactionRow({
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.type,
-    required this.isLast,
-    required this.dateLabel,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  final String title;
-  final String subtitle;
-  final double amount;
-  final TransactionType type;
-  final bool isLast;
-  final String dateLabel;
-  final IconData icon;
-  final Color iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: isLast
-              ? BorderSide.none
-              : BorderSide(color: context.border.withValues(alpha: 0.6)),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: context.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.border.withValues(alpha: 0.6)),
-            ),
-            child: Icon(icon, size: 20, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        subtitle,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    _TagChip(
-                      label: _typeLabel(type),
-                      tint: _categoryTint(type),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                _amountWithSign(amount, type),
-                style: AppTypography.amount(
-                  context,
-                  fontSize: 15,
-                  color: type == TransactionType.income
-                      ? context.homeAccentGreen
-                      : type == TransactionType.investment
-                      ? AppColors.homeAccentPurple
-                      : context.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                dateLabel,
-                style: TextStyle(color: context.textSecondary, fontSize: 11),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TagChip extends StatelessWidget {
-  const _TagChip({required this.label, required this.tint});
-
-  final String label;
-  final Color tint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: tint.withValues(alpha: 0.18)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: tint,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
 class _EmptyTransactionsCard extends StatelessWidget {
   const _EmptyTransactionsCard();
 
@@ -928,20 +825,22 @@ class _EmptyTransactionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return HomeSurfaceCard(
       borderRadius: AppRadii.card,
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
       child: SizedBox(
-        height: 160,
+        height: 170,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _EmptyTransactionSketch(),
-            const SizedBox(height: 12),
+            Center(child: const _EmptyTransactionIllustration()),
+            const SizedBox(height: 14),
             Text(
               'No transactions yet',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: context.textPrimary,
                 fontSize: 17,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 4),
@@ -957,203 +856,111 @@ class _EmptyTransactionsCard extends StatelessWidget {
   }
 }
 
-String _typeLabel(TransactionType type) {
-  return switch (type) {
-    TransactionType.income => 'Income',
-    TransactionType.investment => 'Asset',
-    TransactionType.expense => 'Expense',
-  };
-}
-
-Color _categoryTint(TransactionType type) {
-  return switch (type) {
-    TransactionType.income => AppColors.homeAccentGreen,
-    TransactionType.investment => AppColors.homeAccentPurple,
-    TransactionType.expense => AppColors.homeAccentRed,
-  };
-}
-
-class _EmptyTransactionSketch extends StatelessWidget {
-  const _EmptyTransactionSketch();
+class _EmptyTransactionIllustration extends StatelessWidget {
+  const _EmptyTransactionIllustration();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 90,
-      height: 76,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 12,
-            top: 18,
-            child: Container(
-              width: 78,
-              height: 56,
-              decoration: BoxDecoration(
-                color: context.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: context.border.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 22,
-            top: 8,
-            child: Container(
-              width: 66,
-              height: 64,
-              decoration: BoxDecoration(
-                color: context.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: context.border.withValues(alpha: 0.6),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: context.textSecondary.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 6,
-                      width: 28,
-                      alignment: Alignment.centerLeft,
-                      decoration: BoxDecoration(
-                        color: context.textSecondary.withValues(alpha: 0.24),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Container(
-                      height: 6,
-                      width: 18,
-                      alignment: Alignment.centerLeft,
-                      decoration: BoxDecoration(
-                        color: context.textSecondary.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 0,
-            top: 0,
-            child: Transform.rotate(
-              angle: -0.45,
-              child: Container(
-                width: 14,
-                height: 3,
-                color: context.textSecondary.withValues(alpha: 0.35),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 8,
-            top: 12,
-            child: Transform.rotate(
-              angle: 0.45,
-              child: Container(
-                width: 14,
-                height: 3,
-                color: context.textSecondary.withValues(alpha: 0.35),
-              ),
-            ),
-          ),
-        ],
+      width: 88,
+      height: 72,
+      child: CustomPaint(
+        painter: _ReceiptIllustrationPainter(
+          borderColor: context.border.withValues(alpha: 0.5),
+          surfaceColor: context.surface,
+          surfaceAltColor: context.surfaceAlt,
+          iconColor: context.textSecondary.withValues(alpha: 0.3),
+        ),
       ),
     );
   }
 }
 
-class _SpendBagSketch extends StatelessWidget {
-  const _SpendBagSketch();
+class _ReceiptIllustrationPainter extends CustomPainter {
+  _ReceiptIllustrationPainter({
+    required this.borderColor,
+    required this.surfaceColor,
+    required this.surfaceAltColor,
+    required this.iconColor,
+  });
+
+  final Color borderColor;
+  final Color surfaceColor;
+  final Color surfaceAltColor;
+  final Color iconColor;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 80,
-      height: 70,
-      child: Stack(
-        children: [
-          Positioned(
-            right: 12,
-            bottom: 14,
-            child: Container(
-              width: 74,
-              height: 54,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: context.border.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 24,
-            bottom: 34,
-            child: Transform.rotate(
-              angle: -0.28,
-              child: Container(
-                width: 42,
-                height: 28,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: context.border.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 36,
-            bottom: 28,
-            child: Container(
-              width: 28,
-              height: 2,
-              color: context.border.withValues(alpha: 0.6),
-            ),
-          ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: context.surface,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: context.border.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(14, 18, 58, 42),
+      const Radius.circular(10),
     );
+    final paint = Paint()
+      ..color = surfaceAltColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, paint);
+
+    final paintBorder = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawRRect(rrect, paintBorder);
+
+    final rrect2 = RRect.fromRectAndRadius(
+      Rect.fromLTWH(18, 24, 58, 42),
+      const Radius.circular(10),
+    );
+    final paint2 = Paint()
+      ..color = surfaceColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect2, paint2);
+
+    canvas.drawRRect(rrect2, paintBorder);
+
+    final paintLine = Paint()
+      ..color = iconColor
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 34, 34, 3),
+        const Radius.circular(2),
+      ),
+      paintLine,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 42, 22, 3),
+        const Radius.circular(2),
+      ),
+      paintLine..color = iconColor,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 50, 12, 3),
+        const Radius.circular(2),
+      ),
+      paintLine..color = iconColor,
+    );
+
+    canvas.save();
+    canvas.translate(8, 12);
+    canvas.rotate(0.08);
+    final rrect3 = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, 32, 22),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(rrect3, paint..color = surfaceAltColor);
+    canvas.drawRRect(rrect3, paintBorder);
+    canvas.restore();
   }
+
+  @override
+  bool shouldRepaint(_ReceiptIllustrationPainter oldDelegate) =>
+      oldDelegate.borderColor != borderColor ||
+      oldDelegate.surfaceColor != surfaceColor ||
+      oldDelegate.surfaceAltColor != surfaceAltColor ||
+      oldDelegate.iconColor != iconColor;
 }
 
-String _amountWithSign(double amount, TransactionType type) {
-  if (type == TransactionType.income) {
-    return '+${Formatters.currency(amount)}';
-  }
-  if (type == TransactionType.investment && amount < 0) {
-    return '+${Formatters.currency(amount.abs())}';
-  }
-  return '-${Formatters.currency(amount.abs())}';
-}
+

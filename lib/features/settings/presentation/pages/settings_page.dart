@@ -19,7 +19,7 @@ import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/cloud_sync/domain/entities/drive_backup_info.dart';
 import 'package:spendly/features/cloud_sync/presentation/providers/cloud_sync_provider.dart';
@@ -349,10 +349,9 @@ class SettingsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Settings',
-        showLeading: true,
-        leadingIcon: AppIcons.arrowBack,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -366,11 +365,7 @@ class SettingsPage extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _ProfilePhoto(
-                imageUrl: imageUrl,
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                iconColor: context.textSecondary,
-              ),
+              _ProfilePhoto(imageUrl: imageUrl),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -498,6 +493,7 @@ class SettingsPage extends ConsumerWidget {
                     brightness: brightness,
                   ),
                   dividerColor: divider,
+                  isLast: true,
                 ),
               ],
             ),
@@ -559,6 +555,7 @@ class SettingsPage extends ConsumerWidget {
                     brightness: brightness,
                   ),
                   dividerColor: divider,
+                  isLast: true,
                 ),
               ],
             ),
@@ -997,10 +994,12 @@ class SettingsPage extends ConsumerWidget {
                         '${timestamp.day.toString().padLeft(2, '0')}.json';
                     final tempFile = File('${tempDir.path}/$fileName');
                     await tempFile.writeAsString(payload, flush: true);
-                    await Share.shareXFiles(
-                      [XFile(tempFile.path, mimeType: 'application/json')],
-                      subject: 'Spendly Backup',
-                      text: 'Spendly data backup - $fileName',
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        files: [XFile(tempFile.path, mimeType: 'application/json')],
+                        subject: 'Spendly Backup',
+                        text: 'Spendly data backup - $fileName',
+                      ),
                     );
                   },
                   style: AppButtonStyles.primary(context).copyWith(
@@ -1177,13 +1176,9 @@ class SettingsPage extends ConsumerWidget {
 class _ProfilePhoto extends StatelessWidget {
   const _ProfilePhoto({
     required this.imageUrl,
-    required this.backgroundColor,
-    required this.iconColor,
   });
 
   final String? imageUrl;
-  final Color backgroundColor;
-  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1191,7 +1186,6 @@ class _ProfilePhoto extends StatelessWidget {
       width: 76,
       height: 76,
       decoration: BoxDecoration(
-        color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.border),
       ),
@@ -1200,10 +1194,27 @@ class _ProfilePhoto extends StatelessWidget {
           ? Image.network(
               imageUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Icon(Icons.account_box, size: 44, color: iconColor),
+              errorBuilder: (_, __, ___) => const _ProfilePhotoGradient(),
             )
-          : Icon(Icons.account_box, size: 44, color: iconColor),
+          : const _ProfilePhotoGradient(),
+    );
+  }
+}
+
+class _ProfilePhotoGradient extends StatelessWidget {
+  const _ProfilePhotoGradient();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFF59E0B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Icon(AppIcons.user, size: 44, color: context.background),
     );
   }
 }
@@ -1570,6 +1581,7 @@ class _ProfileRow extends StatelessWidget {
     required this.dividerColor,
     this.subtitle,
     this.subtitleColor,
+    this.isLast = false,
   });
 
   final IconData icon;
@@ -1580,6 +1592,7 @@ class _ProfileRow extends StatelessWidget {
   final Color iconColor;
   final Color dividerColor;
   final Color? subtitleColor;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
@@ -1588,7 +1601,9 @@ class _ProfileRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: dividerColor)),
+          border: isLast
+              ? null
+              : Border(bottom: BorderSide(color: dividerColor)),
         ),
         child: Row(
           children: [

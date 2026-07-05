@@ -11,7 +11,8 @@ import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -97,69 +98,77 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
               Text(entry.key, style: AppTypography.sectionTitle(context)),
               const SizedBox(height: 12),
               Divider(color: context.border),
-              ...entry.value.map((tx) => Dismissible(
-                key: ValueKey(tx.id),
-                confirmDismiss: (direction) async {
-                  if (direction == DismissDirection.startToEnd) {
-                    await showAddExpenseSheet(context, existing: tx);
-                    return false;
-                  }
-                  return showAppDeleteConfirmDialog(
-                    context,
-                    title: 'Delete transaction?',
-                    message: 'This transaction will be removed.',
-                  );
-                },
-                onDismissed: (_) {
-                  ref.read(transactionActionsProvider).softDelete(tx.id);
-                },
-                background: Container(
-                  alignment: Alignment.centerLeft,
-                  color: const Color(0xFF11261B),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(AppIcons.edit, color: AppColors.income),
-                      SizedBox(width: 8),
-                      Text('EDIT', style: TextStyle(
-                        color: AppColors.income,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      )),
-                    ],
+              ...entry.value.asMap().entries.map((item) {
+                final tx = item.value;
+                final isLast = item.key == entry.value.length - 1;
+                return Dismissible(
+                  key: ValueKey(tx.id),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.startToEnd) {
+                      await showAddExpenseSheet(context, existing: tx);
+                      return false;
+                    }
+                    return showAppDeleteConfirmDialog(
+                      context,
+                      title: 'Delete transaction?',
+                      message: 'This transaction will be removed.',
+                    );
+                  },
+                  onDismissed: (_) {
+                    ref.read(transactionActionsProvider).softDelete(tx.id);
+                  },
+                  background: Container(
+                    alignment: Alignment.centerLeft,
+                    color: const Color(0xFF11261B),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(AppIcons.edit, color: AppColors.income),
+                        SizedBox(width: 8),
+                        Text('EDIT', style: TextStyle(
+                          color: AppColors.income,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.1,
+                        )),
+                      ],
+                    ),
                   ),
-                ),
-                secondaryBackground: Container(
-                  alignment: Alignment.centerRight,
-                  color: const Color(0xFF2A1313),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('DELETE', style: TextStyle(
-                        color: AppColors.expense,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.1,
-                      )),
-                      SizedBox(width: 8),
-                      Icon(AppIcons.trash, color: AppColors.expense),
-                    ],
+                  secondaryBackground: Container(
+                    alignment: Alignment.centerRight,
+                    color: const Color(0xFF2A1313),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('DELETE', style: TextStyle(
+                          color: AppColors.expense,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.1,
+                        )),
+                        SizedBox(width: 8),
+                        Icon(AppIcons.trash, color: AppColors.expense),
+                      ],
+                    ),
                   ),
-                ),
-                child: _HistoryRow(
-                  title: categoryById[tx.categoryId]?.name ?? tx.categoryId,
-                  subtitle: tx.note?.trim() ?? '',
-                  paymentModeLabel: transactionPaymentLabel(
-                    type: tx.type, paymentMode: tx.paymentMode, cardType: tx.cardType,
+                  child: TransactionRow(
+                    title: tx.note?.trim().isNotEmpty == true
+                        ? tx.note!.trim()
+                        : (categoryById[tx.categoryId]?.name ?? tx.categoryId),
+                    subtitle: categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                    amount: tx.amount,
+                    type: tx.type,
+                    isLast: isLast,
+                    dateLabel: _dateLabel(tx),
+                    icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
+                    iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
+                    paymentMode: tx.paymentMode,
+                    cardType: tx.cardType,
                   ),
-                  amount: tx.amount,
-                  type: tx.type,
-                  icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
-                  iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
-                ),
-              )),
+
+                );
+              }),
             ],
           ),
         )),
@@ -229,10 +238,9 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     });
 
     return Scaffold(
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.calendar,
         title: 'Transactions',
-        showLeading: true,
-        leadingIcon: AppIcons.calendar,
         onLeadingTap: () => context.push('/calendar'),
       ),
       body: ListView(
@@ -1308,105 +1316,6 @@ double? _parseAmountInput(String text) {
   return double.tryParse(normalized);
 }
 
-class _HistoryRow extends StatelessWidget {
-  const _HistoryRow({
-    required this.title,
-    required this.subtitle,
-    required this.paymentModeLabel,
-    required this.amount,
-    required this.type,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  final String title;
-  final String subtitle;
-  final String paymentModeLabel;
-  final double amount;
-  final TransactionType type;
-  final IconData icon;
-  final Color iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: context.border)),
-      ),
-      child: Row(
-        children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: context.surfaceAlt,
-                borderRadius: BorderRadius.circular(AppRadii.md),
-              ),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(title, style: AppTypography.rowTitle(context)),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: context.border),
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
-                      ),
-                      child: Text(
-                        paymentModeLabel.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: context.textSecondary,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  subtitle.isNotEmpty ? subtitle : 'No note',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: subtitle.isNotEmpty
-                        ? context.textSecondary
-                        : context.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            _amountWithSign(amount, type),
-            style: AppTypography.amount(
-              context,
-              fontSize: 16,
-            ).copyWith(
-              color: type == TransactionType.income
-                  ? const Color(0xFF3DD07B)
-                  : type == TransactionType.investment
-                      ? const Color(0xFF8B5CF6)
-                      : context.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _AccountBreakupCard extends StatelessWidget {
   const _AccountBreakupCard({required this.name, required this.expense});
 
@@ -1420,7 +1329,7 @@ class _AccountBreakupCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1462,12 +1371,6 @@ String _typeLabel(String type) {
   }
 }
 
-String _amountWithSign(double amount, TransactionType type) {
-  if (type == TransactionType.income) {
-    return '+${Formatters.currency(amount)}';
-  }
-  if (type == TransactionType.investment && amount < 0) {
-    return '+${Formatters.currency(amount.abs())}';
-  }
-  return '-${Formatters.currency(amount.abs())}';
+String _dateLabel(dynamic tx) {
+  return DateFormat('h:mm a').format(tx.date as DateTime);
 }
