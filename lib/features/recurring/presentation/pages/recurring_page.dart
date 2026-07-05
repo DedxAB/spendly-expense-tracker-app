@@ -424,7 +424,7 @@ class RecurringPage extends ConsumerWidget {
                                   border: Border.all(
                                     color: context.border,
                                   ),
-                                  borderRadius: BorderRadius.circular(AppRadii.card),
+                                  borderRadius: BorderRadius.circular(AppRadii.lg),
                                 ),
                                 padding: const EdgeInsets.all(AppSpacing.sm),
                                 child: Column(

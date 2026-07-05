@@ -88,7 +88,13 @@ class CategoriesPage extends ConsumerWidget {
     final primary = context.textPrimary;
     final secondary = context.textSecondary;
     const destructive = Color(0xFFE35D5D);
-    final destructiveBorder = context.border;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final destructiveBg = isDark
+        ? const Color(0x221B0000)
+        : const Color(0x1AFF0000);
+    final destructiveBorder = isDark
+        ? const Color(0xFF3D2020)
+        : const Color(0x33FF0000);
 
     return Scaffold(
       backgroundColor: bg,
@@ -205,7 +211,7 @@ class CategoriesPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: surface,
                   border: Border.all(color: border),
-                  borderRadius: BorderRadius.circular(AppRadii.card),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
@@ -263,7 +269,7 @@ class CategoriesPage extends ConsumerWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         border: Border.all(color: destructiveBorder),
-                        color: const Color(0x221B0000),
+                        color: destructiveBg,
                         borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                       child: const Icon(

@@ -95,7 +95,7 @@ class BudgetPage extends ConsumerWidget {
             decoration: BoxDecoration(
               border: Border.all(color: context.border),
               color: context.surface,
-                borderRadius: BorderRadius.circular(AppRadii.card),
+                borderRadius: BorderRadius.circular(AppRadii.lg),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -528,7 +528,7 @@ class _BudgetCategoryCard extends StatelessWidget {
         border: Border.all(
           color: overBudget ? const Color(0xFFFF8A7A) : context.border,
         ),
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

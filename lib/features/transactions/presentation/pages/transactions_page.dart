@@ -411,7 +411,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     decoration: BoxDecoration(
                       color: context.surface,
                       border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(AppRadii.card),
+                      borderRadius: BorderRadius.circular(AppRadii.lg),
                     ),
                     child: Row(
                       children: [

@@ -54,6 +54,7 @@ class AppIcons {
   static const eye = LucideIcons.eye;
   static const eyeOff = LucideIcons.eyeOff;
   static const arrowBack = LucideIcons.arrowLeft;
+  static const trendingUp = LucideIcons.trendingUp;
 
   static IconData getIconForCategory(
     String categoryName, [

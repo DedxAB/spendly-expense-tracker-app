@@ -14,6 +14,7 @@ import 'package:spendly/features/categories/domain/entities/category_entity.dart
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
+import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
@@ -32,6 +33,7 @@ class HomePage extends ConsumerWidget {
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
     final recent = ref.watch(recentTransactionsProvider);
     final lendOverview = ref.watch(lendOverviewProvider);
+    final recurringRules = ref.watch(recurringRulesProvider);
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
     final showAmounts = settings?.showAmountsEnabled ?? true;
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
@@ -42,8 +44,12 @@ class HomePage extends ConsumerWidget {
       appBar: const AppHeader(mode: AppHeaderMode.home),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
         elevation: 0,
         shape: const CircleBorder(),
         child: const Icon(AppIcons.plus, size: 36),
@@ -124,6 +130,20 @@ class HomePage extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 18),
+          summary.when(
+            data: (data) {
+              if (data.monthlyInvestment <= 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _InvestmentCard(
+                  amount: data.monthlyInvestment,
+                  income: data.monthlyIncome,
+                ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           lendOverview.when(
             data: (lend) => _LendBorrowCard(
               toReceive: lend.totalToReceive,
@@ -137,6 +157,28 @@ class HomePage extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           const SizedBox(height: 18),
+          recurringRules.when(
+            data: (rules) {
+              final active = rules.where((r) => r.isActive).toList();
+              if (active.isEmpty) return const SizedBox.shrink();
+              final total = active.fold<double>(
+                0, (sum, r) => sum + r.amount);
+              final nextRule = active.reduce(
+                (a, b) => a.nextDueDate.isBefore(b.nextDueDate) ? a : b);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: _RecurringBanner(
+                  count: active.length,
+                  total: total,
+                  nextTitle: nextRule.title,
+                  nextDueDate: nextRule.nextDueDate,
+                  onTap: () => context.push('/recurring'),
+                ),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           _SectionHeader(
             title: 'Recent Transactions',
             onTap: () => context.push('/transactions'),
@@ -620,7 +662,7 @@ class _LendBorrowCard extends StatelessWidget {
           Row(
             children: [
               _SectionIconChip(
-                icon: AppIcons.usersRound,
+                icon: AppIcons.money,
                 tint: context.homeAccentGreen,
               ),
               const SizedBox(width: 10),
@@ -968,4 +1010,165 @@ class _ReceiptIllustrationPainter extends CustomPainter {
       oldDelegate.surfaceColor != surfaceColor ||
       oldDelegate.surfaceAltColor != surfaceAltColor ||
       oldDelegate.iconColor != iconColor;
+}
+
+class _RecurringBanner extends StatelessWidget {
+  const _RecurringBanner({
+    required this.count,
+    required this.total,
+    required this.nextTitle,
+    required this.nextDueDate,
+    required this.onTap,
+  });
+
+  final int count;
+  final double total;
+  final String nextTitle;
+  final DateTime nextDueDate;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return HomeSurfaceCard(
+      onTap: onTap,
+      borderRadius: AppRadii.lg,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          _SectionIconChip(
+            icon: AppIcons.repeat,
+            tint: context.homeAccentPurple,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  count == 1 ? '1 recurring txn' : '$count recurring txns',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Next: $nextTitle on ${Formatters.date(nextDueDate)}',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            AppIcons.chevronRight,
+            size: 16,
+            color: context.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvestmentCard extends StatelessWidget {
+  const _InvestmentCard({
+    required this.amount,
+    required this.income,
+  });
+
+  final double amount;
+  final double income;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = income > 0 ? (amount / income * 100) : 0.0;
+    final pctDisplay = '${pct.round()}% of income';
+
+    return HomeSurfaceCard(
+      borderRadius: AppRadii.lg,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  AppIcons.trendingUp,
+                  color: Color(0xFF8B5CF6),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'INVESTMENT',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  pctDisplay,
+                  style: const TextStyle(
+                    color: Color(0xFF8B5CF6),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            Formatters.currency(amount),
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: income > 0 ? (amount / income).clamp(0, 1) : 0,
+              backgroundColor: context.border.withValues(alpha: 0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF8B5CF6),
+              ),
+              minHeight: 4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
