@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 
 class ActivityScreenTimePage extends ConsumerWidget {
@@ -15,10 +15,9 @@ class ActivityScreenTimePage extends ConsumerWidget {
     final events = ref.watch(recentActivityEventsProvider);
 
     return Scaffold(
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Screen Time',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -121,7 +120,7 @@ class _ScreenTimeCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,7 +220,7 @@ class _ScreenTimeMetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceAlt,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

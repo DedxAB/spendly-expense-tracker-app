@@ -5,8 +5,32 @@ class AppColors {
   static const onPrimary = Color(0xFFF5F5F5);
   static const emerald = primary;
 
-  static const income = Color(0xFF3DD07B);
-  static const expense = Color(0xFFF55C5C);
+  static const darkBackgroundColor = Color(0xFF050505);
+  static const darkSurfaceColor = Color(0xFF101112);
+  static const darkSurfaceBorderColor = Color(0xFF26282B);
+  static const darkTextPrimaryColor = Color(0xFFF5F5F5);
+  static const darkTextSecondaryColor = Color(0xFF9A9A9A);
+  static const success = Color(0xFF38D97A);
+  static const danger = Color(0xFFFF5C6C);
+  static const accent = Color(0xFF8B5CF6);
+
+  static const income = success;
+  static const expense = danger;
+
+  static const darkBackground = darkBackgroundColor;
+  static const darkSurface = darkSurfaceColor;
+  static const darkSurfaceAlt = darkSurfaceColor;
+  static const darkTextPrimary = darkTextPrimaryColor;
+  static const darkTextSecondary = darkTextSecondaryColor;
+
+  static const homeCard = darkSurfaceColor;
+  static const homeCardSoft = darkSurfaceColor;
+  static const homeCardMuted = Color(0xFF121314);
+  static const homeBorder = darkSurfaceBorderColor;
+  static const homeBorderSoft = Color(0xFF1B1D20);
+  static const homeAccentGreen = success;
+  static const homeAccentPurple = accent;
+  static const homeAccentRed = danger;
 
   static const lightBackground = Color(0xFFF7F7F7);
   static const lightSurface = Color(0xFFFFFFFF);
@@ -14,27 +38,21 @@ class AppColors {
   static const lightTextPrimary = Color(0xFF111111);
   static const lightTextSecondary = Color(0xFF666666);
 
-  static const darkBackground = Color(0xFF000000);
-  static const darkSurface = Color(0xFF0E0E0E);
-  static const darkSurfaceAlt = Color(0xFF0E0E0E);
-  static const darkTextPrimary = Color(0xFFF2F2F2);
-  static const darkTextSecondary = Color(0xFFABABAB);
-
   static const borderLight = Color(0xFFE0E0E0);
-  static const borderDark = Color(0xFF212121);
+  static const borderDark = darkSurfaceBorderColor;
 
   static Color background(Brightness b) =>
-      b == Brightness.dark ? darkBackground : lightBackground;
+      b == Brightness.dark ? darkBackgroundColor : lightBackground;
   static Color surface(Brightness b) =>
-      b == Brightness.dark ? darkSurface : lightSurface;
+      b == Brightness.dark ? darkSurfaceColor : lightSurface;
   static Color surfaceAlt(Brightness b) =>
-      b == Brightness.dark ? darkSurfaceAlt : lightSurfaceAlt;
+      b == Brightness.dark ? darkSurfaceColor : lightSurfaceAlt;
   static Color textPrimary(Brightness b) =>
-      b == Brightness.dark ? darkTextPrimary : lightTextPrimary;
+      b == Brightness.dark ? darkTextPrimaryColor : lightTextPrimary;
   static Color textSecondary(Brightness b) =>
-      b == Brightness.dark ? darkTextSecondary : lightTextSecondary;
+      b == Brightness.dark ? darkTextSecondaryColor : lightTextSecondary;
   static Color border(Brightness b) =>
-      b == Brightness.dark ? borderDark : borderLight;
+      b == Brightness.dark ? darkSurfaceBorderColor : borderLight;
 }
 
 extension ThemeColors on BuildContext {
@@ -45,6 +63,15 @@ extension ThemeColors on BuildContext {
   Color get textPrimary => AppColors.textPrimary(_b);
   Color get textSecondary => AppColors.textSecondary(_b);
   Color get border => AppColors.border(_b);
+  Color get surfaceBorder => AppColors.homeBorder;
+  Color get homeCard => AppColors.homeCard;
+  Color get homeCardSoft => AppColors.homeCardSoft;
+  Color get homeCardMuted => AppColors.homeCardMuted;
+  Color get homeBorder => AppColors.homeBorder;
+  Color get homeBorderSoft => AppColors.homeBorderSoft;
+  Color get homeAccentGreen => AppColors.homeAccentGreen;
+  Color get homeAccentPurple => AppColors.homeAccentPurple;
+  Color get homeAccentRed => AppColors.homeAccentRed;
 }
 
 class AppSpacing {
@@ -63,6 +90,7 @@ class AppRadii {
   static const md = 10.0;
   static const lg = 14.0;
   static const xl = 20.0;
+  static const card = 24.0;
   static const premiumCard = 16.0;
   static const pill = 999.0;
 }

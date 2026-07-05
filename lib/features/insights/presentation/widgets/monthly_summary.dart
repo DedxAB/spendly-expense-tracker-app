@@ -49,7 +49,7 @@ class MonthlySummaryCard extends ConsumerWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

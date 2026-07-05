@@ -149,7 +149,9 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
         elevation: AppElevation.fab,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
       ),
     );
   }
@@ -176,7 +178,7 @@ class AppTheme {
         elevation: AppElevation.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadii.lg),
-          side: const BorderSide(color: Color(0xFF232323)),
+          side: const BorderSide(color: AppColors.borderDark),
         ),
       ),
       appBarTheme: AppBarTheme(
@@ -224,7 +226,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF111111),
+        fillColor: AppColors.darkSurface,
         labelStyle: AppTypography.textTheme(Brightness.dark).bodySmall
             ?.copyWith(
               color: const Color(0xFF8D8D8D),
@@ -244,11 +246,11 @@ class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: const BorderSide(color: AppColors.borderDark),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: const BorderSide(color: Color(0xFF2D2D2D)),
+          borderSide: const BorderSide(color: AppColors.borderDark),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
@@ -298,7 +300,9 @@ class AppTheme {
         backgroundColor: AppColors.onPrimary,
         foregroundColor: AppColors.darkBackground,
         elevation: AppElevation.fab,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
       ),
     );
   }

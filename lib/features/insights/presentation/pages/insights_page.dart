@@ -6,13 +6,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'dart:io';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/insights/domain/entities/expense_slice.dart';
 import 'package:spendly/features/insights/domain/entities/insight_point.dart';
 import 'package:spendly/features/insights/presentation/providers/insights_provider.dart';
@@ -45,10 +50,9 @@ class InsightsPage extends ConsumerWidget {
         ((prevIncomeExpense?['expense'] ?? 0).toDouble());
 
     return Scaffold(
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Analytics',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -93,13 +97,13 @@ class InsightsPage extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               border: Border.all(color: context.border),
-              color: context.surface,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+            color: context.surface,
+            borderRadius: BorderRadius.circular(AppRadii.card),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                   children: [
                     Text('Trend', style: AppTypography.sectionTitle(context)),
                     const Spacer(),
@@ -206,7 +210,7 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
                 0.0)
             .toDouble();
 
-    await service.exportPdf(
+    final pdfBytes = await service.exportPdf(
       month: month,
       isYearly: isYearly,
       userName: userName,
@@ -225,8 +229,16 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
     );
     if (context.mounted) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF saved to app documents')),
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
+      final tempFile = File('${tempDir.path}/$fileName');
+      await tempFile.writeAsBytes(pdfBytes);
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(tempFile.path, mimeType: 'application/pdf')],
+          subject: 'Spendly Report',
+          text: 'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
+        ),
       );
     }
   } catch (e) {
@@ -395,7 +407,7 @@ class _YearPickerDialog extends StatelessWidget {
       backgroundColor: context.surface,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: SizedBox(
         height: 400,
@@ -481,7 +493,7 @@ class _BurnRateCard extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -625,7 +637,7 @@ class _SummaryStrip extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
@@ -750,7 +762,7 @@ class _CategoryWatch extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -808,8 +820,8 @@ class _CategoryWatch extends StatelessWidget {
                   const SizedBox(width: 10),
                   SizedBox(
                     width: 80,
-                    child: Text(
-                      Formatters.currency(slice.total),
+                    child: AmountView(
+                      slice.total,
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontSize: 14,
@@ -845,7 +857,7 @@ class _CategoryWatchSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: const SizedBox(
         height: 120,
@@ -955,7 +967,7 @@ class _WhatsChanged extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border.all(color: context.border),
         color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1373,7 +1385,7 @@ class _SnapshotTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

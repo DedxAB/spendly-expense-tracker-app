@@ -166,12 +166,6 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     if (state == AppLifecycleState.inactive) {
       _flushUsage();
       _visible = false;
-      if (enabled && !_locked) {
-        setState(() {
-          _locked = true;
-          _unlockPromptQueuedForCurrentLock = false;
-        });
-      }
       return;
     }
 

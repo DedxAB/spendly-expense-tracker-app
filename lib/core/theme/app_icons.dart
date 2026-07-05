@@ -41,6 +41,8 @@ class AppIcons {
   static const flight = LucideIcons.plane;
   static const money = LucideIcons.handCoins;
   static const personAdd = LucideIcons.userPlus;
+  static const usersRound = LucideIcons.usersRound;
+  static const userRoundPlus = LucideIcons.userRoundPlus;
   static const close = LucideIcons.x;
   static const plus = LucideIcons.plus;
   static const home = LucideIcons.house;
@@ -51,6 +53,8 @@ class AppIcons {
   static const health = LucideIcons.heartPulse;
   static const eye = LucideIcons.eye;
   static const eyeOff = LucideIcons.eyeOff;
+  static const arrowBack = LucideIcons.arrowLeft;
+  static const trendingUp = LucideIcons.trendingUp;
 
   static IconData getIconForCategory(
     String categoryName, [
@@ -234,7 +238,7 @@ class AppIcons {
     if (icon == AppIcons.upload) {
       return _iconFor(brightness, const Color(0xFFD49520), const Color(0xFFE8A830));
     }
-    if (icon == AppIcons.personAdd || icon == AppIcons.user) {
+    if (icon == AppIcons.personAdd || icon == AppIcons.user || icon == AppIcons.userRoundPlus || icon == AppIcons.usersRound) {
       return _iconFor(brightness, const Color(0xFF4A7AD4), const Color(0xFF5A91E6));
     }
     if (icon == AppIcons.edit) {

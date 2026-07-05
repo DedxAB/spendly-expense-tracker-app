@@ -1,7 +1,6 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:spendly/core/utils/formatters.dart';
@@ -10,7 +9,7 @@ import 'package:spendly/features/insights/domain/entities/income_expense_bar.dar
 import 'package:spendly/features/insights/domain/entities/insight_point.dart';
 
 class InsightsExportService {
-  Future<void> exportPdf({
+  Future<Uint8List> exportPdf({
     required DateTime month,
     required bool isYearly,
     String? userName,
@@ -116,14 +115,7 @@ class InsightsExportService {
       ),
     );
 
-    final dir = await getApplicationDocumentsDirectory();
-    final reportsDir = Directory('${dir.path}/Spendly_Reports');
-    if (!await reportsDir.exists()) {
-      await reportsDir.create(recursive: true);
-    }
-    final fileName = 'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
-    final file = File('${reportsDir.path}/$fileName');
-    await file.writeAsBytes(await pdf.save());
+    return pdf.save();
   }
 
   pw.Widget _buildHeader(

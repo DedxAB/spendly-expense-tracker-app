@@ -5,10 +5,11 @@ import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
-import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
@@ -17,7 +18,7 @@ class LendPage extends ConsumerWidget {
 
   Future<void> _editPerson(
     BuildContext context,
-    WidgetRef ref, {
+    LendRepository repository, {
     required String personId,
     required String personName,
   }) async {
@@ -30,12 +31,13 @@ class LendPage extends ConsumerWidget {
       initialValue: personName,
     );
     if (renamed == null || renamed.trim().isEmpty) return;
-    await ref
-        .read(lendRepositoryProvider)
-        .renamePerson(personId: personId, name: renamed.trim());
+    await repository.renamePerson(personId: personId, name: renamed.trim());
   }
 
-  Future<void> _showAddPersonDialog(BuildContext context, WidgetRef ref) async {
+  Future<void> _showAddPersonDialog(
+    BuildContext context,
+    LendRepository repository,
+  ) async {
     final name = await showAppTextInputDialog(
       context,
       title: 'Add Person',
@@ -45,7 +47,7 @@ class LendPage extends ConsumerWidget {
       requiredLabel: 'Name',
     );
     if (name == null) return;
-    await ref.read(lendRepositoryProvider).addPerson(name.trim());
+    await repository.addPerson(name.trim());
   }
 
   @override
@@ -54,10 +56,9 @@ class LendPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.background,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Lend',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: overview.when(
@@ -85,37 +86,27 @@ class LendPage extends ConsumerWidget {
                     message:
                         'People can be swiped to edit or delete from the list.',
                   ),
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _showAddPersonDialog(context, ref),
-                    icon: Icon(
-                      AppIcons.personAdd,
-                      size: 16,
-                      color: AppIcons.getColorForIcon(AppIcons.personAdd),
-                    ),
-                    label: const Text('ADD'),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Overview', style: AppTypography.cardTitle(context)),
-                    const SizedBox(height: AppSpacing.sm),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sm),
+                  decoration: BoxDecoration(
+                    color: context.surface,
+                    border: Border.all(color: context.border),
+                    borderRadius: BorderRadius.circular(AppRadii.card),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Overview', style: AppTypography.cardTitle(context)),
+                      const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         Expanded(
                           child: _SummaryMetric(
                             label: 'You Will Receive',
-                            value: Formatters.currency(data.totalToReceive),
+                            amountValue: data.totalToReceive,
                             color: AppColors.income,
                           ),
                         ),
@@ -123,7 +114,7 @@ class LendPage extends ConsumerWidget {
                         Expanded(
                           child: _SummaryMetric(
                             label: 'You Owe',
-                            value: Formatters.currency(data.totalToPay),
+                            amountValue: data.totalToPay,
                             color: AppColors.expense,
                           ),
                         ),
@@ -141,7 +132,7 @@ class LendPage extends ConsumerWidget {
                   decoration: BoxDecoration(
                     color: context.surface,
                     border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    borderRadius: BorderRadius.circular(AppRadii.card),
                   ),
                   child: const Text(
                     'No people added yet. Tap + to add your first person.',
@@ -156,9 +147,10 @@ class LendPage extends ConsumerWidget {
                     direction: DismissDirection.horizontal,
                     confirmDismiss: (direction) async {
                       if (direction == DismissDirection.startToEnd) {
+                        final repo = ref.read(lendRepositoryProvider);
                         await _editPerson(
                           context,
-                          ref,
+                          repo,
                           personId: item.person.id,
                           personName: item.person.name,
                         );
@@ -172,9 +164,8 @@ class LendPage extends ConsumerWidget {
                       );
                     },
                     onDismissed: (_) {
-                      ref
-                          .read(lendRepositoryProvider)
-                          .deletePerson(item.person.id);
+                      final repo = ref.read(lendRepositoryProvider);
+                      repo.deletePerson(item.person.id);
                     },
                     background: Container(
                       alignment: Alignment.centerLeft,
@@ -227,7 +218,7 @@ class LendPage extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: context.surface,
                           border: Border.all(color: context.border),
-                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          borderRadius: BorderRadius.circular(AppRadii.premiumCard),
                         ),
                         child: Row(
                           children: [
@@ -242,13 +233,9 @@ class LendPage extends ConsumerWidget {
                                 ),
                               ),
                               child: Icon(
-                                isPositive
-                                    ? AppIcons.download
-                                    : AppIcons.upload,
+                                AppIcons.usersRound,
                                 color: AppIcons.getColorForIcon(
-                                  isPositive
-                                      ? AppIcons.download
-                                      : AppIcons.upload,
+                                  AppIcons.usersRound,
                                 ),
                                 size: 20,
                               ),
@@ -279,15 +266,37 @@ class LendPage extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              '${item.netBalance >= 0 ? '+' : '-'}${Formatters.currency(item.netBalance.abs())}',
-                              style: TextStyle(
-                                color: isPositive
-                                    ? AppColors.income
-                                    : AppColors.expense,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  item.netBalance >= 0 ? '+' : '-',
+                                  style: TextStyle(
+                                    color: isPositive
+                                        ? AppColors.income
+                                        : AppColors.expense,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                AmountView(
+                                  item.netBalance.abs(),
+                                  style: TextStyle(
+                                    color: isPositive
+                                        ? AppColors.income
+                                        : AppColors.expense,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                  maskColor: isPositive
+                                      ? AppColors.income
+                                      : AppColors.expense,
+                                  maskWidth: 5,
+                                  maskHeight: 16,
+                                  maskSpacing: 2,
+                                  maskRadius: 0,
+                                ),
+                              ],
                             ),
                             const SizedBox(width: 4),
                             Icon(
@@ -309,10 +318,13 @@ class LendPage extends ConsumerWidget {
         error: (error, _) => Center(child: Text('Failed to load: $error')),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddPersonDialog(context, ref),
+        onPressed: () {
+          final repo = ref.read(lendRepositoryProvider);
+          _showAddPersonDialog(context, repo);
+        },
         icon: Icon(
-          AppIcons.personAdd,
-          color: AppIcons.getColorForIcon(AppIcons.personAdd),
+          AppIcons.userRoundPlus,
+          color: AppIcons.getColorForIcon(AppIcons.userRoundPlus),
         ),
         label: const Text('Add person'),
       ),
@@ -323,12 +335,12 @@ class LendPage extends ConsumerWidget {
 class _SummaryMetric extends StatelessWidget {
   const _SummaryMetric({
     required this.label,
-    required this.value,
+    required this.amountValue,
     required this.color,
   });
 
   final String label;
-  final String value;
+  final double amountValue;
   final Color color;
 
   @override
@@ -336,7 +348,7 @@ class _SummaryMetric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
         color: color.withValues(alpha: 0.16),
       ),
       child: Column(
@@ -344,13 +356,18 @@ class _SummaryMetric extends StatelessWidget {
         children: [
           Text(label, style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 6),
-          Text(
-            value,
+          AmountView(
+            amountValue,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w800,
               fontSize: 18,
             ),
+            maskColor: color,
+            maskWidth: 6,
+            maskHeight: 18,
+            maskSpacing: 3,
+            maskRadius: 0,
           ),
         ],
       ),

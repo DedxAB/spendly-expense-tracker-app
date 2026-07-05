@@ -1,18 +1,25 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:spendly/core/constants/app_enums.dart';
+import 'package:spendly/core/theme/app_button_styles.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/activity/data/repositories/activity_repository_impl.dart';
 import 'package:spendly/features/cloud_sync/domain/entities/drive_backup_info.dart';
 import 'package:spendly/features/cloud_sync/presentation/providers/cloud_sync_provider.dart';
@@ -342,10 +349,9 @@ class SettingsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Settings',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -359,11 +365,7 @@ class SettingsPage extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _ProfilePhoto(
-                imageUrl: imageUrl,
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                iconColor: context.textSecondary,
-              ),
+              _ProfilePhoto(imageUrl: imageUrl),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -403,7 +405,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [
@@ -454,7 +456,7 @@ class SettingsPage extends ConsumerWidget {
                   icon: AppIcons.money,
                   title: 'Lend & Borrow',
                   subtitle: 'Track people and settlements',
-                  onTap: () => context.go('/lend'),
+                  onTap: () => context.push('/lend'),
                   textColor: primary,
                   subtitleColor: muted,
                   iconColor: AppIcons.getColorForIcon(
@@ -491,6 +493,7 @@ class SettingsPage extends ConsumerWidget {
                     brightness: brightness,
                   ),
                   dividerColor: divider,
+                  isLast: true,
                 ),
               ],
             ),
@@ -502,7 +505,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [
@@ -552,6 +555,7 @@ class SettingsPage extends ConsumerWidget {
                     brightness: brightness,
                   ),
                   dividerColor: divider,
+                  isLast: true,
                 ),
               ],
             ),
@@ -564,7 +568,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               border: Border.all(color: divider),
               color: context.surface,
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -676,7 +680,7 @@ class SettingsPage extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.surface,
               border: Border.all(color: divider),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
+              borderRadius: BorderRadius.circular(AppRadii.card),
             ),
             child: Column(
               children: [
@@ -763,16 +767,18 @@ class SettingsPage extends ConsumerWidget {
               ),
             ),
           ),
-          FutureBuilder<PackageInfo>(
-            future: PackageInfo.fromPlatform(),
-            builder: (context, snapshot) {
-              final info = snapshot.data;
-              if (info == null) return const SizedBox.shrink();
-              return Text(
-                'Version ${info.version}',
-                style: TextStyle(color: muted, fontSize: 14),
-              );
-            },
+          Center(
+            child: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                final info = snapshot.data;
+                if (info == null) return const SizedBox.shrink();
+                return Text(
+                  'Version ${info.version}',
+                  style: TextStyle(color: muted, fontSize: 14),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -955,20 +961,88 @@ class SettingsPage extends ConsumerWidget {
         title: const Text('Export JSON'),
         content: SizedBox(
           width: AppModalSizes.dialogContentWidth,
-          child: SingleChildScrollView(child: SelectableText(payload)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 300),
+            child: SingleChildScrollView(child: SelectableText(payload)),
+          ),
         ),
         actions: [
-          DialogActionsRow(
-            cancelText: 'Close',
-            confirmText: 'Copy',
-            onCancel: () => Navigator.pop(dialogContext),
-            onConfirm: () {
-              Clipboard.setData(ClipboardData(text: payload));
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('JSON copied to clipboard')),
-              );
-            },
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: AppButtonStyles.danger(context).copyWith(
+                    minimumSize: WidgetStatePropertyAll(const Size(0, 48)),
+                    padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                  ),
+                  child: const Text('Close'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () async {
+                    if (!dialogContext.mounted) return;
+                    Navigator.pop(dialogContext);
+                    final tempDir = await getTemporaryDirectory();
+                    final timestamp = DateTime.now();
+                    final fileName =
+                        'spendly_backup_'
+                        '${timestamp.year}-'
+                        '${timestamp.month.toString().padLeft(2, '0')}-'
+                        '${timestamp.day.toString().padLeft(2, '0')}.json';
+                    final tempFile = File('${tempDir.path}/$fileName');
+                    await tempFile.writeAsString(payload, flush: true);
+                    await SharePlus.instance.share(
+                      ShareParams(
+                        files: [XFile(tempFile.path, mimeType: 'application/json')],
+                        subject: 'Spendly Backup',
+                        text: 'Spendly data backup - $fileName',
+                      ),
+                    );
+                  },
+                  style: AppButtonStyles.primary(context).copyWith(
+                    minimumSize: WidgetStatePropertyAll(const Size(0, 48)),
+                    padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.save_alt, size: 18),
+                      SizedBox(width: 4),
+                      Text('Save'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: payload));
+                    Navigator.pop(dialogContext);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('JSON copied to clipboard'),
+                      ),
+                    );
+                  },
+                  style: AppButtonStyles.primary(context).copyWith(
+                    minimumSize: WidgetStatePropertyAll(const Size(0, 48)),
+                    padding: WidgetStatePropertyAll(EdgeInsets.zero),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy, size: 18),
+                      SizedBox(width: 4),
+                      Text('Copy'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -983,17 +1057,54 @@ class SettingsPage extends ConsumerWidget {
         title: const Text('Import JSON'),
         content: SizedBox(
           width: AppModalSizes.dialogContentWidth,
-          height: 400,
-          child: TextField(
-            controller: controller,
-            maxLines: null,
-            expands: true,
-            textAlignVertical: TextAlignVertical.top,
-            decoration: const InputDecoration(
-              hintText: 'Paste your exported JSON here',
-              border: OutlineInputBorder(),
-              alignLabelWithHint: true,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.folder_open, size: 18),
+                  onPressed: () async {
+                    final result = await FilePicker.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['json'],
+                      withData: true,
+                    );
+                    if (result == null || result.files.isEmpty) return;
+                    final bytes = result.files.first.bytes;
+                    if (bytes == null) return;
+                    controller.text = utf8.decode(bytes);
+                    if (!dialogContext.mounted) return;
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  label: const Text('Choose JSON file'),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'or paste below',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: TextField(
+                  controller: controller,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: const InputDecoration(
+                    hintText: 'Paste your exported JSON here',
+                    border: OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                ),
+              ),
+            ],
           ),
         ),
         actions: [
@@ -1065,13 +1176,9 @@ class SettingsPage extends ConsumerWidget {
 class _ProfilePhoto extends StatelessWidget {
   const _ProfilePhoto({
     required this.imageUrl,
-    required this.backgroundColor,
-    required this.iconColor,
   });
 
   final String? imageUrl;
-  final Color backgroundColor;
-  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1079,7 +1186,6 @@ class _ProfilePhoto extends StatelessWidget {
       width: 76,
       height: 76,
       decoration: BoxDecoration(
-        color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: context.border),
       ),
@@ -1088,10 +1194,27 @@ class _ProfilePhoto extends StatelessWidget {
           ? Image.network(
               imageUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  Icon(Icons.account_box, size: 44, color: iconColor),
+              errorBuilder: (_, __, ___) => const _ProfilePhotoGradient(),
             )
-          : Icon(Icons.account_box, size: 44, color: iconColor),
+          : const _ProfilePhotoGradient(),
+    );
+  }
+}
+
+class _ProfilePhotoGradient extends StatelessWidget {
+  const _ProfilePhotoGradient();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFF59E0B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Icon(AppIcons.user, size: 44, color: context.background),
     );
   }
 }
@@ -1458,6 +1581,7 @@ class _ProfileRow extends StatelessWidget {
     required this.dividerColor,
     this.subtitle,
     this.subtitleColor,
+    this.isLast = false,
   });
 
   final IconData icon;
@@ -1468,6 +1592,7 @@ class _ProfileRow extends StatelessWidget {
   final Color iconColor;
   final Color dividerColor;
   final Color? subtitleColor;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
@@ -1476,7 +1601,9 @@ class _ProfileRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: dividerColor)),
+          border: isLast
+              ? null
+              : Border(bottom: BorderSide(color: dividerColor)),
         ),
         child: Row(
           children: [

@@ -5,7 +5,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -88,14 +88,19 @@ class CategoriesPage extends ConsumerWidget {
     final primary = context.textPrimary;
     final secondary = context.textSecondary;
     const destructive = Color(0xFFE35D5D);
-    final destructiveBorder = context.border;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final destructiveBg = isDark
+        ? const Color(0x221B0000)
+        : const Color(0x1AFF0000);
+    final destructiveBorder = isDark
+        ? const Color(0xFF3D2020)
+        : const Color(0x33FF0000);
 
     return Scaffold(
       backgroundColor: bg,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Categories',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       floatingActionButton: SizedBox(
@@ -206,7 +211,7 @@ class CategoriesPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: surface,
                   border: Border.all(color: border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
                 ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.symmetric(
@@ -264,7 +269,7 @@ class CategoriesPage extends ConsumerWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         border: Border.all(color: destructiveBorder),
-                        color: const Color(0x221B0000),
+                        color: destructiveBg,
                         borderRadius: BorderRadius.circular(AppRadii.md),
                       ),
                       child: const Icon(

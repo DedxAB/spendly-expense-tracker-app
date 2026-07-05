@@ -45,6 +45,27 @@ final todaySpentProvider = StreamProvider<double>((ref) {
       });
 });
 
+final currentMonthDailyIncomeExpenseProvider = StreamProvider<({List<double> income, List<double> expense})>((ref) {
+  final now = DateTime.now();
+  final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+  final repo = ref.watch(transactionsRepositoryProvider);
+  return repo.watchAll().map((items) {
+    final income = List<double>.filled(daysInMonth, 0);
+    final expense = List<double>.filled(daysInMonth, 0);
+    for (final item in items) {
+      if (item.date.year != now.year || item.date.month != now.month) continue;
+      final day = item.date.day - 1;
+      if (day < 0 || day >= daysInMonth) continue;
+      if (item.type == TransactionType.income) {
+        income[day] += item.amount;
+      } else if (item.type == TransactionType.expense) {
+        expense[day] += item.amount;
+      }
+    }
+    return (income: income, expense: expense);
+  });
+});
+
 final yesterdaySpentProvider = StreamProvider<double>((ref) {
   final now = DateTime.now();
   final yesterday = now.subtract(const Duration(days: 1));

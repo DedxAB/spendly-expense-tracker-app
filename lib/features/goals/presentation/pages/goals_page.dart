@@ -6,9 +6,10 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
-import 'package:spendly/core/widgets/noir_header.dart';
+import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/goals/presentation/providers/goals_provider.dart';
 
@@ -43,10 +44,9 @@ class GoalsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.background,
-      appBar: NoirHeader(
+      appBar: AppHeader(
+        mode: AppHeaderMode.back,
         title: 'Goals',
-        showLeading: true,
-        leadingIcon: Icons.arrow_back,
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
       body: ListView(
@@ -315,7 +315,7 @@ class GoalsPage extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: context.surface,
                   border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  borderRadius: BorderRadius.circular(AppRadii.card),
                 ),
                 child: Row(
                   children: [
@@ -327,8 +327,8 @@ class GoalsPage extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      Formatters.currency(total),
+                    AmountView(
+                      total,
                       style: const TextStyle(
                         color: Color(0xFF8B5CF6),
                         fontSize: 17,
@@ -975,7 +975,7 @@ class _EmergencyFundCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1020,8 +1020,8 @@ class _EmergencyFundCard extends StatelessWidget {
                   child: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
-                    child: Text(
-                      Formatters.currency(emergency.currentAmount),
+                    child: AmountView(
+                      emergency.currentAmount,
                       maxLines: 1,
                       style: TextStyle(
                         color: context.textPrimary,
@@ -1162,7 +1162,7 @@ class _AggregateInsightCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1174,8 +1174,8 @@ class _AggregateInsightCard extends StatelessWidget {
             style: AppTypography.sectionTitle(context),
           ),
           const SizedBox(height: 10),
-          Text(
-            Formatters.currency(totalSaved),
+          AmountView(
+            totalSaved,
             style: AppTypography.amount(context, fontSize: 30),
           ),
           const SizedBox(height: 2),
@@ -1254,7 +1254,7 @@ class _UrgencyStrip extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Row(
         children: [
@@ -1297,7 +1297,7 @@ class _GoalCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1420,17 +1420,19 @@ class _CreateGoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onCreate,
-      child: Container(
-        height: 220,
-        decoration: BoxDecoration(
-          color: context.surface,
-          border: Border.all(color: context.border),
-          borderRadius: BorderRadius.circular(AppRadii.md),
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CustomPaint(painter: _DotGridPainter(color: context.border)),
+        child: Container(
+          height: 220,
+          decoration: BoxDecoration(
+            color: context.surface,
+            border: Border.all(color: context.border),
+            borderRadius: BorderRadius.circular(AppRadii.card),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadii.card),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _DotGridPainter(color: context.border)),
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1459,6 +1461,7 @@ class _CreateGoalCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

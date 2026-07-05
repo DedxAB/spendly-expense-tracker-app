@@ -8,15 +8,18 @@ import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
+import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/transaction_row.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
-import 'package:spendly/features/home/presentation/widgets/home_header.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
+import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
+import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
-import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
-import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -31,31 +34,33 @@ class HomePage extends ConsumerWidget {
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
     final recent = ref.watch(recentTransactionsProvider);
     final lendOverview = ref.watch(lendOverviewProvider);
+    final recurringRules = ref.watch(recurringRulesProvider);
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
     final showAmounts = settings?.showAmountsEnabled ?? true;
-    final recurringRules =
-        ref.watch(recurringRulesProvider).valueOrNull ?? const [];
-    final activeRecurring = recurringRules.where((r) => r.isActive).toList()
-      ..sort((a, b) => a.nextDueDate.compareTo(b.nextDueDate));
-    final nearestRecurring = activeRecurring.isEmpty
-        ? null
-        : activeRecurring.first;
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
     final categoryById = {for (final c in categories) c.id: c};
 
     return Scaffold(
-      appBar: const HomeHeader(),
+      backgroundColor: context.background,
+      appBar: const AppHeader(mode: AppHeaderMode.home),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddExpenseSheet(context),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
-        child: const Icon(AppIcons.plus, size: 28),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.black
+            : Colors.white,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.smPlus,
-          AppSpacing.md,
+          AppSpacing.sm,
           AppSpacing.smPlus,
-          96,
+          28,
         ),
         children: [
           summary.when(
@@ -72,103 +77,74 @@ class HomePage extends ConsumerWidget {
               onTap: () => context.push('/transactions'),
             ),
             loading: () => const SizedBox(
-              height: 260,
+              height: 190,
               child: Center(
                 child: SizedBox(
-                  width: 26,
-                  height: 26,
+                  width: 24,
+                  height: 24,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
             ),
-            error: (e, _) => Text('Failed to load: $e'),
+            error: (e, _) => SizedBox(
+              height: 190,
+              child: Center(child: Text('Failed to load: $e')),
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 18),
           Row(
             children: [
               Expanded(
-                child: _StatTile(
+                child: _MetricCard(
                   title: "TODAY'S SPEND",
-                  amount: Formatters.currency(todaySpent),
+                  icon: AppIcons.analytics,
+                  accent: context.homeAccentGreen,
+                  amount: todaySpent,
                   note: todayComparison.label,
                   noteColor: todayComparison.color,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
-                child: _StatTile(
+                child: _RemainingCard(
                   title: 'REMAINING',
-                  amount: Formatters.currency(
-                      summary.valueOrNull?.remainingBudget ?? 0),
+                  accent: context.homeAccentPurple,
+                  amount: summary.valueOrNull?.remainingBudget ?? 0,
                   note: () {
                     final data = summary.valueOrNull;
                     if (data == null) return '';
                     return 'of ${Formatters.currency(data.remainingBudget + data.monthlyExpense)} limit';
                   }(),
-                  active: true,
-                  noteColor: const Color(0xFF3DD07B),
+                  percent: () {
+                    final data = summary.valueOrNull;
+                    if (data == null) return 0;
+                    final budget = data.remainingBudget + data.monthlyExpense;
+                    if (budget <= 0) return 0;
+                    return (data.remainingBudget / budget * 100)
+                        .clamp(0, 100)
+                        .round();
+                  }(),
                 ),
               ),
             ],
           ),
-          () {
-            final data = summary.valueOrNull;
-            if (data == null || data.monthlyInvestment <= 0) return const SizedBox(height: 28);
-            final income = data.monthlyIncome > 0 ? data.monthlyIncome : 1;
-            final pct = (data.monthlyInvestment / income * 100).toStringAsFixed(0);
-            return Column(
-              children: [
-                const SizedBox(height: 16),
-                Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: context.surface,
-                      border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(AppRadii.md),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          'INVESTED',
-                        style: AppTypography.metadata(context).copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        Formatters.currency(data.monthlyInvestment),
-                        style: const TextStyle(
-                          color: Color(0xFF8B5CF6),
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.4)),
-                            borderRadius: BorderRadius.circular(AppRadii.sm),
-                          ),
-                          child: Text(
-                            '$pct% of income',
-                          style: const TextStyle(
-                            color: Color(0xFF8B5CF6),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          const SizedBox(height: 18),
+          summary.when(
+            data: (data) {
+              if (data.monthlyInvestment <= 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _InvestmentCard(
+                  amount: data.monthlyInvestment,
+                  income: data.monthlyIncome,
                 ),
-                const SizedBox(height: 28),
-              ],
-            );
-          }(),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
           lendOverview.when(
-            data: (lend) => _LendQuickCard(
+            data: (lend) => _LendBorrowCard(
               toReceive: lend.totalToReceive,
               toPay: lend.totalToPay,
               openPeople: lend.peopleBalances
@@ -179,89 +155,69 @@ class HomePage extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
-              if (activeRecurring.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            InkWell(
-              onTap: () => context.push('/recurring'),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
+          const SizedBox(height: 18),
+          recurringRules.when(
+            data: (rules) {
+              final active = rules.where((r) => r.isActive).toList();
+              if (active.isEmpty) return const SizedBox.shrink();
+              final total = active.fold<double>(
+                0, (sum, r) => sum + r.amount);
+              final nextRule = active.reduce(
+                (a, b) => a.nextDueDate.isBefore(b.nextDueDate) ? a : b);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: _RecurringBanner(
+                  count: active.length,
+                  total: total,
+                  nextTitle: nextRule.title,
+                  nextDueDate: nextRule.nextDueDate,
+                  onTap: () => context.push('/recurring'),
                 ),
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.md),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      AppIcons.repeat,
-                      size: 16,
-                      color: AppIcons.getColorForIcon(AppIcons.repeat, brightness: Theme.of(context).brightness),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _recurringSummaryText(
-                          activeRecurring.length,
-                          nearestRecurring,
-                        ),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const Icon(AppIcons.chevronRight, size: 16),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Recent Transactions',
-                  style: AppTypography.sectionTitle(context),
-                ),
-              ),
-              TextButton(
-                onPressed: () => context.push('/transactions'),
-                child: const Text('View all'),
-              ),
-            ],
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
-          Divider(height: 28, color: context.border),
+          _SectionHeader(
+            title: 'Recent Transactions',
+            onTap: () => context.push('/transactions'),
+          ),
+          const SizedBox(height: 14),
           recent.when(
             data: (items) {
               if (items.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Text('No transactions yet'),
-                );
+                return const _EmptyTransactionsCard();
               }
-              return Column(
-                children: items
-                    .map(
-                      (tx) => _TransactionRow(
-                        title:
-                            categoryById[tx.categoryId]?.name ?? tx.categoryId,
-                        subtitle: _subtitle(tx),
-                        amount: tx.amount,
-                        type: tx.type,
+              return HomeSurfaceCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < items.length; i++)
+                      TransactionRow(
+                        title: items[i].note?.trim().isNotEmpty == true
+                            ? items[i].note!.trim()
+                            : (categoryById[items[i].categoryId]?.name ??
+                                  items[i].categoryId),
+                        subtitle:
+                            categoryById[items[i].categoryId]?.name ??
+                            items[i].categoryId,
+                        amount: items[i].amount,
+                        type: items[i].type,
+                        isLast: i == items.length - 1,
+                        dateLabel: _dateLabel(items[i]),
                         icon: _iconFor(
-                          categoryById[tx.categoryId]?.name ?? tx.categoryId,
+                          categoryById[items[i].categoryId]?.name ??
+                              items[i].categoryId,
                         ),
                         iconColor: _categoryIconColor(
-                          categoryById[tx.categoryId],
-                          tx.type,
+                          categoryById[items[i].categoryId],
+                          items[i].type,
                         ),
+                        paymentMode: items[i].paymentMode,
+                        cardType: items[i].cardType,
                       ),
-                    )
-                    .toList(growable: false),
+                  ],
+                ),
               );
             },
             loading: () => const Padding(
@@ -296,21 +252,13 @@ class HomePage extends ConsumerWidget {
     }
   }
 
-  static String _subtitle(dynamic tx) {
+  static String _dateLabel(dynamic tx) {
     final now = DateTime.now();
     final d = tx.date as DateTime;
     if (d.year == now.year && d.month == now.month && d.day == now.day) {
       return 'Today, ${DateFormat('h:mm a').format(d)}';
     }
     return Formatters.date(d);
-  }
-
-  static String _recurringSummaryText(int activeCount, dynamic nearest) {
-    if (nearest == null) {
-      return '$activeCount active recurring transactions';
-    }
-    final due = Formatters.date(nearest.nextDueDate);
-    return '$activeCount recurring transactions • Next: ${nearest.title} on $due';
   }
 
   static _SpendComparison _todayComparison(double today, double yesterday) {
@@ -357,126 +305,327 @@ class _SpendComparison {
   final Color color;
 }
 
-class _StatTile extends StatelessWidget {
-  const _StatTile({
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, required this.onTap});
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            title,
+            style: AppTypography.sectionTitle(context).copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: onTap,
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text('View all', style: TextStyle(fontSize: 13)),
+              SizedBox(width: 4),
+              Icon(AppIcons.chevronRight, size: 16),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({
     required this.title,
+    required this.icon,
+    required this.accent,
     required this.amount,
     required this.note,
-    this.active = false,
-    this.noteColor = const Color(0xFFA3A3A3),
+    required this.noteColor,
   });
 
   final String title;
-  final String amount;
+  final IconData icon;
+  final Color accent;
+  final double amount;
   final String note;
-  final bool active;
   final Color noteColor;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 208,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: context.surface,
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (active)
-            Divider(height: 0, thickness: 2, color: context.textPrimary),
-          if (active) const SizedBox(height: 10),
-          Text(
-            title,
-            style: AppTypography.metadata(context).copyWith(height: 1.25),
-          ),
-          const Spacer(),
-          Text(amount, style: AppTypography.amount(context, fontSize: 18)),
-          const SizedBox(height: 8),
-          Text(
-            note,
-            style: TextStyle(color: noteColor, fontSize: 13, height: 1.3),
-          ),
-        ],
+    return HomeSurfaceCard(
+      borderRadius: AppRadii.card,
+      topAccent: accent,
+      child: SizedBox(
+        height: 170,
+        child: Stack(
+          children: [
+            Positioned(
+              right: -15,
+              bottom: -20,
+              child: IgnorePointer(
+                child: Icon(
+                  Icons.wallet_outlined,
+                  size: 100,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFE0E0E3),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TitleChip(icon: icon, title: title, tint: accent),
+                  const Spacer(),
+                  AmountView(
+                    amount,
+                    style: AppTypography.amount(
+                      context,
+                      fontSize: 20,
+                      color: context.textPrimary,
+                    ).copyWith(letterSpacing: -0.5),
+                    maskColor: context.textPrimary,
+                    maskWidth: 7,
+                    maskHeight: 20,
+                    maskSpacing: 3,
+                    maskRadius: 0,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    note,
+                    style: TextStyle(
+                      color: noteColor,
+                      fontSize: 13,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _TransactionRow extends StatelessWidget {
-  const _TransactionRow({
+class _RemainingCard extends StatelessWidget {
+  const _RemainingCard({
     required this.title,
-    required this.subtitle,
+    required this.accent,
     required this.amount,
-    required this.type,
-    required this.icon,
-    required this.iconColor,
+    required this.note,
+    required this.percent,
   });
 
   final String title;
-  final String subtitle;
+  final Color accent;
   final double amount;
-  final TransactionType type;
-  final IconData icon;
-  final Color iconColor;
+  final String note;
+  final int percent;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: context.border)),
-      ),
-      child: Row(
-        children: [
-            Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: context.surfaceAlt,
-              borderRadius: BorderRadius.circular(AppRadii.md),
-            ),
-            child: Icon(icon, size: 20, color: iconColor),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTypography.rowTitle(context)),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: 13,
+    return HomeSurfaceCard(
+      borderRadius: AppRadii.card,
+      topAccent: accent,
+      child: SizedBox(
+        height: 170,
+        child: Stack(
+          children: [
+            Positioned(
+              right: -15,
+              bottom: -20,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.35,
+                  child: SizedBox(
+                    width: 90,
+                    height: 90,
+                    child: _RingIndicator(value: percent, accent: accent),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-          Text(
-            _amountWithSign(amount, type),
-            style: AppTypography.amount(
-              context,
-              fontSize: 20,
-              color: type == TransactionType.income
-                  ? const Color(0xFF3DD07B)
-                  : type == TransactionType.investment
-                      ? const Color(0xFF8B5CF6)
-                      : context.textPrimary,
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _TitleChip(
+                    icon: AppIcons.budget,
+                    title: 'REMAINING',
+                    tint: AppColors.homeAccentPurple,
+                  ),
+                  const Spacer(),
+                  AmountView(
+                    amount,
+                    style: AppTypography.amount(
+                      context,
+                      fontSize: 20,
+                      color: context.textPrimary,
+                    ).copyWith(letterSpacing: -0.5),
+                    maskColor: context.textPrimary,
+                    maskWidth: 7,
+                    maskHeight: 20,
+                    maskSpacing: 3,
+                    maskRadius: 0,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    note,
+                    style: TextStyle(
+                      color: context.homeAccentGreen,
+                      fontSize: 13,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _LendQuickCard extends StatelessWidget {
-  const _LendQuickCard({
+class _TitleChip extends StatelessWidget {
+  const _TitleChip({
+    required this.icon,
+    required this.title,
+    required this.tint,
+  });
+
+  final IconData icon;
+  final String title;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: tint.withValues(alpha: 0.16),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: tint, size: 18),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: TextStyle(
+            color: context.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RingIndicator extends StatelessWidget {
+  const _RingIndicator({required this.value, required this.accent});
+
+  final int value;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: CustomPaint(
+        painter: _RingPainter(
+          value: value,
+          accent: accent,
+          trackColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2C2C2E)
+              : const Color(0xFFE0E0E3),
+        ),
+        child: Center(
+          child: Text(
+            '$value%',
+            style: TextStyle(
+              color: accent,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  const _RingPainter({
+    required this.value,
+    required this.accent,
+    required this.trackColor,
+  });
+
+  final int value;
+  final Color accent;
+  final Color trackColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.shortestSide - 10) / 2;
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..strokeCap = StrokeCap.round
+      ..color = trackColor;
+
+    final valuePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..strokeCap = StrokeCap.round
+      ..color = accent;
+
+    canvas.drawCircle(center, radius, basePaint);
+    final sweep = (value.clamp(0, 100) / 100) * 2 * 3.1415926535897932;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5707963267948966,
+      sweep,
+      false,
+      valuePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter oldDelegate) {
+    return oldDelegate.value != value ||
+        oldDelegate.accent != accent ||
+        oldDelegate.trackColor != trackColor;
+  }
+}
+
+class _LendBorrowCard extends StatelessWidget {
+  const _LendBorrowCard({
     required this.toReceive,
     required this.toPay,
     required this.openPeople,
@@ -490,99 +639,142 @@ class _LendQuickCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final greenBg = isDark
+        ? const Color(0xFF121C14)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.06);
+    final greenBorder = isDark
+        ? const Color(0xFF1B3420)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.15);
+    final greenIconBg = isDark
+        ? const Color(0xFF17311F)
+        : AppColors.homeAccentGreen.withValues(alpha: 0.12);
+
+    final redBg = isDark
+        ? const Color(0xFF1A1314)
+        : AppColors.homeAccentRed.withValues(alpha: 0.06);
+    final redBorder = isDark
+        ? const Color(0xFF352224)
+        : AppColors.homeAccentRed.withValues(alpha: 0.15);
+    final redIconBg = isDark
+        ? const Color(0xFF332122)
+        : AppColors.homeAccentRed.withValues(alpha: 0.12);
+
+    return HomeSurfaceCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.surface,
-          border: Border.all(color: context.border),
-          borderRadius: BorderRadius.circular(AppRadii.md),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  AppIcons.money,
-                  size: 16,
-                  color: AppIcons.getColorForIcon(AppIcons.money, brightness: Theme.of(context).brightness),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'LEND & BORROW',
-                  style: AppTypography.metadata(
-                    context,
-                  ).copyWith(color: context.textSecondary),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _LendMetric(
-                    label: 'You Receive',
-                    value: Formatters.currency(toReceive),
-                    valueColor: const Color(0xFF3DD07B),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _LendMetric(
-                    label: 'You Owe',
-                    value: Formatters.currency(toPay),
-                    valueColor: const Color(0xFFF55C5C),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '$openPeople active people - Tap to open',
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LendMetric extends StatelessWidget {
-  const _LendMetric({
-    required this.label,
-    required this.value,
-    required this.valueColor,
-  });
-
-  final String label;
-  final String value;
-  final Color valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-      ),
+      borderRadius: AppRadii.card,
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: context.textSecondary),
+          Row(
+            children: [
+              _SectionIconChip(
+                icon: AppIcons.money,
+                tint: context.homeAccentGreen,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'LEND & BORROW',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'View all',
+                style: TextStyle(color: context.textSecondary, fontSize: 13),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                AppIcons.chevronRight,
+                size: 16,
+                color: context.textSecondary,
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTypography.amount(
-              context,
-              fontSize: 16,
-              color: valueColor,
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniMetricCard(
+                  title: 'You Receive',
+                  amount: toReceive,
+                  tint: AppColors.homeAccentGreen,
+                  icon: AppIcons.download,
+                  backgroundColor: greenBg,
+                  borderColor: greenBorder,
+                  iconBackgroundColor: greenIconBg,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MiniMetricCard(
+                  title: 'You Owe',
+                  amount: toPay,
+                  tint: AppColors.homeAccentRed,
+                  icon: AppIcons.upload,
+                  backgroundColor: redBg,
+                  borderColor: redBorder,
+                  iconBackgroundColor: redIconBg,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: context.surface,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: context.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: context.border.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  child: Icon(
+                    AppIcons.usersRound,
+                    color: context.homeAccentGreen,
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$openPeople active people',
+                        style: TextStyle(
+                          color: context.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        'Tap to open',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -591,12 +783,411 @@ class _LendMetric extends StatelessWidget {
   }
 }
 
-String _amountWithSign(double amount, TransactionType type) {
-  if (type == TransactionType.income) {
-    return '+${Formatters.currency(amount)}';
+class _SectionIconChip extends StatelessWidget {
+  const _SectionIconChip({required this.icon, required this.tint});
+
+  final IconData icon;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(icon, color: tint, size: 20),
+    );
   }
-  if (type == TransactionType.investment && amount < 0) {
-    return '+${Formatters.currency(amount.abs())}';
+}
+
+class _MiniMetricCard extends StatelessWidget {
+  const _MiniMetricCard({
+    required this.title,
+    required this.amount,
+    required this.tint,
+    required this.icon,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.iconBackgroundColor,
+  });
+
+  final String title;
+  final double amount;
+  final Color tint;
+  final IconData icon;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Color iconBackgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 70,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+              width: 36,
+              height: 36,
+            decoration: BoxDecoration(
+              color: iconBackgroundColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: tint, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                AmountView(
+                  amount,
+                  style: TextStyle(
+                    color: tint,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                  maskColor: tint,
+                  maskWidth: 6,
+                  maskHeight: 16,
+                  maskSpacing: 3,
+                  maskRadius: 0,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  return '-${Formatters.currency(amount.abs())}';
+}
+
+class _EmptyTransactionsCard extends StatelessWidget {
+  const _EmptyTransactionsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return HomeSurfaceCard(
+      borderRadius: AppRadii.card,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: SizedBox(
+        height: 170,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(child: const _EmptyTransactionIllustration()),
+            const SizedBox(height: 14),
+            Text(
+              'No transactions yet',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Your recent transactions will appear here',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyTransactionIllustration extends StatelessWidget {
+  const _EmptyTransactionIllustration();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 88,
+      height: 72,
+      child: CustomPaint(
+        painter: _ReceiptIllustrationPainter(
+          borderColor: context.border.withValues(alpha: 0.5),
+          surfaceColor: context.surface,
+          surfaceAltColor: context.surfaceAlt,
+          iconColor: context.textSecondary.withValues(alpha: 0.3),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReceiptIllustrationPainter extends CustomPainter {
+  _ReceiptIllustrationPainter({
+    required this.borderColor,
+    required this.surfaceColor,
+    required this.surfaceAltColor,
+    required this.iconColor,
+  });
+
+  final Color borderColor;
+  final Color surfaceColor;
+  final Color surfaceAltColor;
+  final Color iconColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(14, 18, 58, 42),
+      const Radius.circular(10),
+    );
+    final paint = Paint()
+      ..color = surfaceAltColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect, paint);
+
+    final paintBorder = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    canvas.drawRRect(rrect, paintBorder);
+
+    final rrect2 = RRect.fromRectAndRadius(
+      Rect.fromLTWH(18, 24, 58, 42),
+      const Radius.circular(10),
+    );
+    final paint2 = Paint()
+      ..color = surfaceColor
+      ..style = PaintingStyle.fill;
+    canvas.drawRRect(rrect2, paint2);
+
+    canvas.drawRRect(rrect2, paintBorder);
+
+    final paintLine = Paint()
+      ..color = iconColor
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 34, 34, 3),
+        const Radius.circular(2),
+      ),
+      paintLine,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 42, 22, 3),
+        const Radius.circular(2),
+      ),
+      paintLine..color = iconColor,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(30, 50, 12, 3),
+        const Radius.circular(2),
+      ),
+      paintLine..color = iconColor,
+    );
+
+    canvas.save();
+    canvas.translate(8, 12);
+    canvas.rotate(0.08);
+    final rrect3 = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, 32, 22),
+      const Radius.circular(6),
+    );
+    canvas.drawRRect(rrect3, paint..color = surfaceAltColor);
+    canvas.drawRRect(rrect3, paintBorder);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_ReceiptIllustrationPainter oldDelegate) =>
+      oldDelegate.borderColor != borderColor ||
+      oldDelegate.surfaceColor != surfaceColor ||
+      oldDelegate.surfaceAltColor != surfaceAltColor ||
+      oldDelegate.iconColor != iconColor;
+}
+
+class _RecurringBanner extends StatelessWidget {
+  const _RecurringBanner({
+    required this.count,
+    required this.total,
+    required this.nextTitle,
+    required this.nextDueDate,
+    required this.onTap,
+  });
+
+  final int count;
+  final double total;
+  final String nextTitle;
+  final DateTime nextDueDate;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return HomeSurfaceCard(
+      onTap: onTap,
+      borderRadius: AppRadii.lg,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          _SectionIconChip(
+            icon: AppIcons.repeat,
+            tint: context.homeAccentPurple,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  count == 1 ? '1 recurring txn' : '$count recurring txns',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Next: $nextTitle on ${Formatters.date(nextDueDate)}',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(
+            AppIcons.chevronRight,
+            size: 16,
+            color: context.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvestmentCard extends StatelessWidget {
+  const _InvestmentCard({
+    required this.amount,
+    required this.income,
+  });
+
+  final double amount;
+  final double income;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = income > 0 ? (amount / income * 100) : 0.0;
+    final pctDisplay = '${pct.round()}% of income';
+
+    return HomeSurfaceCard(
+      borderRadius: AppRadii.lg,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  AppIcons.trendingUp,
+                  color: Color(0xFF8B5CF6),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'INVESTMENT',
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  pctDisplay,
+                  style: const TextStyle(
+                    color: Color(0xFF8B5CF6),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          AmountView(
+            amount,
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+            ),
+            maskColor: context.textPrimary,
+            maskWidth: 8,
+            maskHeight: 22,
+            maskSpacing: 4,
+            maskRadius: 0,
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: income > 0 ? (amount / income).clamp(0, 1) : 0,
+              backgroundColor: context.border.withValues(alpha: 0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF8B5CF6),
+              ),
+              minHeight: 4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
