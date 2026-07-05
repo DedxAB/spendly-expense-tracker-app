@@ -10,6 +10,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/utils/money.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
@@ -111,23 +112,22 @@ class BudgetPage extends ConsumerWidget {
                     ),
                   ),
                 const SizedBox(height: 10),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: context.textPrimary),
-                    children: [
-                      TextSpan(
-                        text: Formatters.currency(monthlySpend),
-                        style: AppTypography.amount(context),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    AmountView(
+                      monthlySpend,
+                      style: AppTypography.amount(context),
+                      maskColor: context.textPrimary,
+                    ),
+                    Text(
+                      ' / ${Formatters.currency(budget)}',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: context.textSecondary,
                       ),
-                      TextSpan(
-                        text: ' / ${Formatters.currency(budget)}',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: context.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 LinearProgressIndicator(
@@ -165,16 +165,34 @@ class BudgetPage extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            '${safePerDay >= 0 ? Formatters.currency(safePerDay) : '-${Formatters.currency(safePerDay.abs())}'} / day',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: safePerDay >= 0
-                                  ? const Color(0xFF3DD07B)
-                                  : const Color(0xFFFF8A7A),
-                              height: 1,
-                            ),
+                          Row(
+                            children: [
+                              AmountView(
+                                safePerDay.abs(),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: safePerDay >= 0
+                                      ? const Color(0xFF3DD07B)
+                                      : const Color(0xFFFF8A7A),
+                                  height: 1,
+                                ),
+                                maskColor: safePerDay >= 0
+                                    ? const Color(0xFF3DD07B)
+                                    : const Color(0xFFFF8A7A),
+                              ),
+                              Text(
+                                ' / day',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: safePerDay >= 0
+                                      ? const Color(0xFF3DD07B)
+                                      : const Color(0xFFFF8A7A),
+                                  height: 1,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -561,13 +579,43 @@ class _BudgetCategoryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 2),
-          Text(
-            '${Formatters.currency(spend)} / ${Formatters.currency(allocated)}',
-            style: TextStyle(
-              color: overBudget
-                  ? const Color(0xFFFF8A7A)
-                  : context.textPrimary,
-            ),
+          Row(
+            children: [
+              AmountView(
+                spend,
+                style: TextStyle(
+                  color: overBudget
+                      ? const Color(0xFFFF8A7A)
+                      : context.textPrimary,
+                ),
+                maskColor: overBudget
+                    ? const Color(0xFFFF8A7A)
+                    : context.textPrimary,
+                maskWidth: 5,
+                maskHeight: 14,
+              ),
+              Text(
+                ' / ',
+                style: TextStyle(
+                  color: overBudget
+                      ? const Color(0xFFFF8A7A)
+                      : context.textPrimary,
+                ),
+              ),
+              AmountView(
+                allocated,
+                style: TextStyle(
+                  color: overBudget
+                      ? const Color(0xFFFF8A7A)
+                      : context.textPrimary,
+                ),
+                maskColor: overBudget
+                    ? const Color(0xFFFF8A7A)
+                    : context.textPrimary,
+                maskWidth: 5,
+                maskHeight: 14,
+              ),
+            ],
           ),
           const SizedBox(height: 18),
           LinearProgressIndicator(
@@ -581,13 +629,32 @@ class _BudgetCategoryCard extends StatelessWidget {
             children: [
               Text('${(ratio * 100).toStringAsFixed(0)}%'),
               const Spacer(),
-              Text(
-                '${remaining >= 0 ? Formatters.currency(remaining) : '-${Formatters.currency(remaining.abs())}'} ${remaining >= 0 ? 'Left' : 'Over'}',
-                style: TextStyle(
-                  color: overBudget
-                      ? const Color(0xFFFF8A7A)
-                      : context.textSecondary,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AmountView(
+                    remaining.abs(),
+                    style: TextStyle(
+                      color: overBudget
+                          ? const Color(0xFFFF8A7A)
+                          : context.textSecondary,
+                    ),
+                    maskColor: overBudget
+                        ? const Color(0xFFFF8A7A)
+                        : context.textSecondary,
+                    maskWidth: 5,
+                    maskHeight: 14,
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    remaining >= 0 ? 'Left' : 'Over',
+                    style: TextStyle(
+                      color: overBudget
+                          ? const Color(0xFFFF8A7A)
+                          : context.textSecondary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

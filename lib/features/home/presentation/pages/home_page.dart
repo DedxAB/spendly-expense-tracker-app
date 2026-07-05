@@ -8,6 +8,7 @@ import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
@@ -98,7 +99,7 @@ class HomePage extends ConsumerWidget {
                   title: "TODAY'S SPEND",
                   icon: AppIcons.analytics,
                   accent: context.homeAccentGreen,
-                  value: Formatters.currency(todaySpent),
+                  amount: todaySpent,
                   note: todayComparison.label,
                   noteColor: todayComparison.color,
                 ),
@@ -108,9 +109,7 @@ class HomePage extends ConsumerWidget {
                 child: _RemainingCard(
                   title: 'REMAINING',
                   accent: context.homeAccentPurple,
-                  value: Formatters.currency(
-                    summary.valueOrNull?.remainingBudget ?? 0,
-                  ),
+                  amount: summary.valueOrNull?.remainingBudget ?? 0,
                   note: () {
                     final data = summary.valueOrNull;
                     if (data == null) return '';
@@ -352,7 +351,7 @@ class _MetricCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.accent,
-    required this.value,
+    required this.amount,
     required this.note,
     required this.noteColor,
   });
@@ -360,7 +359,7 @@ class _MetricCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Color accent;
-  final String value;
+  final double amount;
   final String note;
   final Color noteColor;
 
@@ -393,13 +392,18 @@ class _MetricCard extends StatelessWidget {
                 children: [
                   _TitleChip(icon: icon, title: title, tint: accent),
                   const Spacer(),
-                  Text(
-                    value,
+                  AmountView(
+                    amount,
                     style: AppTypography.amount(
                       context,
                       fontSize: 20,
                       color: context.textPrimary,
                     ).copyWith(letterSpacing: -0.5),
+                    maskColor: context.textPrimary,
+                    maskWidth: 7,
+                    maskHeight: 20,
+                    maskSpacing: 3,
+                    maskRadius: 0,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -424,14 +428,14 @@ class _RemainingCard extends StatelessWidget {
   const _RemainingCard({
     required this.title,
     required this.accent,
-    required this.value,
+    required this.amount,
     required this.note,
     required this.percent,
   });
 
   final String title;
   final Color accent;
-  final String value;
+  final double amount;
   final String note;
   final int percent;
 
@@ -469,13 +473,18 @@ class _RemainingCard extends StatelessWidget {
                     tint: AppColors.homeAccentPurple,
                   ),
                   const Spacer(),
-                  Text(
-                    value,
+                  AmountView(
+                    amount,
                     style: AppTypography.amount(
                       context,
                       fontSize: 20,
                       color: context.textPrimary,
                     ).copyWith(letterSpacing: -0.5),
+                    maskColor: context.textPrimary,
+                    maskWidth: 7,
+                    maskHeight: 20,
+                    maskSpacing: 3,
+                    maskRadius: 0,
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -694,7 +703,7 @@ class _LendBorrowCard extends StatelessWidget {
               Expanded(
                 child: _MiniMetricCard(
                   title: 'You Receive',
-                  value: Formatters.currency(toReceive),
+                  amount: toReceive,
                   tint: AppColors.homeAccentGreen,
                   icon: AppIcons.download,
                   backgroundColor: greenBg,
@@ -706,7 +715,7 @@ class _LendBorrowCard extends StatelessWidget {
               Expanded(
                 child: _MiniMetricCard(
                   title: 'You Owe',
-                  value: Formatters.currency(toPay),
+                  amount: toPay,
                   tint: AppColors.homeAccentRed,
                   icon: AppIcons.upload,
                   backgroundColor: redBg,
@@ -797,7 +806,7 @@ class _SectionIconChip extends StatelessWidget {
 class _MiniMetricCard extends StatelessWidget {
   const _MiniMetricCard({
     required this.title,
-    required this.value,
+    required this.amount,
     required this.tint,
     required this.icon,
     required this.backgroundColor,
@@ -806,7 +815,7 @@ class _MiniMetricCard extends StatelessWidget {
   });
 
   final String title;
-  final String value;
+  final double amount;
   final Color tint;
   final IconData icon;
   final Color backgroundColor;
@@ -849,14 +858,19 @@ class _MiniMetricCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  value,
+                AmountView(
+                  amount,
                   style: TextStyle(
                     color: tint,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
                   ),
+                  maskColor: tint,
+                  maskWidth: 6,
+                  maskHeight: 16,
+                  maskSpacing: 3,
+                  maskRadius: 0,
                 ),
               ],
             ),
@@ -1146,14 +1160,19 @@ class _InvestmentCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            Formatters.currency(amount),
+          AmountView(
+            amount,
             style: TextStyle(
               color: context.textPrimary,
               fontSize: 22,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
+            maskColor: context.textPrimary,
+            maskWidth: 8,
+            maskHeight: 22,
+            maskSpacing: 4,
+            maskRadius: 0,
           ),
           const SizedBox(height: 6),
           ClipRRect(

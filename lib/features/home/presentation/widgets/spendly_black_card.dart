@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
-import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
 
 class SpendlyBlackCard extends StatelessWidget {
@@ -97,30 +97,25 @@ class SpendlyBlackCard extends StatelessWidget {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              showValues
-                                  ? FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        Formatters.currency(balance),
-                                        style: TextStyle(
-                                          color: context.textPrimary,
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: -1.1,
-                                          height: 1,
-                                        ),
-                                      ),
-                                    )
-                                  : Text(
-                                      '******',
-                                      style: TextStyle(
-                                        color: context.textPrimary,
-                                        fontSize: 34,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 4,
-                                      ),
-                                    ),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: AmountView(
+                                  balance,
+                                  style: TextStyle(
+                                    color: context.textPrimary,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -1.1,
+                                    height: 1,
+                                  ),
+                                  maskColor: context.textPrimary,
+                                  maskWidth: 7,
+                                  maskHeight: 22,
+                                  maskSpacing: 4,
+                                  maskRadius: 0,
+                                ),
+                              ),
                             ],
                           ),
                         ],

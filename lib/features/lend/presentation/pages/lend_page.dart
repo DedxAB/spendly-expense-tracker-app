@@ -5,7 +5,7 @@ import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
-import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
@@ -106,7 +106,7 @@ class LendPage extends ConsumerWidget {
                         Expanded(
                           child: _SummaryMetric(
                             label: 'You Will Receive',
-                            value: Formatters.currency(data.totalToReceive),
+                            amountValue: data.totalToReceive,
                             color: AppColors.income,
                           ),
                         ),
@@ -114,7 +114,7 @@ class LendPage extends ConsumerWidget {
                         Expanded(
                           child: _SummaryMetric(
                             label: 'You Owe',
-                            value: Formatters.currency(data.totalToPay),
+                            amountValue: data.totalToPay,
                             color: AppColors.expense,
                           ),
                         ),
@@ -266,15 +266,37 @@ class LendPage extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              '${item.netBalance >= 0 ? '+' : '-'}${Formatters.currency(item.netBalance.abs())}',
-                              style: TextStyle(
-                                color: isPositive
-                                    ? AppColors.income
-                                    : AppColors.expense,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  item.netBalance >= 0 ? '+' : '-',
+                                  style: TextStyle(
+                                    color: isPositive
+                                        ? AppColors.income
+                                        : AppColors.expense,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                AmountView(
+                                  item.netBalance.abs(),
+                                  style: TextStyle(
+                                    color: isPositive
+                                        ? AppColors.income
+                                        : AppColors.expense,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 16,
+                                  ),
+                                  maskColor: isPositive
+                                      ? AppColors.income
+                                      : AppColors.expense,
+                                  maskWidth: 5,
+                                  maskHeight: 16,
+                                  maskSpacing: 2,
+                                  maskRadius: 0,
+                                ),
+                              ],
                             ),
                             const SizedBox(width: 4),
                             Icon(
@@ -313,12 +335,12 @@ class LendPage extends ConsumerWidget {
 class _SummaryMetric extends StatelessWidget {
   const _SummaryMetric({
     required this.label,
-    required this.value,
+    required this.amountValue,
     required this.color,
   });
 
   final String label;
-  final String value;
+  final double amountValue;
   final Color color;
 
   @override
@@ -334,13 +356,18 @@ class _SummaryMetric extends StatelessWidget {
         children: [
           Text(label, style: Theme.of(context).textTheme.labelMedium),
           const SizedBox(height: 6),
-          Text(
-            value,
+          AmountView(
+            amountValue,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w800,
               fontSize: 18,
             ),
+            maskColor: color,
+            maskWidth: 6,
+            maskHeight: 18,
+            maskSpacing: 3,
+            maskRadius: 0,
           ),
         ],
       ),

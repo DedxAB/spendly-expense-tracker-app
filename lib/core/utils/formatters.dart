@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_constants.dart';
-import 'package:spendly/core/utils/amount_visibility.dart';
-
 class Formatters {
   static final NumberFormat _inrFormat = NumberFormat.currency(
     locale: 'en_IN',
@@ -15,11 +13,7 @@ class Formatters {
 
   static String rawCurrency(num value) => _inrFormat.format(value);
 
-  static String currency(num value) {
-    final formatted = rawCurrency(value);
-    if (AmountVisibilityController.isVisible) return formatted;
-    return AmountVisibilityController.mask(formatted);
-  }
+  static String currency(num value) => rawCurrency(value);
 
   static String date(DateTime date) => _dateFormat.format(date);
 

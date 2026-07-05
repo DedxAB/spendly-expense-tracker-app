@@ -9,6 +9,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/app_header.dart';
@@ -425,8 +426,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           ),
                         ),
                         const Spacer(),
-                        Text(
-                          Formatters.currency(totalIncome),
+                        AmountView(
+                          totalIncome,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,

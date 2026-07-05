@@ -7,6 +7,7 @@ import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/app_header.dart';
@@ -522,8 +523,8 @@ class RecurringPage extends ConsumerWidget {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.end,
                                           children: [
-                                            Text(
-                                              Formatters.currency(item.amount),
+                                            AmountView(
+                                              item.amount,
                                               style: TextStyle(
                                                 color: context.textPrimary,
                                                 fontSize: 17,

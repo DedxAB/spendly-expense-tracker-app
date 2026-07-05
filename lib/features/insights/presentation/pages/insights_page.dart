@@ -16,6 +16,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/insights/domain/entities/expense_slice.dart';
 import 'package:spendly/features/insights/domain/entities/insight_point.dart';
@@ -819,8 +820,8 @@ class _CategoryWatch extends StatelessWidget {
                   const SizedBox(width: 10),
                   SizedBox(
                     width: 80,
-                    child: Text(
-                      Formatters.currency(slice.total),
+                    child: AmountView(
+                      slice.total,
                       textAlign: TextAlign.right,
                       style: TextStyle(
                         fontSize: 14,

@@ -6,6 +6,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/app_header.dart';
@@ -326,8 +327,8 @@ class GoalsPage extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      Formatters.currency(total),
+                    AmountView(
+                      total,
                       style: const TextStyle(
                         color: Color(0xFF8B5CF6),
                         fontSize: 17,
@@ -1019,8 +1020,8 @@ class _EmergencyFundCard extends StatelessWidget {
                   child: FittedBox(
                     alignment: Alignment.centerLeft,
                     fit: BoxFit.scaleDown,
-                    child: Text(
-                      Formatters.currency(emergency.currentAmount),
+                    child: AmountView(
+                      emergency.currentAmount,
                       maxLines: 1,
                       style: TextStyle(
                         color: context.textPrimary,
@@ -1173,8 +1174,8 @@ class _AggregateInsightCard extends StatelessWidget {
             style: AppTypography.sectionTitle(context),
           ),
           const SizedBox(height: 10),
-          Text(
-            Formatters.currency(totalSaved),
+          AmountView(
+            totalSaved,
             style: AppTypography.amount(context, fontSize: 30),
           ),
           const SizedBox(height: 2),

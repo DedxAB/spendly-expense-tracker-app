@@ -9,6 +9,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
@@ -925,8 +926,8 @@ class _EntryCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      Formatters.currency(amount),
+                    AmountView(
+                      amount,
                       style: TextStyle(
                         color: amountColor,
                         fontWeight: FontWeight.w800,

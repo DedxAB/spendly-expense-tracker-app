@@ -3,6 +3,7 @@ import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/amount_mask.dart';
 
 class TransactionRow extends StatelessWidget {
   const TransactionRow({
@@ -109,17 +110,14 @@ class TransactionRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                amountWithSign(amount, type),
-                style: AppTypography.amount(
-                  context,
-                  fontSize: 15,
-                  color: type == TransactionType.income
-                      ? context.homeAccentGreen
-                      : type == TransactionType.investment
-                      ? AppColors.homeAccentPurple
-                      : context.textPrimary,
-                ),
+              _AmountWithSign(
+                amount: amount,
+                type: type,
+                textColor: type == TransactionType.income
+                    ? context.homeAccentGreen
+                    : type == TransactionType.investment
+                    ? AppColors.homeAccentPurple
+                    : context.textPrimary,
               ),
               const SizedBox(height: 4),
               Text(
@@ -185,6 +183,51 @@ String amountWithSign(double amount, TransactionType type) {
     return '+${Formatters.currency(amount.abs())}';
   }
   return '-${Formatters.currency(amount.abs())}';
+}
+
+class _AmountWithSign extends StatelessWidget {
+  const _AmountWithSign({
+    required this.amount,
+    required this.type,
+    required this.textColor,
+  });
+
+  final double amount;
+  final TransactionType type;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = type == TransactionType.income ||
+        (type == TransactionType.investment && amount < 0);
+    final sign = isPositive ? '+' : '-';
+    final absAmount = amount.abs();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          sign,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(width: 1),
+        AmountView(
+          absAmount,
+          style: AppTypography.amount(context, fontSize: 15).copyWith(
+            color: textColor,
+          ),
+          maskColor: textColor,
+          maskWidth: 5,
+          maskHeight: 15,
+          maskSpacing: 2,
+          maskRadius: 0,
+        ),
+      ],
+    );
+  }
 }
 
 Color paymentModeTint(PaymentMode mode) {
