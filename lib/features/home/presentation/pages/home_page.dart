@@ -2,24 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
+import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
-import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
 import 'package:spendly/features/home/presentation/widgets/spendly_black_card.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 import 'package:spendly/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
-import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
 class HomePage extends ConsumerWidget {
@@ -113,10 +112,10 @@ class HomePage extends ConsumerWidget {
                   }(),
                   percent: () {
                     final data = summary.valueOrNull;
-                    if (data == null || data.monthlyIncome <= 0) {
-                      return 0;
-                    }
-                    return (data.monthlyExpense / data.monthlyIncome * 100)
+                    if (data == null) return 0;
+                    final budget = data.remainingBudget + data.monthlyExpense;
+                    if (budget <= 0) return 0;
+                    return (data.remainingBudget / budget * 100)
                         .clamp(0, 100)
                         .round();
                   }(),
@@ -333,13 +332,15 @@ class _MetricCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned(
-              right: -10,
-              bottom: -10,
+              right: -15,
+              bottom: -20,
               child: IgnorePointer(
-                  child: Icon(
-                    LucideIcons.walletCards100,
-                    size: 100,
-                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2E) : const Color(0xFFE0E0E3),
+                child: Icon(
+                  Icons.wallet_outlined,
+                  size: 100,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xFF2C2C2E)
+                      : const Color(0xFFE0E0E3),
                 ),
               ),
             ),
@@ -361,7 +362,11 @@ class _MetricCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     note,
-                    style: TextStyle(color: noteColor, fontSize: 13, height: 1.2),
+                    style: TextStyle(
+                      color: noteColor,
+                      fontSize: 13,
+                      height: 1.2,
+                    ),
                   ),
                 ],
               ),
@@ -398,14 +403,14 @@ class _RemainingCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned(
-              right: -10,
-              bottom: -10,
+              right: -15,
+              bottom: -20,
               child: IgnorePointer(
                 child: Opacity(
                   opacity: 0.35,
                   child: SizedBox(
-                    width: 100,
-                    height: 100,
+                    width: 90,
+                    height: 90,
                     child: _RingIndicator(value: percent, accent: accent),
                   ),
                 ),
@@ -497,13 +502,15 @@ class _RingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 66,
-      height: 66,
+      width: 90,
+      height: 90,
       child: CustomPaint(
         painter: _RingPainter(
           value: value,
           accent: accent,
-          trackColor: Theme.of(context).brightness == Brightness.dark ? const Color(0xFF2C2C2E) : const Color(0xFFE0E0E3),
+          trackColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF2C2C2E)
+              : const Color(0xFFE0E0E3),
         ),
         child: Center(
           child: Text(
@@ -537,13 +544,13 @@ class _RingPainter extends CustomPainter {
     final radius = (size.shortestSide - 10) / 2;
     final basePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
+      ..strokeWidth = 7
       ..strokeCap = StrokeCap.round
       ..color = trackColor;
 
     final valuePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
+      ..strokeWidth = 7
       ..strokeCap = StrokeCap.round
       ..color = accent;
 
@@ -777,8 +784,8 @@ class _MiniMetricCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40,
-            height: 40,
+              width: 36,
+              height: 36,
             decoration: BoxDecoration(
               color: iconBackgroundColor,
               borderRadius: BorderRadius.circular(10),
@@ -962,5 +969,3 @@ class _ReceiptIllustrationPainter extends CustomPainter {
       oldDelegate.surfaceAltColor != surfaceAltColor ||
       oldDelegate.iconColor != iconColor;
 }
-
-

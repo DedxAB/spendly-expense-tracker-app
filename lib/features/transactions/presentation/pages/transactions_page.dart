@@ -1148,7 +1148,7 @@ class _ActiveFilterBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surface,
         border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.card),
+        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
