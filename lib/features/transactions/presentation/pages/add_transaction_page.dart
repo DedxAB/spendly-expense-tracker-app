@@ -138,10 +138,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       isDeleted: false,
     );
 
+    final transactionActions = ref.read(transactionActionsProvider);
+
     if (widget.existing == null) {
-      await ref.read(transactionActionsProvider).save(entity);
+      await transactionActions.save(entity);
     } else {
-      await ref.read(transactionActionsProvider).update(entity);
+      await transactionActions.update(entity);
     }
 
     HapticFeedback.selectionClick();
@@ -160,7 +162,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       widget.existing == null ? 'Transaction added' : 'Transaction updated',
       actionLabel: widget.existing == null ? 'Undo' : null,
       onAction: widget.existing == null
-          ? () => ref.read(transactionActionsProvider).softDelete(entity.id)
+          ? () => transactionActions.softDelete(entity.id)
           : null,
     );
   }
@@ -190,13 +192,21 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     onSurface: Color(0xFF111111),
                   ),
             dialogTheme: DialogThemeData(
-              backgroundColor: isDark ? const Color(0xFF0E0E0E) : const Color(0xFFFFFFFF),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+              backgroundColor: isDark
+                  ? const Color(0xFF0E0E0E)
+                  : const Color(0xFFFFFFFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+              ),
             ),
-            datePickerTheme: isDark ? AppDatePickerTheme.darkBoxy() : AppDatePickerTheme.lightBoxy(),
+            datePickerTheme: isDark
+                ? AppDatePickerTheme.darkBoxy()
+                : AppDatePickerTheme.lightBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: isDark ? Colors.white : const Color(0xFF111111),
+                foregroundColor: isDark
+                    ? Colors.white
+                    : const Color(0xFF111111),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
@@ -303,13 +313,17 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  if (_formAttempted && (Money.tryParse(_amountController.text.trim()) == null ||
-                      Money.tryParse(_amountController.text.trim())! <= 0))
+                  if (_formAttempted &&
+                      (Money.tryParse(_amountController.text.trim()) == null ||
+                          Money.tryParse(_amountController.text.trim())! <= 0))
                     const Padding(
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Enter a valid amount',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: AppFontSizes.small),
+                        style: TextStyle(
+                          color: Color(0xFFF55C5C),
+                          fontSize: AppFontSizes.small,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 14),
@@ -362,7 +376,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Select a category',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: AppFontSizes.small),
+                        style: TextStyle(
+                          color: Color(0xFFF55C5C),
+                          fontSize: AppFontSizes.small,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 22),
@@ -437,7 +454,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     child: TextField(
                       controller: _noteController,
                       maxLines: 1,
-                      style: TextStyle(color: context.textPrimary, fontSize: AppFontSizes.title),
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: AppFontSizes.title,
+                      ),
                       decoration: InputDecoration(
                         filled: false,
                         enabledBorder: InputBorder.none,
@@ -598,36 +618,40 @@ class _AccountSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: selected == item.$1 ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected == item.$1
+                        ? context.textPrimary
+                        : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: selected == item.$1
+                          ? context.surface
+                          : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: AppFontSizes.body,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );
@@ -656,37 +680,37 @@ class _CardTypeSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = selected == item.$1;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            final isSelected = selected == item.$1;
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isSelected ? context.textPrimary : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: isSelected ? context.surface : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: AppFontSizes.body,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );
@@ -716,36 +740,40 @@ class _TypeSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: selected == item.$1 ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected == item.$1
+                        ? context.textPrimary
+                        : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: selected == item.$1
+                          ? context.surface
+                          : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: AppFontSizes.body,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );

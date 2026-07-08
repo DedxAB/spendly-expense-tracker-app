@@ -13,14 +13,11 @@ void showAppToast(
 }) {
   final overlay = Overlay.of(context);
   late OverlayEntry entry;
+  final brightness = Theme.of(context).brightness;
+  final isDark = brightness == Brightness.dark;
 
-  final bgColor = switch (style) {
-    AppToastStyle.success => AppColors.success,
-    AppToastStyle.error => AppColors.expense,
-    AppToastStyle.normal => const Color(0xFF1A1A1A),
-  };
-
-  final textColor = Colors.white;
+  final bgColor = isDark ? Colors.white : Colors.black;
+  final textColor = isDark ? Colors.black : Colors.white;
 
   entry = OverlayEntry(
     builder: (_) => _TopToast(
@@ -77,9 +74,10 @@ class _TopToastState extends State<_TopToast>
       begin: const Offset(0, -1),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    _fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _fade = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.forward();
 
@@ -100,57 +98,58 @@ class _TopToastState extends State<_TopToast>
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.topCenter,
-      child: SlideTransition(
-        position: _slide,
-        child: FadeTransition(
-          opacity: _fade,
-          child: Container(
-            color: widget.bgColor,
-            width: double.infinity,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.message,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: AppFontSizes.body,
-                        fontWeight: FontWeight.w500,
-                        height: 1.3,
+      child: SafeArea(
+        bottom: false,
+        child: SlideTransition(
+          position: _slide,
+          child: FadeTransition(
+            opacity: _fade,
+            child: Material(
+              color: widget.bgColor,
+              elevation: 10,
+              shadowColor: Colors.black.withValues(alpha: 0.24),
+              borderRadius: BorderRadius.zero,
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(minHeight: 52),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.message,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: widget.textColor,
+                          fontSize: AppFontSizes.body,
+                          fontWeight: FontWeight.w600,
+                          height: 1.15,
+                        ),
                       ),
                     ),
-                  ),
-                  if (widget.actionLabel != null) ...[
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () {
-                        widget.onAction?.call();
-                        _controller.reverse().then((_) => widget.onDismiss());
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(AppRadii.sm),
-                        ),
+                    if (widget.actionLabel != null) ...[
+                      const SizedBox(width: 12),
+                      GestureDetector(
+                        onTap: () {
+                          widget.onAction?.call();
+                          _controller.reverse().then((_) => widget.onDismiss());
+                        },
                         child: Text(
                           widget.actionLabel!,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: widget.textColor,
                             fontSize: AppFontSizes.label,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
