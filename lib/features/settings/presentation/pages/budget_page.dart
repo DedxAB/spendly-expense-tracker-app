@@ -82,14 +82,10 @@ class BudgetPage extends ConsumerWidget {
           AppSpacing.md,
         ),
         children: [
-          Text('Budget', style: AppTypography.screenTitle(context)),
-          const SizedBox(height: 4),
           Text(
             '${DateFormat('MMMM').format(now)} Overview',
-            style: TextStyle(color: context.textSecondary),
+            style: AppTypography.screenTitle(context),
           ),
-          const SizedBox(height: 10),
-          Divider(color: context.border),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(18),

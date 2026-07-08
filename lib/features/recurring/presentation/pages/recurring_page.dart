@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/constants/app_constants.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -40,11 +41,7 @@ class RecurringPage extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (categories.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please create an expense category first.'),
-        ),
-      );
+      showAppToast(context, 'Please create an expense category first.');
       return;
     }
 

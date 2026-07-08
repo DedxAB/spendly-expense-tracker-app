@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
@@ -129,14 +130,11 @@ class GoalsPage extends ConsumerWidget {
                     );
                     if (!context.mounted) return;
                     if (added < amount) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            added > 0
-                                ? "Target nearly reached! Added ₹${added.toInt()} only."
-                                : 'Emergency fund target already reached.',
-                          ),
-                        ),
+                      showAppToast(
+                        context,
+                        added > 0
+                            ? "Target nearly reached! Added ₹${added.toInt()} only."
+                            : 'Emergency fund target already reached.',
                       );
                     }
                     HapticFeedback.selectionClick();
@@ -154,11 +152,7 @@ class GoalsPage extends ConsumerWidget {
                     );
                     if (!context.mounted) return;
                     if (!ok) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Insufficient saved amount.'),
-                        ),
-                      );
+                      showAppToast(context, 'Insufficient saved amount.');
                       return;
                     }
                     HapticFeedback.selectionClick();
@@ -261,19 +255,16 @@ class GoalsPage extends ConsumerWidget {
                       final added = await actions.addToGoal(goal.id, amount);
                       if (!context.mounted) return;
                       if (added < amount) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              added > 0
-                                  ? "Target nearly reached! Added ₹${added.toInt()} only."
-                                  : 'Goal target already reached.',
-                            ),
-                          ),
+                        showAppToast(
+                          context,
+                          added > 0
+                              ? "Target nearly reached! Added ₹${added.toInt()} only."
+                              : 'Goal target already reached.',
                         );
                       }
                       HapticFeedback.selectionClick();
                     },
-                  onQuickRemove: () async {
+                    onQuickRemove: () async {
                     final amount = await _askAmount(
                       context,
                       title: 'Withdraw from ${goal.title}',
@@ -283,11 +274,7 @@ class GoalsPage extends ConsumerWidget {
                     final ok = await actions.removeFromGoal(goal.id, amount);
                     if (!context.mounted) return;
                     if (!ok) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Insufficient saved amount.'),
-                        ),
-                      );
+                      showAppToast(context, 'Insufficient saved amount.');
                       return;
                     }
                     HapticFeedback.selectionClick();

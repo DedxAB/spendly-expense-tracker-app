@@ -106,7 +106,7 @@ GoRouter handles all navigation. The main shell has a bottom navigation bar with
   └── /goals         → GoalsPage
 
 Additional routes (accessible from anywhere):
-  /transactions/new?type=expense|income  → AddTransactionPage
+  /transactions/new?type=expense|income|investment  → AddTransactionPage
   /calendar                             → CalendarPage
   /settings                             → SettingsPage
   /categories                           → CategoriesPage
@@ -201,7 +201,10 @@ Providers: `dashboardSummaryProvider`, `todaySpentProvider`, `yesterdaySpentProv
 Full transaction history with filtering. Supports:
 
 - Add / edit / soft-delete transactions
-- Filter by month, type (income/expense), category
+- Support for income, expense, and investment transaction types
+- Filter by month, type (income/expense/investment), category
+- Search by note or amount
+- Sort by date or amount
 - Calendar view grouped by date
 - Restore deleted transactions
 
@@ -245,13 +248,19 @@ Tracks savings goals and an emergency fund.
 
 Analytics and spending breakdowns. All data comes from aggregating the transactions table.
 
-Charts available:
+Charts and metrics available:
 
 - Expense trend (daily or monthly line chart)
-- Expense distribution by category (pie chart)
+- Expense distribution by category (ranked list with spend and % change)
 - Income vs expense comparison (bar chart)
 - Yearly income vs expense (monthly bars)
-- Payment mode breakdown (cash / card / UPI)
+- Payment mode breakdown (cash / card / UPI, in PDF export)
+- Burn rate card with projected monthly expense
+- Budget progress bar with remaining/over indicator
+- Month-over-month spending change percentage
+- "What's Changed" natural-language insights
+- Trend snapshot (active periods, peak spending)
+- PDF export of full analytics report
 
 ---
 

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/features/user/data/repositories/user_profile_repository_impl.dart';
-import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
 class ProfileOnboardingPage extends ConsumerStatefulWidget {
   const ProfileOnboardingPage({super.key});
@@ -29,17 +28,14 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
     super.dispose();
   }
 
+  bool get _hasName => _nameController.text.trim().isNotEmpty;
+
   Future<void> _continue() async {
+    if (!_hasName) return;
     setState(() => _isSubmitting = true);
-    final profile = ref.read(userProfileProvider).valueOrNull;
-    final fallback = profile?.name ?? 'User';
     await ref
         .read(userProfileRepositoryProvider)
-        .completeOnboarding(
-          name: _nameController.text.trim().isEmpty
-              ? fallback
-              : _nameController.text.trim(),
-        );
+        .completeOnboarding(name: _nameController.text.trim());
     if (mounted) context.go('/home');
   }
 
@@ -67,14 +63,15 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
               TextField(
                 controller: _nameController,
                 textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _isSubmitting ? null : _continue(),
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => _isSubmitting || !_hasName ? null : _continue(),
                 decoration: const InputDecoration(hintText: 'Name'),
               ),
               const SizedBox(height: AppSpacing.md),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _isSubmitting ? null : _continue,
+                  onPressed: _isSubmitting || !_hasName ? null : _continue,
                   child: const Text('Continue'),
                 ),
               ),

@@ -16,6 +16,7 @@ import 'package:spendly/core/theme/app_button_styles.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
@@ -100,19 +101,14 @@ class SettingsPage extends ConsumerWidget {
       }
       await ref.read(settingsRepositoryProvider).clearAllData();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Logged out. Local data cleared. Google backup preserved.',
-          ),
-        ),
+      showAppToast(
+        context,
+        'Logged out. Local data cleared. Google backup preserved.',
       );
       context.go('/splash');
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Logout failed. Please try again.')),
-      );
+      showAppToast(context, 'Logout failed. Please try again.');
     }
   }
 
@@ -125,21 +121,13 @@ class SettingsPage extends ConsumerWidget {
       backupInfo = await cloudController.getBackupInfo();
     } catch (_) {
       if (!context.mounted) return false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not fetch backup info. Please try again.'),
-        ),
-      );
+      showAppToast(context, 'Could not fetch backup info. Please try again.');
       return false;
     }
 
     if (backupInfo == null) {
       if (!context.mounted) return false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No backup found in Google Drive.'),
-        ),
-      );
+      showAppToast(context, 'No backup found in Google Drive.');
       return false;
     }
 
@@ -284,19 +272,13 @@ class SettingsPage extends ConsumerWidget {
       await cloudController.restoreFromDrive();
       await cloudController.refresh();
       if (!context.mounted) return true;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Restore completed successfully.'),
-        ),
-      );
+      showAppToast(context, 'Restore completed successfully.',
+          style: AppToastStyle.success);
       return true;
     } catch (_) {
       if (!context.mounted) return false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Restore failed. Please try again.'),
-        ),
-      );
+      showAppToast(context, 'Restore failed. Please try again.',
+          style: AppToastStyle.error);
       return false;
     }
   }
@@ -310,14 +292,10 @@ class SettingsPage extends ConsumerWidget {
     try {
       await action();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(successMessage)));
+      showAppToast(context, successMessage, style: AppToastStyle.success);
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(failureMessage)));
+      showAppToast(context, failureMessage, style: AppToastStyle.error);
     }
   }
 
@@ -810,11 +788,7 @@ class SettingsPage extends ConsumerWidget {
       final isSupported = await auth.isDeviceSupported();
       if (!context.mounted) return;
       if (!isSupported) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Device lock is not available on this device.'),
-          ),
-        );
+        showAppToast(context, 'Device lock is not available on this device.');
         return;
       }
 
@@ -831,25 +805,19 @@ class SettingsPage extends ConsumerWidget {
 
       await ref.read(settingsRepositoryProvider).setPrivacyLockEnabled(enabled);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            enabled ? 'Privacy Shield enabled.' : 'Privacy Shield disabled.',
-          ),
-        ),
+      showAppToast(
+        context,
+        enabled ? 'Privacy Shield enabled.' : 'Privacy Shield disabled.',
       );
     } on LocalAuthException {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not verify biometrics. Check device settings.'),
-        ),
+      showAppToast(
+        context,
+        'Could not verify biometrics. Check device settings.',
       );
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Privacy Shield update failed.')),
-      );
+      showAppToast(context, 'Privacy Shield update failed.');
     }
   }
 
@@ -1022,11 +990,7 @@ class SettingsPage extends ConsumerWidget {
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: payload));
                     Navigator.pop(dialogContext);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('JSON copied to clipboard'),
-                      ),
-                    );
+                    showAppToast(context, 'JSON copied to clipboard');
                   },
                   style: AppButtonStyles.primary(context).copyWith(
                     minimumSize: WidgetStatePropertyAll(const Size(0, 48)),
@@ -1119,14 +1083,12 @@ class SettingsPage extends ConsumerWidget {
                 await ref.read(settingsRepositoryProvider).importJson(raw);
                 if (!dialogContext.mounted) return;
                 Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Import completed')),
-                );
+                showAppToast(context, 'Import completed',
+                    style: AppToastStyle.success);
               } catch (e) {
                 if (!dialogContext.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Import failed: $e')),
-                );
+                showAppToast(context, 'Import failed: $e',
+                    style: AppToastStyle.error);
               }
             },
           ),
@@ -1154,21 +1116,17 @@ class SettingsPage extends ConsumerWidget {
       }
       await ref.read(settingsRepositoryProvider).clearAllData();
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            cloud?.isConnected == true
-                ? 'All data erased. Google account disconnected.'
-                : 'All data erased.',
-          ),
-        ),
+      showAppToast(
+        context,
+        cloud?.isConnected == true
+            ? 'All data erased. Google account disconnected.'
+            : 'All data erased.',
       );
       context.go('/splash');
     } catch (_) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erase failed. Please try again.')),
-      );
+      showAppToast(context, 'Erase failed. Please try again.',
+          style: AppToastStyle.error);
     }
   }
 }

@@ -7,6 +7,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:spendly/app/app_router.dart';
 import 'package:spendly/core/notifications/local_notification_service.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_theme.dart';
 import 'package:spendly/core/theme/app_theme_provider.dart';
@@ -224,12 +225,9 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
       }
     } on LocalAuthException catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not verify identity. Check biometrics or device lock settings.',
-          ),
-        ),
+      showAppToast(
+        context,
+        'Could not verify identity. Check biometrics or device lock settings.',
       );
     } finally {
       if (mounted) setState(() => _authenticating = false);

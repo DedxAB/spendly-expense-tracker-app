@@ -9,6 +9,7 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -146,7 +147,6 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     HapticFeedback.selectionClick();
 
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.maybeOf(context);
     final navigator = Navigator.of(context);
 
     if (!widget.embedded) {
@@ -155,20 +155,13 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       navigator.maybePop();
     }
 
-    // Show feedback without reading inherited widgets from a deactivated context.
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.existing == null ? 'Transaction added' : 'Transaction updated',
-        ),
-        action: widget.existing == null
-            ? SnackBarAction(
-                label: 'Undo',
-                onPressed: () =>
-                    ref.read(transactionActionsProvider).softDelete(entity.id),
-              )
-            : null,
-      ),
+    showAppToast(
+      context,
+      widget.existing == null ? 'Transaction added' : 'Transaction updated',
+      actionLabel: widget.existing == null ? 'Undo' : null,
+      onAction: widget.existing == null
+          ? () => ref.read(transactionActionsProvider).softDelete(entity.id)
+          : null,
     );
   }
 

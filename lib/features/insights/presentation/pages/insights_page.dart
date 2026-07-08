@@ -14,6 +14,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:spendly/core/constants/app_constants.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
@@ -244,9 +245,7 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
   } catch (e) {
     if (context.mounted) {
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Export failed: $e')),
-      );
+      showAppToast(context, 'Export failed: $e', style: AppToastStyle.error);
     }
   }
 }
