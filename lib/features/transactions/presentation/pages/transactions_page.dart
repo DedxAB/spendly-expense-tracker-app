@@ -518,6 +518,13 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   height: 420,
                   child: Column(
                     children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                        ),
+                      ),
                       Expanded(
                         child: Row(
                           children: [

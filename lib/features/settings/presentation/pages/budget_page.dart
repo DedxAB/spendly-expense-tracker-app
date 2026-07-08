@@ -414,7 +414,8 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
             AppSpacing.sm,
             MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm,
           ),
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -426,7 +427,17 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.smPlus),
-              Text('Edit Budget', style: AppTypography.sectionTitle(context)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Edit Budget', style: AppTypography.sectionTitle(context)),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.sm),
               const _ModalFieldLabel('Monthly Budget'),
               const SizedBox(height: 6),
@@ -489,6 +500,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

@@ -854,7 +854,17 @@ class SettingsPage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.smPlus),
-                Text('Account', style: Theme.of(context).textTheme.titleMedium),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text('Account', style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                   Text(
                     'Update your primary profile details.',

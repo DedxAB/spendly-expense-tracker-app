@@ -61,7 +61,8 @@ class SwipeActionsInfoButton extends StatelessWidget {
               AppSpacing.md,
               AppSpacing.lg,
             ),
-            child: Column(
+            child: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -113,6 +114,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                   text: rightActionLabel,
                 ),
               ],
+            ),
             ),
           ),
         );

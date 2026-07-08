@@ -671,7 +671,17 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                ),
+              ],
+            ),
             const SizedBox(height: 14),
             _GoalTextField(
               controller: _titleController,
@@ -851,11 +861,22 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
         AppSpacing.md,
         MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
       ),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+           Row(
+              children: [
+                Expanded(
+                  child: Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                ),
+              ],
+            ),
           const SizedBox(height: 12),
           _GoalTextField(
             controller: _titleController,
@@ -907,6 +928,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

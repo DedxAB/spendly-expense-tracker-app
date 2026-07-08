@@ -15,8 +15,8 @@ void showAppToast(
   late OverlayEntry entry;
 
   final bgColor = switch (style) {
-    AppToastStyle.success => const Color(0xFF1A3A2A),
-    AppToastStyle.error => const Color(0xFF3D1D1D),
+    AppToastStyle.success => AppColors.success,
+    AppToastStyle.error => AppColors.expense,
     AppToastStyle.normal => const Color(0xFF1A1A1A),
   };
 
@@ -98,67 +98,59 @@ class _TopToastState extends State<_TopToast>
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    return SlideTransition(
-      position: _slide,
-      child: FadeTransition(
-        opacity: _fade,
-        child: Align(
-          alignment: Alignment.topCenter,
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SlideTransition(
+        position: _slide,
+        child: FadeTransition(
+          opacity: _fade,
           child: Container(
-            padding: EdgeInsets.only(top: topPadding),
             color: widget.bgColor,
             width: double.infinity,
-            child: SafeArea(
-              bottom: false,
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.message,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: AppFontSizes.body,
+                        fontWeight: FontWeight.w500,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                  if (widget.actionLabel != null) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        widget.onAction?.call();
+                        _controller.reverse().then((_) => widget.onDismiss());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(AppRadii.sm),
+                        ),
                         child: Text(
-                          widget.message,
+                          widget.actionLabel!,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: AppFontSizes.body,
-                            fontWeight: FontWeight.w500,
-                            height: 1.3,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                    if (widget.actionLabel != null) ...[
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () {
-                          widget.onAction?.call();
-                          _controller.reverse().then((_) => widget.onDismiss());
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            widget.actionLabel!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: AppFontSizes.label,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
             ),
           ),
