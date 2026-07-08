@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spendly/core/theme/app_design_tokens.dart';
 
 enum AppToastStyle { normal, success, error }
 
@@ -122,7 +123,7 @@ class _TopToastState extends State<_TopToast>
                           widget.message,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 13,
+                            fontSize: AppFontSizes.body,
                             fontWeight: FontWeight.w500,
                             height: 1.3,
                           ),
@@ -149,7 +150,7 @@ class _TopToastState extends State<_TopToast>
                             widget.actionLabel!,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: AppFontSizes.label,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

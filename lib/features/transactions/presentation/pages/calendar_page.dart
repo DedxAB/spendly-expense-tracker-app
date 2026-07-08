@@ -139,7 +139,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               Text(
                 _currency.format(selectedTotal),
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: AppFontSizes.largeHeading,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -356,7 +356,7 @@ class _MonthGrid extends StatelessWidget {
                       Text(
                         '${day.day}',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSizes.body,
                           fontWeight: FontWeight.w600,
                           color: isSelected
                               ? context.textPrimary
@@ -370,7 +370,7 @@ class _MonthGrid extends StatelessWidget {
                         Text(
                           _shortCurrency(spend),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSizes.label,
                             fontWeight: FontWeight.w600,
                             color: isSelected ? context.textPrimary : context.textPrimary,
                           ),

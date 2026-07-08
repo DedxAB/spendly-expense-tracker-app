@@ -35,7 +35,7 @@ class ActivityScreenTimePage extends ConsumerWidget {
           const SizedBox(height: 6),
           Text(
             'Audit logs and app usage for your recent Spendly activity.',
-            style: TextStyle(color: context.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
           ),
           const SizedBox(height: AppSpacing.md),
           usage.when(
@@ -49,9 +49,12 @@ class ActivityScreenTimePage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.mdPlus),
           Row(
             children: [
-              Text(
-                'Diagnostic Audit Trail',
-                style: AppTypography.sectionTitle(context),
+              Flexible(
+                child: Text(
+                  'Diagnostic Audit Trail',
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.sectionTitle(context),
+                ),
               ),
               const SizedBox(width: 8),
               Container(
@@ -64,7 +67,7 @@ class ActivityScreenTimePage extends ConsumerWidget {
                   '3 days',
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 11,
+                    fontSize: AppFontSizes.small,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -151,7 +154,7 @@ class _ScreenTimeCard extends StatelessWidget {
                     color: Theme.of(context).brightness == Brightness.dark
                         ? const Color(0xFF3DD07B)
                         : const Color(0xFF166E3C),
-                    fontSize: 10,
+                    fontSize: AppFontSizes.caption,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -229,7 +232,7 @@ class _ScreenTimeMetricCard extends StatelessWidget {
             label,
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.8,
             ),
@@ -237,11 +240,10 @@ class _ScreenTimeMetricCard extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            softWrap: false,
             style: TextStyle(
               color: valueColor ?? context.textPrimary,
-              fontSize: 18,
+              fontSize: AppFontSizes.heading,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -250,7 +252,7 @@ class _ScreenTimeMetricCard extends StatelessWidget {
             caption.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: context.textSecondary, fontSize: 10),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.caption),
           ),
         ],
       ),
@@ -296,7 +298,7 @@ class _ActivityEventRow extends StatelessWidget {
                   event.title.toUpperCase(),
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 14,
+                    fontSize: AppFontSizes.bodyLarge,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -305,7 +307,7 @@ class _ActivityEventRow extends StatelessWidget {
                   event.description,
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 12,
+                    fontSize: AppFontSizes.label,
                   ),
                 ),
               ],
@@ -317,7 +319,7 @@ class _ActivityEventRow extends StatelessWidget {
             textAlign: TextAlign.right,
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: 10,
+              fontSize: AppFontSizes.caption,
               fontWeight: FontWeight.w700,
             ),
           ),

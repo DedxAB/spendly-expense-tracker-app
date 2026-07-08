@@ -319,7 +319,7 @@ class _SectionHeader extends StatelessWidget {
           child: Text(
             title,
             style: AppTypography.sectionTitle(context).copyWith(
-              fontSize: 18,
+              fontSize: AppFontSizes.heading,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.3,
             ),
@@ -335,7 +335,7 @@ class _SectionHeader extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: const [
-              Text('View all', style: TextStyle(fontSize: 13)),
+              Text('View all', style: TextStyle(fontSize: AppFontSizes.body)),
               SizedBox(width: 4),
               Icon(AppIcons.chevronRight, size: 16),
             ],
@@ -396,7 +396,7 @@ class _MetricCard extends StatelessWidget {
                     amount,
                     style: AppTypography.amount(
                       context,
-                      fontSize: 20,
+                      fontSize: AppFontSizes.largeHeading,
                       color: context.textPrimary,
                     ).copyWith(letterSpacing: -0.5),
                     maskColor: context.textPrimary,
@@ -410,7 +410,7 @@ class _MetricCard extends StatelessWidget {
                     note,
                     style: TextStyle(
                       color: noteColor,
-                      fontSize: 13,
+                      fontSize: AppFontSizes.body,
                       height: 1.2,
                     ),
                   ),
@@ -477,7 +477,7 @@ class _RemainingCard extends StatelessWidget {
                     amount,
                     style: AppTypography.amount(
                       context,
-                      fontSize: 20,
+                      fontSize: AppFontSizes.largeHeading,
                       color: context.textPrimary,
                     ).copyWith(letterSpacing: -0.5),
                     maskColor: context.textPrimary,
@@ -491,7 +491,7 @@ class _RemainingCard extends StatelessWidget {
                     note,
                     style: TextStyle(
                       color: context.homeAccentGreen,
-                      fontSize: 13,
+                      fontSize: AppFontSizes.body,
                       height: 1.2,
                     ),
                   ),
@@ -530,13 +530,16 @@ class _TitleChip extends StatelessWidget {
           child: Icon(icon, color: tint, size: 18),
         ),
         const SizedBox(width: 10),
-        Text(
-          title,
-          style: TextStyle(
-            color: context.textPrimary,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1,
+        Flexible(
+          child: Text(
+            title,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: AppFontSizes.label,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.1,
+            ),
           ),
         ),
       ],
@@ -568,7 +571,7 @@ class _RingIndicator extends StatelessWidget {
             '$value%',
             style: TextStyle(
               color: accent,
-              fontSize: 14,
+              fontSize: AppFontSizes.bodyLarge,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -675,19 +678,22 @@ class _LendBorrowCard extends StatelessWidget {
                 tint: context.homeAccentGreen,
               ),
               const SizedBox(width: 10),
-              Text(
-                'LEND & BORROW',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.2,
+              Flexible(
+                child: Text(
+                  'LEND & BORROW',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: AppFontSizes.subhead,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                  ),
                 ),
               ),
               const Spacer(),
               Text(
                 'View all',
-                style: TextStyle(color: context.textSecondary, fontSize: 13),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.body),
               ),
               const SizedBox(width: 4),
               Icon(
@@ -757,18 +763,19 @@ class _LendBorrowCard extends StatelessWidget {
                     children: [
                       Text(
                         '$openPeople active people',
-                        style: TextStyle(
-                          color: context.textPrimary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+          style: TextStyle(
+            color: context.textPrimary,
+            fontSize: AppFontSizes.label,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.1,
+          ),
                       ),
                       const SizedBox(height: 1),
                       Text(
                         'Tap to open',
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 12,
+                          fontSize: AppFontSizes.label,
                         ),
                       ),
                     ],
@@ -853,7 +860,7 @@ class _MiniMetricCard extends StatelessWidget {
                   title,
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 11,
+                    fontSize: AppFontSizes.small,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -862,7 +869,7 @@ class _MiniMetricCard extends StatelessWidget {
                   amount,
                   style: TextStyle(
                     color: tint,
-                    fontSize: 16,
+                    fontSize: AppFontSizes.title,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
                   ),
@@ -902,7 +909,7 @@ class _EmptyTransactionsCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 17,
+                fontSize: AppFontSizes.heading,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -910,7 +917,7 @@ class _EmptyTransactionsCard extends StatelessWidget {
             Text(
               'Your recent transactions will appear here',
               textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary, fontSize: 13),
+              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.body),
             ),
           ],
         ),
@@ -1062,7 +1069,7 @@ class _RecurringBanner extends StatelessWidget {
                   count == 1 ? '1 recurring txn' : '$count recurring txns',
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 14,
+                    fontSize: AppFontSizes.bodyLarge,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1074,9 +1081,8 @@ class _RecurringBanner extends StatelessWidget {
                         'Next: $nextTitle on ${Formatters.date(nextDueDate)}',
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 12,
+                          fontSize: AppFontSizes.label,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -1132,13 +1138,16 @@ class _InvestmentCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Text(
-                'INVESTMENT',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.3,
+              Flexible(
+                child: Text(
+                  'INVESTMENT',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: AppFontSizes.body,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
               const Spacer(),
@@ -1152,7 +1161,7 @@ class _InvestmentCard extends StatelessWidget {
                   pctDisplay,
                   style: const TextStyle(
                     color: Color(0xFF8B5CF6),
-                    fontSize: 11,
+                    fontSize: AppFontSizes.small,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1164,7 +1173,7 @@ class _InvestmentCard extends StatelessWidget {
             amount,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 22,
+              fontSize: AppFontSizes.display,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),

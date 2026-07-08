@@ -334,7 +334,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 label,
                 style: TextStyle(
                   color: active ? context.surface : context.textPrimary,
-                  fontSize: 13,
+                  fontSize: AppFontSizes.body,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -344,7 +344,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   ': $subtitle',
                   style: TextStyle(
                     color: active ? context.surface.withValues(alpha: 0.7) : context.textSecondary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -544,7 +544,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                                           sidebarLabels[index],
                                           style: TextStyle(
                                             color: isSelected ? context.surface : context.textPrimary,
-                                            fontSize: 13,
+                                            fontSize: AppFontSizes.body,
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -737,7 +737,7 @@ class _DateRangeButton extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: selected ? context.surface : context.textPrimary,
-                  fontSize: 13,
+                  fontSize: AppFontSizes.body,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -976,7 +976,7 @@ class _FilterSelectionChip extends StatelessWidget {
           label[0].toUpperCase() + label.substring(1),
           style: TextStyle(
             color: selected ? context.surface : context.textPrimary,
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             fontWeight: FontWeight.w700,
           ),
         ),

@@ -309,7 +309,7 @@ class GoalsPage extends ConsumerWidget {
                     Text(
                       'Total Invested',
                       style: AppTypography.metadata(context).copyWith(
-                        fontSize: 12,
+                        fontSize: AppFontSizes.label,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -318,7 +318,7 @@ class GoalsPage extends ConsumerWidget {
                       total,
                       style: const TextStyle(
                         color: Color(0xFF8B5CF6),
-                        fontSize: 17,
+                        fontSize: AppFontSizes.heading,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -683,7 +683,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Goal name is required',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                 ),
               ),
             const SizedBox(height: 10),
@@ -703,7 +703,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Target amount is required',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                 ),
               ),
             const SizedBox(height: 10),
@@ -867,7 +867,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
               padding: EdgeInsets.only(top: 4),
               child: Text(
                 'Goal name is required',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
               ),
             ),
           const SizedBox(height: 10),
@@ -882,7 +882,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
               padding: EdgeInsets.only(top: 4),
               child: Text(
                 'Target amount is required',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
               ),
             ),
           const SizedBox(height: 10),
@@ -971,7 +971,7 @@ class _EmergencyFundCard extends StatelessWidget {
             'PRIMARY LIQUIDITY / ${liquidityIndex.toString().padLeft(2, '0')}',
             style: TextStyle(
               color: context.textPrimary.withValues(alpha: 0.54),
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               letterSpacing: 4,
               fontWeight: FontWeight.w700,
             ),
@@ -983,7 +983,7 @@ class _EmergencyFundCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 50,
+              fontSize: AppFontSizes.hero,
               height: 0.9,
               fontWeight: FontWeight.w900,
             ),
@@ -993,7 +993,7 @@ class _EmergencyFundCard extends StatelessWidget {
             'CURRENT STATUS',
             style: TextStyle(
               color: context.textPrimary.withValues(alpha: 0.54),
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w700,
             ),
@@ -1012,7 +1012,7 @@ class _EmergencyFundCard extends StatelessWidget {
                       maxLines: 1,
                       style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 40,
+                        fontSize: AppFontSizes.hero,
                         fontWeight: FontWeight.w900,
                         height: 1,
                       ),
@@ -1027,7 +1027,7 @@ class _EmergencyFundCard extends StatelessWidget {
                     maxLines: 1,
                     style: TextStyle(
                       color: context.textPrimary.withValues(alpha: 0.87),
-                      fontSize: 28,
+                      fontSize: AppFontSizes.largeDisplay,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1163,7 +1163,7 @@ class _AggregateInsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           AmountView(
             totalSaved,
-            style: AppTypography.amount(context, fontSize: 30),
+            style: AppTypography.amount(context, fontSize: AppFontSizes.largeDisplay),
           ),
           const SizedBox(height: 2),
           Text(
@@ -1195,7 +1195,7 @@ class _AggregateInsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Aggregate performance = combined progress across all emergency funds and goals.',
-            style: TextStyle(color: context.textSecondary, fontSize: 12),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
           ),
         ],
       ),
@@ -1210,7 +1210,7 @@ class _AggregateInsightCard extends StatelessWidget {
           label,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 11,
+            fontSize: AppFontSizes.small,
             letterSpacing: 1.1,
           ),
         ),
@@ -1220,7 +1220,7 @@ class _AggregateInsightCard extends StatelessWidget {
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w700,
-            fontSize: 14,
+            fontSize: AppFontSizes.bodyLarge,
           ),
         ),
       ],
@@ -1294,7 +1294,7 @@ class _GoalCard extends StatelessWidget {
   style: TextStyle(
     color: context.textSecondary,
     letterSpacing: 3,
-    fontSize: 10,
+    fontSize: AppFontSizes.caption,
     fontWeight: FontWeight.w700,
   ),
           ),
@@ -1337,12 +1337,15 @@ class _GoalCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              Text(
-                '${Formatters.currency(goal.savedAmount)} / ${Formatters.currency(goal.targetAmount)}',
-style: TextStyle(
-  color: context.textSecondary,
-  fontWeight: FontWeight.w700,
-),
+              Flexible(
+                child: Text(
+                  '${Formatters.currency(goal.savedAmount)} / ${Formatters.currency(goal.targetAmount)}',
+                  softWrap: false,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               const Spacer(),
               Text(
@@ -1366,17 +1369,20 @@ style: TextStyle(
             children: [
               Text(
                 _formatTimeline(remainingDays),
-                style: TextStyle(color: context.textSecondary, fontSize: 12),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
               ),
               const Spacer(),
-              Text(
-                'Need ${Formatters.currency(requiredPerMonth)}/mo',
-                style: TextStyle(
-                  color: requiredPerMonth <= goal.monthlyContribution
-                      ? const Color(0xFF3DD07B)
-                      : const Color(0xFFFF8A7A),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  'Need ${Formatters.currency(requiredPerMonth)}/mo',
+                  softWrap: true,
+                  style: TextStyle(
+                    color: requiredPerMonth <= goal.monthlyContribution
+                        ? const Color(0xFF3DD07B)
+                        : const Color(0xFFFF8A7A),
+                    fontSize: AppFontSizes.label,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -1430,7 +1436,7 @@ class _CreateGoalCard extends StatelessWidget {
                     'CREATE GOAL',
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 34,
+                      fontSize: AppFontSizes.hero,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1440,7 +1446,7 @@ class _CreateGoalCard extends StatelessWidget {
                     style: TextStyle(
                       color: context.textSecondary,
                       letterSpacing: 2.2,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                     ),
                   ),
                 ],
@@ -1498,7 +1504,7 @@ class _GoalTextField extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
             ),
             if (required)
               const Text(' *', style: TextStyle(color: Colors.red)),

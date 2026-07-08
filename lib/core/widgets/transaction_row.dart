@@ -66,7 +66,7 @@ class TransactionRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 14,
+                    fontSize: AppFontSizes.bodyLarge,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -79,7 +79,7 @@ class TransactionRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 12,
+                          fontSize: AppFontSizes.label,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -122,7 +122,7 @@ class TransactionRow extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 dateLabel,
-                style: TextStyle(color: context.textSecondary, fontSize: 11),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.small),
               ),
             ],
           ),
@@ -151,7 +151,7 @@ class _TagChip extends StatelessWidget {
         label,
         style: TextStyle(
           color: tint,
-          fontSize: 10,
+          fontSize: AppFontSizes.caption,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -209,14 +209,14 @@ class _AmountWithSign extends StatelessWidget {
           sign,
           style: TextStyle(
             color: textColor,
-            fontSize: 15,
+            fontSize: AppFontSizes.subhead,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(width: 1),
         AmountView(
           absAmount,
-          style: AppTypography.amount(context, fontSize: 15).copyWith(
+          style: AppTypography.amount(context, fontSize: AppFontSizes.subhead).copyWith(
             color: textColor,
           ),
           maskColor: textColor,

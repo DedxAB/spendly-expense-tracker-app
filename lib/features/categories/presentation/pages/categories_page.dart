@@ -113,7 +113,7 @@ class CategoriesPage extends ConsumerWidget {
           label: const Text(
             'Add Category',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: AppFontSizes.body,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
             ),
@@ -163,7 +163,7 @@ class CategoriesPage extends ConsumerWidget {
                     'EXPENSE',
                     style: TextStyle(
                       color: secondary,
-                      fontSize: 12,
+                      fontSize: AppFontSizes.label,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.3,
                     ),
@@ -177,7 +177,7 @@ class CategoriesPage extends ConsumerWidget {
                     'INCOME',
                     style: TextStyle(
                       color: secondary,
-                      fontSize: 12,
+                      fontSize: AppFontSizes.label,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.3,
                     ),
@@ -191,7 +191,7 @@ class CategoriesPage extends ConsumerWidget {
                     'INVESTMENT',
                     style: TextStyle(
                       color: secondary,
-                      fontSize: 12,
+                      fontSize: AppFontSizes.label,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.3,
                     ),
@@ -246,7 +246,7 @@ class CategoriesPage extends ConsumerWidget {
                     category.type.name.toUpperCase(),
                     style: TextStyle(
                       color: secondary,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                       letterSpacing: 0.9,
                     ),
                   ),
@@ -308,7 +308,7 @@ class _ModalFieldLabel extends StatelessWidget {
       label,
       style: TextStyle(
         color: context.textSecondary,
-        fontSize: 12,
+        fontSize: AppFontSizes.label,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -360,7 +360,7 @@ class _CategoryTypeSegment extends StatelessWidget {
                   item.$2,
                   style: TextStyle(
                     color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     letterSpacing: 0.2,
                     fontWeight: FontWeight.w600,
                   ),

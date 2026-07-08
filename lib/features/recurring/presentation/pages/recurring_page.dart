@@ -95,7 +95,7 @@ class RecurringPage extends ConsumerWidget {
                             'Title is required',
                             style: TextStyle(
                               color: const Color(0xFFF55C5C),
-                              fontSize: 11,
+                              fontSize: AppFontSizes.small,
                             ),
                           ),
                         ),
@@ -123,7 +123,7 @@ class RecurringPage extends ConsumerWidget {
                             'Amount is required',
                             style: TextStyle(
                               color: const Color(0xFFF55C5C),
-                              fontSize: 11,
+                              fontSize: AppFontSizes.small,
                             ),
                           ),
                         ),
@@ -463,7 +463,7 @@ class RecurringPage extends ConsumerWidget {
                                                 style: TextStyle(
                                                   color: context.textPrimary,
                                                   fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
+                                                  fontSize: AppFontSizes.title,
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
@@ -490,7 +490,7 @@ class RecurringPage extends ConsumerWidget {
                                                         style: TextStyle(
                                                           color:
                                                               Color(0xFFFF8A7A),
-                                                          fontSize: 10,
+                                                          fontSize: AppFontSizes.caption,
                                                           fontWeight:
                                                               FontWeight.w800,
                                                           letterSpacing: 1,
@@ -502,7 +502,7 @@ class RecurringPage extends ConsumerWidget {
                                                       '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
                                                       style: TextStyle(
                                                         color: context.textSecondary,
-                                                        fontSize: 12,
+                                                        fontSize: AppFontSizes.label,
                                                       ),
                                                       overflow:
                                                           TextOverflow.ellipsis,
@@ -524,7 +524,7 @@ class RecurringPage extends ConsumerWidget {
                                               item.amount,
                                               style: TextStyle(
                                                 color: context.textPrimary,
-                                                fontSize: 17,
+                                                fontSize: AppFontSizes.heading,
                                                 fontWeight: FontWeight.w700,
                                               ),
                                             ),
@@ -605,7 +605,7 @@ class _PaymentModeSegment extends StatelessWidget {
                     item.$2,
                     style: TextStyle(
                       color: isSelected ? context.surface : context.textPrimary,
-                      fontSize: 13,
+                      fontSize: AppFontSizes.body,
                       letterSpacing: 0.8,
                       fontWeight: FontWeight.w700,
                     ),
@@ -634,7 +634,7 @@ class _ModalFieldLabel extends StatelessWidget {
           label,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -643,7 +643,7 @@ class _ModalFieldLabel extends StatelessWidget {
             ' *',
             style: TextStyle(
               color: const Color(0xFFF55C5C),
-              fontSize: 14,
+              fontSize: AppFontSizes.bodyLarge,
               fontWeight: FontWeight.w700,
             ),
           ),

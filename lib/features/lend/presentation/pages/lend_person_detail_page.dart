@@ -95,7 +95,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                       padding: EdgeInsets.only(top: 4),
                       child: Text(
                         'Amount is required',
-                        style: TextStyle(color: Colors.red, fontSize: 12),
+                        style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                       ),
                     ),
                   const SizedBox(height: AppSpacing.sm),
@@ -175,7 +175,7 @@ class LendPersonDetailPage extends ConsumerWidget {
               title: Text(
                 isEditing ? 'Edit Entry' : 'Add Entry',
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: AppFontSizes.largeHeading,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -233,7 +233,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                           padding: EdgeInsets.only(top: 4),
                           child: Text(
                             'Amount is required',
-                            style: TextStyle(color: Colors.red, fontSize: 12),
+                            style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                           ),
                         ),
                       const SizedBox(height: AppSpacing.sm),
@@ -483,7 +483,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                     Text(
                       'ACTIVE',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppFontSizes.label,
                         letterSpacing: 1.2,
                         color: context.textSecondary,
                         fontWeight: FontWeight.w700,
@@ -619,7 +619,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                     Text(
                       'SETTLED',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: AppFontSizes.label,
                         letterSpacing: 1.2,
                         color: context.textSecondary,
                         fontWeight: FontWeight.w700,
@@ -737,7 +737,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                                         ? context.textPrimary
                                         : color,
                                     fontWeight: FontWeight.w700,
-                                    fontSize: 10,
+                                    fontSize: AppFontSizes.caption,
                                   ),
                                 ),
                               ),
@@ -800,7 +800,7 @@ class _ModalFieldLabel extends StatelessWidget {
         text: label,
         style: TextStyle(
           color: context.textSecondary,
-          fontSize: 12,
+          fontSize: AppFontSizes.label,
           fontWeight: FontWeight.w600,
         ),
         children: required_
@@ -851,7 +851,7 @@ List<Widget> _buildEventChips(BuildContext context, List<dynamic> entryEvents) {
           child: Text(
             '${DateFormat('dd MMM').format(event.date)} ${Formatters.currency(event.amount)}',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: AppFontSizes.caption,
               fontWeight: FontWeight.w600,
               color: context.textSecondary,
             ),
@@ -921,7 +921,7 @@ class _EntryCard extends StatelessWidget {
                         title,
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
-                          fontSize: 16,
+                          fontSize: AppFontSizes.title,
                         ),
                       ),
                     ),
@@ -931,7 +931,7 @@ class _EntryCard extends StatelessWidget {
                       style: TextStyle(
                         color: amountColor,
                         fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        fontSize: AppFontSizes.title,
                       ),
                     ),
                   ],
@@ -941,19 +941,19 @@ class _EntryCard extends StatelessWidget {
                   dateLabel,
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 12,
+                    fontSize: AppFontSizes.label,
                   ),
                 ),
                 if (note != null && note!.isNotEmpty) ...[
                   const SizedBox(height: 4),
-                  Text(note!, style: const TextStyle(fontSize: 12)),
+                  Text(note!, style: const TextStyle(fontSize: AppFontSizes.label)),
                 ],
                 if (eventCount != null) ...[
                   const SizedBox(height: 4),
                   Text(
                     'Settlements ($eventCount)',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                       fontWeight: FontWeight.w700,
                       color: context.textSecondary,
                     ),
@@ -1003,7 +1003,7 @@ class _PersonMetric extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w800,
-              fontSize: 18,
+              fontSize: AppFontSizes.heading,
             ),
           ),
         ],

@@ -108,3 +108,19 @@ class AppElevation {
   static const fab = 0.0;
   static const premiumCard = 18.0;
 }
+
+class AppFontSizes {
+  static const double caption = 10;
+  static const double small = 11;
+  static const double label = 12;
+  static const double body = 13;
+  static const double bodyLarge = 14;
+  static const double button = 14;
+  static const double subhead = 15;
+  static const double title = 16;
+  static const double heading = 18;
+  static const double largeHeading = 20;
+  static const double display = 22;
+  static const double largeDisplay = 28;
+  static const double hero = 32;
+}

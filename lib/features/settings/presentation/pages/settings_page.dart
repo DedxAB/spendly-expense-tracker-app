@@ -211,7 +211,7 @@ class SettingsPage extends ConsumerWidget {
                           'overwritten.',
                           style: TextStyle(
                             color: const Color(0xFF2F6F46),
-                            fontSize: 13,
+                            fontSize: AppFontSizes.body,
                             fontWeight: FontWeight.w500,
                             height: 1.4,
                           ),
@@ -242,7 +242,7 @@ class SettingsPage extends ConsumerWidget {
                           'the Drive backup contents.',
                           style: TextStyle(
                             color: infoColor,
-                            fontSize: 13,
+                            fontSize: AppFontSizes.body,
                             fontWeight: FontWeight.w500,
                             height: 1.4,
                           ),
@@ -553,28 +553,28 @@ class SettingsPage extends ConsumerWidget {
               children: [
                 Text(
                   'Cloud Sync',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                  style: TextStyle(fontSize: AppFontSizes.title, fontWeight: FontWeight.w600, color: primary),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   cloudSync?.isConnected == true
                       ? 'Connected: ${cloudSync?.connectedEmail ?? '-'}'
                       : 'Not connected',
-                  style: TextStyle(color: muted, fontSize: 12),
+                   style: TextStyle(color: muted, fontSize: AppFontSizes.label),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   cloudSync?.lastBackupAt == null
                       ? 'Last backup: never'
                       : 'Last backup: ${DateFormat('dd MMM, hh:mm a').format(cloudSync!.lastBackupAt!)}',
-                  style: TextStyle(color: muted, fontSize: 12),
+                  style: TextStyle(color: muted, fontSize: AppFontSizes.label),
                 ),
                 const SizedBox(height: AppSpacing.smPlus),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
                     'Automatic daily backup',
-                    style: TextStyle(fontSize: 14, color: primary),
+                    style: TextStyle(fontSize: AppFontSizes.bodyLarge, color: primary),
                   ),
                   value: cloudSync?.automaticDailyBackup ?? false,
                   onChanged: cloudSync?.isConnected == true
@@ -666,11 +666,11 @@ class SettingsPage extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     'Budget alerts',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                    style: TextStyle(fontSize: AppFontSizes.title, fontWeight: FontWeight.w600, color: primary),
                   ),
                   subtitle: Text(
                     'Show in-app budget warning notifications',
-                    style: TextStyle(fontSize: 12, color: muted),
+                    style: TextStyle(fontSize: AppFontSizes.label, color: muted),
                   ),
                   value: budgetAlerts,
                   onChanged: (value) async {
@@ -687,11 +687,11 @@ class SettingsPage extends ConsumerWidget {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: Text(
                     'Daily reminder',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: primary),
+                    style: TextStyle(fontSize: AppFontSizes.title, fontWeight: FontWeight.w600, color: primary),
                   ),
                   subtitle: Text(
                     'Receive a push reminder every day',
-                    style: TextStyle(fontSize: 12, color: muted),
+                    style: TextStyle(fontSize: AppFontSizes.label, color: muted),
                   ),
                   value: dailyReminder,
                   onChanged: (value) async {
@@ -723,7 +723,7 @@ class SettingsPage extends ConsumerWidget {
               child: const Text(
                 'Logout',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: AppFontSizes.heading,
                   letterSpacing: 0,
                   fontWeight: FontWeight.w600,
                 ),
@@ -741,7 +741,7 @@ class SettingsPage extends ConsumerWidget {
               },
               child: const Text(
                 'Privacy Policy',
-                style: TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: AppFontSizes.button),
               ),
             ),
           ),
@@ -753,7 +753,7 @@ class SettingsPage extends ConsumerWidget {
                 if (info == null) return const SizedBox.shrink();
                 return Text(
                   'Version ${info.version}',
-                  style: TextStyle(color: muted, fontSize: 14),
+                  style: TextStyle(color: muted, fontSize: AppFontSizes.bodyLarge),
                 );
               },
             ),
@@ -858,7 +858,7 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 4),
                   Text(
                     'Update your primary profile details.',
-                    style: TextStyle(color: context.textSecondary, fontSize: 12),
+                    style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
                   ),
                 const SizedBox(height: AppSpacing.smPlus),
                 _SheetLabeledField(
@@ -1050,7 +1050,7 @@ class SettingsPage extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   'or paste below',
-                  style: TextStyle(fontSize: 12),
+                  style: TextStyle(fontSize: AppFontSizes.label),
                 ),
               ),
               ConstrainedBox(
@@ -1065,7 +1065,7 @@ class SettingsPage extends ConsumerWidget {
                     alignLabelWithHint: true,
                     contentPadding: EdgeInsets.all(12),
                   ),
-                  style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                  style: const TextStyle(fontSize: AppFontSizes.body, fontFamily: 'monospace'),
                 ),
               ),
             ],
@@ -1226,12 +1226,12 @@ class _PrivacyShieldTile extends StatelessWidget {
               children: [
                 Text(
                   'Privacy Shield',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: AppFontSizes.heading, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Require fingerprint, face, or device PIN for app access',
-                  style: TextStyle(color: context.textSecondary, fontSize: 12),
+                  style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
                 ),
               ],
             ),
@@ -1279,12 +1279,12 @@ class _ThemeToggleTile extends StatelessWidget {
               children: [
                 Text(
                   'Theme',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: TextStyle(fontSize: AppFontSizes.heading, fontWeight: FontWeight.w700),
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Switch between light and dark mode',
-                  style: TextStyle(color: context.textSecondary, fontSize: 12),
+                  style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
                 ),
               ],
             ),
@@ -1328,7 +1328,7 @@ class _ThemeToggleTile extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected ? ctx.surface : ctx.textPrimary,
-            fontSize: 13,
+            fontSize: AppFontSizes.body,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -1369,7 +1369,7 @@ class _TransactionCountPill extends StatelessWidget {
             label,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
             ),
@@ -1412,7 +1412,7 @@ class _TrackingSincePill extends StatelessWidget {
             label,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.2,
             ),
@@ -1447,7 +1447,7 @@ class _SheetLabeledField extends StatelessWidget {
           label,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
           ),
@@ -1488,7 +1488,7 @@ class _RestoreInfoRow extends StatelessWidget {
               label,
               style: TextStyle(
                 color: context.textSecondary,
-                fontSize: 11,
+                fontSize: AppFontSizes.small,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.3,
               ),
@@ -1498,7 +1498,7 @@ class _RestoreInfoRow extends StatelessWidget {
               value,
               style: TextStyle(
                 color: context.textPrimary,
-                fontSize: 14,
+                fontSize: AppFontSizes.bodyLarge,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1521,7 +1521,7 @@ class _SectionLabel extends StatelessWidget {
       text,
       style: TextStyle(
         color: color,
-        fontSize: 14,
+        fontSize: AppFontSizes.bodyLarge,
         letterSpacing: 1.4,
         fontWeight: FontWeight.w600,
       ),
@@ -1583,7 +1583,7 @@ class _ProfileRow extends StatelessWidget {
                     title,
                     style: AppTypography.sectionTitle(
                       context,
-                    ).copyWith(color: textColor, fontSize: 18),
+                    ).copyWith(color: textColor, fontSize: AppFontSizes.heading),
                   ),
                   if (subtitle != null)
                     Padding(
@@ -1592,7 +1592,7 @@ class _ProfileRow extends StatelessWidget {
                         subtitle!,
                         style: TextStyle(
                           color: subtitleColor ?? iconColor,
-                          fontSize: 13,
+                          fontSize: AppFontSizes.body,
                         ),
                       ),
                     ),

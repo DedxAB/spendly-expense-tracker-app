@@ -251,7 +251,7 @@ class LendPage extends ConsumerWidget {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w700,
-                                      fontSize: 16,
+                                      fontSize: AppFontSizes.title,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -259,7 +259,7 @@ class LendPage extends ConsumerWidget {
                                     '${item.activeEntryCount} active entries',
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 12,
+                    fontSize: AppFontSizes.label,
                   ),
                                   ),
                                 ],
@@ -276,7 +276,7 @@ class LendPage extends ConsumerWidget {
                                         ? AppColors.income
                                         : AppColors.expense,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontSize: AppFontSizes.title,
                                   ),
                                 ),
                                 AmountView(
@@ -286,7 +286,7 @@ class LendPage extends ConsumerWidget {
                                         ? AppColors.income
                                         : AppColors.expense,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 16,
+                                    fontSize: AppFontSizes.title,
                                   ),
                                   maskColor: isPositive
                                       ? AppColors.income
@@ -361,7 +361,7 @@ class _SummaryMetric extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w800,
-              fontSize: 18,
+              fontSize: AppFontSizes.heading,
             ),
             maskColor: color,
             maskWidth: 6,

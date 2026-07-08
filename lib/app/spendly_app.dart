@@ -340,7 +340,7 @@ class _PrivacyLockScreen extends StatelessWidget {
               const Text(
                 'Unlock Spendly to view your financial data.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFFBDBDBD), fontSize: 14),
+                style: TextStyle(color: Color(0xFFBDBDBD), fontSize: AppFontSizes.bodyLarge),
               ),
               const SizedBox(height: AppSpacing.mdPlus),
               SizedBox(

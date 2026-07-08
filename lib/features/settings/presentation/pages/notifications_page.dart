@@ -36,7 +36,7 @@ class NotificationsPage extends ConsumerWidget {
         children: [
           Text(
             'Stay informed about your finances.',
-            style: TextStyle(color: context.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
           ),
           const SizedBox(height: 20),
           if (summary != null && summary.remainingBudget < 0)
@@ -59,7 +59,7 @@ class NotificationsPage extends ConsumerWidget {
                 'Just now',
                 style: TextStyle(
                   color: context.textSecondary,
-                  fontSize: 11,
+                  fontSize: AppFontSizes.small,
                 ),
               ),
             ),
@@ -139,7 +139,7 @@ class _NotificationCard extends StatelessWidget {
                             child: Text(
                               title,
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: AppFontSizes.subhead,
                                 fontWeight: FontWeight.w600,
                                 color: context.textPrimary,
                               ),
@@ -152,7 +152,7 @@ class _NotificationCard extends StatelessWidget {
                       Text(
                         message,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSizes.body,
                           color: context.textSecondary,
                           height: 1.4,
                         ),
@@ -187,7 +187,7 @@ class _StatusBadge extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 10,
+          fontSize: AppFontSizes.caption,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
         ),

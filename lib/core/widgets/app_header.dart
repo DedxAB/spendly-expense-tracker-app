@@ -103,7 +103,7 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
         return Text(
           title!,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 18,
+            fontSize: AppFontSizes.heading,
             fontWeight: FontWeight.w600,
           ),
         );
@@ -156,7 +156,7 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 17,
+              fontSize: AppFontSizes.heading,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.4,
             ),
@@ -166,7 +166,7 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
             _greeting(),
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: 13,
+              fontSize: AppFontSizes.body,
               fontWeight: FontWeight.w500,
             ),
           ),

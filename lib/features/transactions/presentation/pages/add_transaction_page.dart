@@ -280,7 +280,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 20,
+                      fontSize: AppFontSizes.largeHeading,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),
@@ -289,12 +289,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       prefixText: '${AppConstants.currencySymbol} ',
                       prefixStyle: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 16,
+                        fontSize: AppFontSizes.title,
                         fontWeight: FontWeight.w600,
                       ),
                       hintStyle: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 18,
+                        fontSize: AppFontSizes.heading,
                         fontWeight: FontWeight.w600,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -309,7 +309,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Enter a valid amount',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
+                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: AppFontSizes.small),
                       ),
                     ),
                   const SizedBox(height: 14),
@@ -362,7 +362,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Select a category',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
+                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: AppFontSizes.small),
                       ),
                     ),
                   const SizedBox(height: 22),
@@ -410,7 +410,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                               ).formatMediumDate(_date),
                               style: TextStyle(
                                 color: context.textPrimary,
-                                fontSize: 16,
+                                fontSize: AppFontSizes.title,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -437,7 +437,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     child: TextField(
                       controller: _noteController,
                       maxLines: 1,
-                      style: TextStyle(color: context.textPrimary, fontSize: 16),
+                      style: TextStyle(color: context.textPrimary, fontSize: AppFontSizes.title),
                       decoration: InputDecoration(
                         filled: false,
                         enabledBorder: InputBorder.none,
@@ -448,7 +448,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                         hintText: 'What was this for?',
                         hintStyle: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 16,
+                          fontSize: AppFontSizes.title,
                           fontWeight: FontWeight.w500,
                         ),
                         border: InputBorder.none,
@@ -468,7 +468,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                             ? _saveButtonLabel(_type)
                             : _updateButtonLabel(_type),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: AppFontSizes.subhead,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0,
                         ),
@@ -508,7 +508,7 @@ class _SheetLabel extends StatelessWidget {
           text,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             letterSpacing: 1.6,
             fontWeight: FontWeight.w700,
           ),
@@ -520,7 +520,7 @@ class _SheetLabel extends StatelessWidget {
               '*',
               style: TextStyle(
                 color: Color(0xFFF55C5C),
-                fontSize: 14,
+                fontSize: AppFontSizes.bodyLarge,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -565,7 +565,7 @@ class _SheetChoiceChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected ? context.surface : context.textPrimary,
-            fontSize: 13,
+            fontSize: AppFontSizes.body,
             letterSpacing: 0.8,
             fontWeight: FontWeight.w700,
           ),
@@ -619,7 +619,7 @@ class _AccountSegment extends StatelessWidget {
                   item.$2,
                   style: TextStyle(
                     color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,
                   ),
@@ -678,7 +678,7 @@ class _CardTypeSegment extends StatelessWidget {
                   item.$2,
                   style: TextStyle(
                     color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,
                   ),
@@ -737,7 +737,7 @@ class _TypeSegment extends StatelessWidget {
                   item.$2,
                   style: TextStyle(
                     color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     letterSpacing: 0,
                     fontWeight: FontWeight.w600,
                   ),

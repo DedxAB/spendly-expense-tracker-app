@@ -103,7 +103,7 @@ class BudgetPage extends ConsumerWidget {
                     'TOTAL AVAILABLE VS USED',
                     style: TextStyle(
                       letterSpacing: 1.8,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                       color: context.textSecondary,
                     ),
                   ),
@@ -116,11 +116,14 @@ class BudgetPage extends ConsumerWidget {
                       style: AppTypography.amount(context),
                       maskColor: context.textPrimary,
                     ),
-                    Text(
-                      ' / ${Formatters.currency(budget)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: context.textSecondary,
+                    Flexible(
+                      child: Text(
+                        ' / ${Formatters.currency(budget)}',
+                        softWrap: false,
+                        style: TextStyle(
+                          fontSize: AppFontSizes.heading,
+                          color: context.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -139,8 +142,11 @@ class BudgetPage extends ConsumerWidget {
                       '${(budget <= 0 ? 0 : ((monthlySpend / budget) * 100)).toStringAsFixed(0)}% Used',
                     ),
                     const Spacer(),
-                    Text(
-                      '${Formatters.currency(remaining.abs())} ${remaining >= 0 ? 'Remaining' : 'Over'}',
+                    Flexible(
+                      child: Text(
+                        '${Formatters.currency(remaining.abs())} ${remaining >= 0 ? 'Remaining' : 'Over'}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -156,7 +162,7 @@ class BudgetPage extends ConsumerWidget {
                           Text(
                             'Safe to Spend',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: AppFontSizes.label,
                               color: context.textSecondary,
                             ),
                           ),
@@ -166,7 +172,7 @@ class BudgetPage extends ConsumerWidget {
                               AmountView(
                                 safePerDay.abs(),
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: AppFontSizes.heading,
                                   fontWeight: FontWeight.w700,
                                   color: safePerDay >= 0
                                       ? const Color(0xFF3DD07B)
@@ -180,7 +186,7 @@ class BudgetPage extends ConsumerWidget {
                               Text(
                                 ' / day',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: AppFontSizes.heading,
                                   fontWeight: FontWeight.w700,
                                   color: safePerDay >= 0
                                       ? const Color(0xFF3DD07B)
@@ -205,7 +211,7 @@ class BudgetPage extends ConsumerWidget {
                       child: Text(
                         remaining >= 0 ? 'ON TRACK' : 'OVER BUDGET',
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: AppFontSizes.small,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -459,7 +465,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                   'Total category budgets (${Formatters.currency(totalCategoryBudget)}) cannot exceed monthly budget (${Formatters.currency(monthlyBudgetValue)}).',
                   style: const TextStyle(
                     color: Color(0xFFFF8A7A),
-                    fontSize: 12,
+                    fontSize: AppFontSizes.label,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -501,7 +507,7 @@ class _ModalFieldLabel extends StatelessWidget {
       label,
       style: TextStyle(
         color: context.textSecondary,
-        fontSize: 12,
+        fontSize: AppFontSizes.label,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -561,7 +567,7 @@ class _BudgetCategoryCard extends StatelessWidget {
                 const Text(
                   'OVER BUDGET',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: AppFontSizes.caption,
                     letterSpacing: 1.2,
                     color: Color(0xFFFF8A7A),
                   ),

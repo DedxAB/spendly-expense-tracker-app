@@ -90,7 +90,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                   message,
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     height: 1.4,
                   ),
                 ),
@@ -162,7 +162,7 @@ class _SwipeHintRow extends StatelessWidget {
               text,
               style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 14,
+                        fontSize: AppFontSizes.bodyLarge,
                         fontWeight: FontWeight.w600,
                       ),
             ),

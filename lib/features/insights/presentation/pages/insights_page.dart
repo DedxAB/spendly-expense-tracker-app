@@ -332,7 +332,7 @@ class _PeriodNavigator extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: context.textPrimary,
-                  fontSize: 18,
+                  fontSize: AppFontSizes.heading,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.5,
                   ),
@@ -386,7 +386,7 @@ class _ViewModeChip extends StatelessWidget {
         label,
         style: TextStyle(
           color: isSelected ? context.surface : context.textSecondary,
-          fontSize: 12,
+          fontSize: AppFontSizes.label,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -501,7 +501,9 @@ class _BurnRateCard extends StatelessWidget {
             children: [
               const Icon(Icons.speed, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
-              Text(isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate', style: AppTypography.sectionTitle(context)),
+              Flexible(
+                child: Text(isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate', overflow: TextOverflow.ellipsis, style: AppTypography.sectionTitle(context)),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -512,7 +514,7 @@ class _BurnRateCard extends StatelessWidget {
                 '${AppConstants.currencySymbol}${_formatCompact(rateValue)}',
                 style: TextStyle(
                   color: context.textPrimary,
-                  fontSize: 28,
+                  fontSize: AppFontSizes.largeDisplay,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -521,14 +523,17 @@ class _BurnRateCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   rateLabel,
-                  style: TextStyle(color: context.textSecondary, fontSize: 14),
+                  style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
                 ),
               ),
               const Spacer(),
               if (displayProjected > 0)
-                Text(
-                  isYearly ? 'Projected EoY ${Formatters.currency(displayProjected)}' : 'Projected ${Formatters.currency(displayProjected)}',
-                  style: TextStyle(color: context.textSecondary, fontSize: 12),
+                Flexible(
+                  child: Text(
+                    isYearly ? 'Projected EoY ${Formatters.currency(displayProjected)}' : 'Projected ${Formatters.currency(displayProjected)}',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
+                  ),
                 ),
             ],
           ),
@@ -575,7 +580,7 @@ class _BudgetBar extends StatelessWidget {
           children: [
             Text(
               '${(pct * 100).toStringAsFixed(0)}% of budget',
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
             ),
             Text(
               isOver
@@ -583,7 +588,7 @@ class _BudgetBar extends StatelessWidget {
                   : '${Formatters.currency(remaining)} left',
               style: TextStyle(
                 color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
-                fontSize: 12,
+                fontSize: AppFontSizes.label,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -593,7 +598,7 @@ class _BudgetBar extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Projected to exceed by ${Formatters.currency(projected - budget)}',
-            style: const TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
+            style: const TextStyle(color: Color(0xFFF55C5C), fontSize: AppFontSizes.small),
           ),
         ],
       ],
@@ -700,7 +705,7 @@ class _SummaryRow extends StatelessWidget {
           label,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 14,
+            fontSize: AppFontSizes.bodyLarge,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -715,7 +720,7 @@ class _SummaryRow extends StatelessWidget {
                 value,
                 style: TextStyle(
                   color: valueColor,
-                  fontSize: 18,
+                  fontSize: AppFontSizes.heading,
                   fontWeight: FontWeight.w700,
                   height: 1.1,
                 ),
@@ -725,7 +730,7 @@ class _SummaryRow extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 subtitle!,
-                style: TextStyle(color: context.textSecondary, fontSize: 10),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.caption),
               ),
             ],
           ],
@@ -793,7 +798,7 @@ class _CategoryWatch extends StatelessWidget {
                   Expanded(
                     child: Text(
                       slice.category,
-                      style: TextStyle(fontSize: 14, color: context.textSecondary),
+                      style: TextStyle(fontSize: AppFontSizes.bodyLarge, color: context.textSecondary),
                     ),
                   ),
                   if (delta != null && delta.abs() > 1)
@@ -808,7 +813,7 @@ class _CategoryWatch extends StatelessWidget {
                       child: Text(
                         '${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}%',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: AppFontSizes.small,
                           fontWeight: FontWeight.w700,
                           color: delta > 0
                               ? const Color(0xFFF55C5C)
@@ -823,7 +828,7 @@ class _CategoryWatch extends StatelessWidget {
                       slice.total,
                       textAlign: TextAlign.right,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: AppFontSizes.bodyLarge,
                         fontWeight: FontWeight.w600,
                         color: context.textPrimary,
                       ),
@@ -837,7 +842,7 @@ class _CategoryWatch extends StatelessWidget {
           Center(
             child: Text(
               '${Formatters.currency(totalExpense)} total across ${sorted.length} categories',
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
             ),
           ),
         ],
@@ -987,7 +992,7 @@ class _WhatsChanged extends StatelessWidget {
                 children: [
                   Text(
                     '\u2022',
-                    style: TextStyle(color: context.textSecondary, fontSize: 14),
+                    style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -995,7 +1000,7 @@ class _WhatsChanged extends StatelessWidget {
                       line,
                       style: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 14,
+                        fontSize: AppFontSizes.bodyLarge,
                         height: 1.5,
                       ),
                     ),
@@ -1071,7 +1076,7 @@ class _TrendChart extends StatelessWidget {
                       alignment: Alignment.topRight,
                       style: const TextStyle(
                         color: Color(0xFFE8B830),
-                        fontSize: 10,
+                        fontSize: AppFontSizes.caption,
                         fontWeight: FontWeight.w600,
                       ),
                       labelResolver: (_) => 'Budget',
@@ -1114,7 +1119,7 @@ class _TrendChart extends StatelessWidget {
                   getTitlesWidget: (value, _) => Text(
                     _formatAxisAmount(value),
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                       color: context.textSecondary,
                     ),
                   ),
@@ -1133,7 +1138,7 @@ class _TrendChart extends StatelessWidget {
                     return Text(
                       chartPoints[i].label,
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: AppFontSizes.small,
                         color: context.textSecondary,
                       ),
                     );
@@ -1190,7 +1195,7 @@ class _TrendChart extends StatelessWidget {
       '${point.title}\n',
       TextStyle(
         color: context.textPrimary,
-        fontSize: 12,
+        fontSize: AppFontSizes.label,
         fontWeight: FontWeight.w700,
       ),
       textAlign: TextAlign.left,
@@ -1199,7 +1204,7 @@ class _TrendChart extends StatelessWidget {
           text: '${Formatters.currency(point.value)} spent\n',
           style: TextStyle(
             color: context.textPrimary,
-            fontSize: 13,
+            fontSize: AppFontSizes.body,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1207,7 +1212,7 @@ class _TrendChart extends StatelessWidget {
           text: '${point.periodLabel}\n',
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 11,
+            fontSize: AppFontSizes.small,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -1215,7 +1220,7 @@ class _TrendChart extends StatelessWidget {
           text: '${Formatters.currency(average)} per day',
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 11,
+            fontSize: AppFontSizes.small,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -1224,7 +1229,7 @@ class _TrendChart extends StatelessWidget {
             text: '\n${comparison.text}',
             style: TextStyle(
               color: comparison.color,
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1312,7 +1317,7 @@ class _TrendArrow extends StatelessWidget {
         Text(
           '${isUp ? '+' : ''}${pct.toStringAsFixed(0)}% from $periodLabel start',
           style: TextStyle(
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             fontWeight: FontWeight.w600,
             color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
           ),
@@ -1395,7 +1400,7 @@ class _SnapshotTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: context.textSecondary,
-              fontSize: 9,
+              fontSize: AppFontSizes.caption,
               fontWeight: FontWeight.w700,
               letterSpacing: 0.8,
             ),
@@ -1403,11 +1408,10 @@ class _SnapshotTile extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            softWrap: false,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 13,
+              fontSize: AppFontSizes.body,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -1416,7 +1420,7 @@ class _SnapshotTile extends StatelessWidget {
             caption,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: context.textSecondary, fontSize: 11),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.small),
           ),
         ],
       ),
