@@ -85,7 +85,7 @@ class SpendlyBlackCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Total Balance',
+                            'Available Balance',
                             style: TextStyle(
                               color: context.textPrimary,
                               fontSize: AppFontSizes.heading,

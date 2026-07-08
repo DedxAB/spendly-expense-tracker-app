@@ -1,9 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
+import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
+
+IconData _categoryIcon(String categoryName) {
+  return AppIcons.getIconForCategory(categoryName);
+}
+
+Color _categoryIconColor(CategoryEntity? category, TransactionType type) {
+  if (category != null) {
+    return AppIcons.getColorForCategory(category.name, type);
+  }
+  return switch (type) {
+    TransactionType.income => AppColors.income,
+    TransactionType.investment => const Color(0xFF8B5CF6),
+    TransactionType.expense => AppColors.expense,
+  };
+}
+
+String _transactionTitle(TransactionEntity tx, Map<String, CategoryEntity> categoryById) {
+  return tx.note?.trim().isNotEmpty == true
+      ? tx.note!.trim()
+      : (categoryById[tx.categoryId]?.name ?? tx.categoryId);
+}
+
+String _transactionSubtitle(TransactionEntity tx, Map<String, CategoryEntity> categoryById) {
+  return categoryById[tx.categoryId]?.name ?? tx.categoryId;
+}
 
 class TransactionRow extends StatelessWidget {
   const TransactionRow({
@@ -19,6 +47,28 @@ class TransactionRow extends StatelessWidget {
     this.paymentMode,
     this.cardType,
   });
+
+  factory TransactionRow.fromEntity({
+    required TransactionEntity tx,
+    required Map<String, CategoryEntity> categoryById,
+    required String dateLabel,
+    required bool isLast,
+    Key? key,
+  }) {
+    return TransactionRow(
+      key: key,
+      title: _transactionTitle(tx, categoryById),
+      subtitle: _transactionSubtitle(tx, categoryById),
+      amount: tx.amount,
+      type: tx.type,
+      isLast: isLast,
+      dateLabel: dateLabel,
+      icon: _categoryIcon(categoryById[tx.categoryId]?.name ?? tx.categoryId),
+      iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
+      paymentMode: tx.paymentMode,
+      cardType: tx.cardType,
+    );
+  }
 
   final String title;
   final String subtitle;

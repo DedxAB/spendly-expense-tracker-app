@@ -55,7 +55,6 @@ class AppHeader extends ConsumerWidget implements PreferredSizeWidget {
         const SizedBox(width: 8),
         _IconCard(
           icon: AppIcons.bell,
-          showDot: isHome,
           onTap: () => context.push('/notifications'),
         ),
         const SizedBox(width: AppSpacing.smPlus),
@@ -180,46 +179,25 @@ class _IconCard extends StatelessWidget {
   const _IconCard({
     required this.icon,
     required this.onTap,
-    this.showDot = false,
   });
 
   final IconData icon;
   final VoidCallback onTap;
-  final bool showDot;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: context.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.border),
-            ),
-            child: Icon(icon, size: 22, color: context.textPrimary),
-          ),
-          if (showDot)
-            Positioned(
-              top: 6,
-              right: 6,
-              child: Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: context.homeAccentGreen,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: context.background, width: 1.2),
-                ),
-              ),
-            ),
-        ],
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: context.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: context.border),
+        ),
+        child: Icon(icon, size: 22, color: context.textPrimary),
       ),
     );
   }

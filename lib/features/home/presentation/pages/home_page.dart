@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -10,8 +9,8 @@ import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
-import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
@@ -144,14 +143,20 @@ class HomePage extends ConsumerWidget {
             error: (_, __) => const SizedBox.shrink(),
           ),
           lendOverview.when(
-            data: (lend) => _LendBorrowCard(
-              toReceive: lend.totalToReceive,
-              toPay: lend.totalToPay,
-              openPeople: lend.peopleBalances
+            data: (lend) {
+              final openPeople = lend.peopleBalances
                   .where((p) => p.activeEntryCount > 0)
-                  .length,
-              onTap: () => context.push('/lend'),
-            ),
+                  .length;
+              if (lend.totalToReceive <= 0 && lend.totalToPay <= 0 && openPeople == 0) {
+                return const SizedBox.shrink();
+              }
+              return _LendBorrowCard(
+                toReceive: lend.totalToReceive,
+                toPay: lend.totalToPay,
+                openPeople: openPeople,
+                onTap: () => context.push('/lend'),
+              );
+            },
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
@@ -186,35 +191,21 @@ class HomePage extends ConsumerWidget {
           recent.when(
             data: (items) {
               if (items.isEmpty) {
-                return const _EmptyTransactionsCard();
+                return const Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: EmptyTransactionIllustration(message: 'Your recent transactions will appear here'),
+                );
               }
               return HomeSurfaceCard(
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
                     for (var i = 0; i < items.length; i++)
-                      TransactionRow(
-                        title: items[i].note?.trim().isNotEmpty == true
-                            ? items[i].note!.trim()
-                            : (categoryById[items[i].categoryId]?.name ??
-                                  items[i].categoryId),
-                        subtitle:
-                            categoryById[items[i].categoryId]?.name ??
-                            items[i].categoryId,
-                        amount: items[i].amount,
-                        type: items[i].type,
-                        isLast: i == items.length - 1,
+                      TransactionRow.fromEntity(
+                        tx: items[i],
+                        categoryById: categoryById,
                         dateLabel: _dateLabel(items[i]),
-                        icon: _iconFor(
-                          categoryById[items[i].categoryId]?.name ??
-                              items[i].categoryId,
-                        ),
-                        iconColor: _categoryIconColor(
-                          categoryById[items[i].categoryId],
-                          items[i].type,
-                        ),
-                        paymentMode: items[i].paymentMode,
-                        cardType: items[i].cardType,
+                        isLast: i == items.length - 1,
                       ),
                   ],
                 ),
@@ -229,27 +220,6 @@ class HomePage extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  static IconData _iconFor(String text) {
-    return AppIcons.getIconForCategory(text);
-  }
-
-  static Color _categoryIconColor(
-    CategoryEntity? category,
-    TransactionType type,
-  ) {
-    if (category != null) {
-      return AppIcons.getColorForCategory(category.name, type);
-    }
-    switch (type) {
-      case TransactionType.income:
-        return AppColors.income;
-      case TransactionType.investment:
-        return const Color(0xFF8B5CF6);
-      case TransactionType.expense:
-        return AppColors.expense;
-    }
   }
 
   static String _dateLabel(dynamic tx) {
@@ -708,7 +678,7 @@ class _LendBorrowCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniMetricCard(
-                  title: 'You Receive',
+                  title: 'You Will Receive',
                   amount: toReceive,
                   tint: AppColors.homeAccentGreen,
                   icon: AppIcons.download,
@@ -888,150 +858,6 @@ class _MiniMetricCard extends StatelessWidget {
   }
 }
 
-class _EmptyTransactionsCard extends StatelessWidget {
-  const _EmptyTransactionsCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return HomeSurfaceCard(
-      borderRadius: AppRadii.card,
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: SizedBox(
-        height: 170,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(child: const _EmptyTransactionIllustration()),
-            const SizedBox(height: 14),
-            Text(
-              'No transactions yet',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: context.textPrimary,
-                fontSize: AppFontSizes.heading,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Your recent transactions will appear here',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.body),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyTransactionIllustration extends StatelessWidget {
-  const _EmptyTransactionIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 88,
-      height: 72,
-      child: CustomPaint(
-        painter: _ReceiptIllustrationPainter(
-          borderColor: context.border.withValues(alpha: 0.5),
-          surfaceColor: context.surface,
-          surfaceAltColor: context.surfaceAlt,
-          iconColor: context.textSecondary.withValues(alpha: 0.3),
-        ),
-      ),
-    );
-  }
-}
-
-class _ReceiptIllustrationPainter extends CustomPainter {
-  _ReceiptIllustrationPainter({
-    required this.borderColor,
-    required this.surfaceColor,
-    required this.surfaceAltColor,
-    required this.iconColor,
-  });
-
-  final Color borderColor;
-  final Color surfaceColor;
-  final Color surfaceAltColor;
-  final Color iconColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rrect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(14, 18, 58, 42),
-      const Radius.circular(10),
-    );
-    final paint = Paint()
-      ..color = surfaceAltColor
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(rrect, paint);
-
-    final paintBorder = Paint()
-      ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    canvas.drawRRect(rrect, paintBorder);
-
-    final rrect2 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(18, 24, 58, 42),
-      const Radius.circular(10),
-    );
-    final paint2 = Paint()
-      ..color = surfaceColor
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(rrect2, paint2);
-
-    canvas.drawRRect(rrect2, paintBorder);
-
-    final paintLine = Paint()
-      ..color = iconColor
-      ..style = PaintingStyle.fill;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 34, 34, 3),
-        const Radius.circular(2),
-      ),
-      paintLine,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 42, 22, 3),
-        const Radius.circular(2),
-      ),
-      paintLine..color = iconColor,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(30, 50, 12, 3),
-        const Radius.circular(2),
-      ),
-      paintLine..color = iconColor,
-    );
-
-    canvas.save();
-    canvas.translate(8, 12);
-    canvas.rotate(0.08);
-    final rrect3 = RRect.fromRectAndRadius(
-      Rect.fromLTWH(0, 0, 32, 22),
-      const Radius.circular(6),
-    );
-    canvas.drawRRect(rrect3, paint..color = surfaceAltColor);
-    canvas.drawRRect(rrect3, paintBorder);
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_ReceiptIllustrationPainter oldDelegate) =>
-      oldDelegate.borderColor != borderColor ||
-      oldDelegate.surfaceColor != surfaceColor ||
-      oldDelegate.surfaceAltColor != surfaceAltColor ||
-      oldDelegate.iconColor != iconColor;
-}
 
 class _RecurringBanner extends StatelessWidget {
   const _RecurringBanner({

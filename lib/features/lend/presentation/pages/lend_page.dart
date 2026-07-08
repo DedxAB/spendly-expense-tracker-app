@@ -107,7 +107,7 @@ class LendPage extends ConsumerWidget {
                           child: _SummaryMetric(
                             label: 'You Will Receive',
                             amountValue: data.totalToReceive,
-                            color: AppColors.income,
+                            isReceive: true,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
@@ -115,7 +115,7 @@ class LendPage extends ConsumerWidget {
                           child: _SummaryMetric(
                             label: 'You Owe',
                             amountValue: data.totalToPay,
-                            color: AppColors.expense,
+                            isReceive: false,
                           ),
                         ),
                       ],
@@ -336,34 +336,56 @@ class _SummaryMetric extends StatelessWidget {
   const _SummaryMetric({
     required this.label,
     required this.amountValue,
-    required this.color,
+    required this.isReceive,
   });
 
   final String label;
   final double amountValue;
-  final Color color;
+  final bool isReceive;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tint = isReceive ? AppColors.homeAccentGreen : AppColors.homeAccentRed;
+
+    final bg = isDark
+        ? (isReceive
+            ? const Color(0xFF121C14)
+            : const Color(0xFF1A1314))
+        : tint.withValues(alpha: 0.06);
+    final border = isDark
+        ? (isReceive
+            ? const Color(0xFF1B3420)
+            : const Color(0xFF352224))
+        : tint.withValues(alpha: 0.15);
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
-        color: color.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(14),
+        color: bg,
+        border: Border.all(color: border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.labelMedium),
-          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: context.textPrimary,
+              fontSize: AppFontSizes.small,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
           AmountView(
             amountValue,
             style: TextStyle(
-              color: color,
+              color: tint,
               fontWeight: FontWeight.w800,
               fontSize: AppFontSizes.heading,
             ),
-            maskColor: color,
+            maskColor: tint,
             maskWidth: 6,
             maskHeight: 18,
             maskSpacing: 3,

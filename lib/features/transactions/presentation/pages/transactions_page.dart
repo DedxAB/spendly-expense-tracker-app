@@ -8,9 +8,11 @@ import 'package:spendly/core/theme/app_date_picker_theme.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
+import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -81,14 +83,34 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
       shown += entry.value.length;
     }
 
+    final grandTotal = entries.fold<double>(
+      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + t.amount),
+    );
     return Column(
       children: [
-        ...visible.map((entry) => Padding(
+        ...visible.asMap().entries.map((group) {
+          final entry = group.value;
+          return Padding(
           padding: EdgeInsets.only(top: AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(entry.key, style: AppTypography.sectionTitle(context)),
+              group.key == 0
+                  ? Row(
+                      children: [
+                        Text(entry.key, style: AppTypography.sectionTitle(context)),
+                        const Spacer(),
+                        Text(
+                          'Total = ${Formatters.currency(grandTotal)}',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(entry.key, style: AppTypography.sectionTitle(context)),
               SizedBox(height: AppSpacing.smPlus),
               Divider(color: context.border),
               ...entry.value.asMap().entries.map((item) {
@@ -145,26 +167,19 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                       ],
                     ),
                   ),
-                  child: TransactionRow(
-                    title: tx.note?.trim().isNotEmpty == true
-                        ? tx.note!.trim()
-                        : (categoryById[tx.categoryId]?.name ?? tx.categoryId),
-                    subtitle: categoryById[tx.categoryId]?.name ?? tx.categoryId,
-                    amount: tx.amount,
-                    type: tx.type,
-                    isLast: isLast,
+                  child: TransactionRow.fromEntity(
+                    tx: tx,
+                    categoryById: categoryById,
                     dateLabel: _dateLabel(tx),
-                    icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
-                    iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
-                    paymentMode: tx.paymentMode,
-                    cardType: tx.cardType,
+                    isLast: isLast,
                   ),
 
                 );
               }),
             ],
           ),
-        )),
+        );
+          }),
         if (shown < totalCount)
           Padding(
             padding: EdgeInsets.only(top: AppSpacing.sm),
@@ -228,9 +243,9 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
           transactions.when(
             data: (items) {
               if (items.isEmpty) {
-                return Padding(
-                  padding: EdgeInsets.only(top: AppSpacing.xl),
-                  child: const Text('No transactions found'),
+                return const Padding(
+                  padding: EdgeInsets.only(top: 60),
+                  child: EmptyTransactionIllustration(),
                 );
               }
 
@@ -265,27 +280,6 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
       map.putIfAbsent(key, () => []).add(tx);
     }
     return map;
-  }
-
-  static IconData _iconFor(String text) {
-    return AppIcons.getIconForCategory(text);
-  }
-
-  static Color _categoryIconColor(
-    CategoryEntity? category,
-    TransactionType type,
-  ) {
-    if (category != null) {
-      return AppIcons.getColorForCategory(category.name, type);
-    }
-    switch (type) {
-      case TransactionType.income:
-        return AppColors.income;
-      case TransactionType.investment:
-        return const Color(0xFF8B5CF6);
-      case TransactionType.expense:
-        return AppColors.expense;
-    }
   }
 
   List<Widget> _buildFilterChips(
@@ -628,6 +622,9 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                               child: FilledButton(
                                 onPressed: () {
                                   syncAmountState();
+                                  ref
+                                      .read(transactionFilterProvider.notifier)
+                                      .setType(selectedType);
                                   ref
                                       .read(transactionFilterProvider.notifier)
                                       .setCategory(selectedCategoryId);

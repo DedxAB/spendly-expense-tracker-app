@@ -116,17 +116,21 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
           .where((row) => row.type == 'expense')
           .fold<double>(0, (sum, row) => sum + row.amount);
       final netInvestment = rows
-          .where((row) => row.type == 'investment')
+          .where((row) => row.type == 'investment' && row.categoryId != 'cat_goal_transfer')
           .fold<double>(0, (sum, row) => sum + row.amount);
       final grossInvestment = rows
-          .where((row) => row.type == 'investment' && row.amount > 0)
+          .where((row) => row.type == 'investment' && row.amount > 0 && row.categoryId != 'cat_goal_transfer')
+          .fold<double>(0, (sum, row) => sum + row.amount);
+      final goalTransfers = rows
+          .where((row) => row.categoryId == 'cat_goal_transfer')
           .fold<double>(0, (sum, row) => sum + row.amount);
       return {
         'income': income,
         'expense': expense,
         'investment': netInvestment,
         'grossInvestment': grossInvestment,
-        'balance': income - expense - netInvestment,
+        'goalTransfers': goalTransfers,
+        'balance': income - expense - netInvestment - goalTransfers,
       };
     });
   }
@@ -135,7 +139,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
   Stream<List<TransactionEntity>> watchRecent({int limit = 5}) {
     return _ref
         .read(appDatabaseProvider)
-        .watchRecentTransactions(limit: limit)
+        .watchRecentTransactions(limit: limit, excludeCategoryId: 'cat_goal_transfer')
         .map(
           (rows) => rows.map((row) => row.toEntity()).toList(growable: false),
         );

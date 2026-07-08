@@ -298,11 +298,14 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Stream<List<Transaction>> watchRecentTransactions({int limit = 5}) {
+  Stream<List<Transaction>> watchRecentTransactions({int limit = 5, String? excludeCategoryId}) {
     final query = (select(transactions)
       ..where((tbl) => tbl.isDeleted.equals(false))
       ..orderBy([(tbl) => OrderingTerm.desc(tbl.date)])
       ..limit(limit));
+    if (excludeCategoryId != null) {
+      query.where((tbl) => tbl.categoryId.equals(excludeCategoryId).not());
+    }
     return query.watch();
   }
 
