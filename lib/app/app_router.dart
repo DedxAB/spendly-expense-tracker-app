@@ -152,7 +152,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
           child: Text(
             'Spendly',
             style: TextStyle(
-              fontSize: AppFontSizes.hero,
+              fontSize: AppFontSizes.splash,
               fontWeight: FontWeight.w800,
               color: context.textPrimary,
               letterSpacing: -1.5,

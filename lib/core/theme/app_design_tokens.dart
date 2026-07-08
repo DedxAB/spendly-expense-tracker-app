@@ -123,4 +123,5 @@ class AppFontSizes {
   static const double display = 22;
   static const double largeDisplay = 28;
   static const double hero = 32;
+  static const double splash = 48;
 }
