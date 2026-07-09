@@ -8,6 +8,7 @@ import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_person_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_settlement_event_entity.dart';
 import 'package:spendly/features/recurring/domain/entities/recurring_rule_entity.dart';
+import 'package:spendly/features/contributions/domain/entities/contribution_entity.dart';
 import 'package:spendly/features/settings/domain/entities/settings_entity.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/user/domain/entities/user_profile_entity.dart';
@@ -296,5 +297,30 @@ MonthlyReflectionsCompanion monthlyReflectionToCompanion(
     monthKey: entity.monthKey,
     note: entity.note,
     updatedAt: entity.updatedAt.millisecondsSinceEpoch,
+  );
+}
+
+extension ContributionMapper on ExpenseContribution {
+  ContributionEntity toContributionEntity() {
+    return ContributionEntity(
+      id: id,
+      expenseId: expenseId,
+      personName: personName,
+      amount: amountPaise > 0 ? Money.fromPaise(amountPaise) : amount,
+      isSettled: isSettled,
+      settledAt: settledAt == null ? null : DateTime.fromMillisecondsSinceEpoch(settledAt!),
+    );
+  }
+}
+
+ExpenseContributionsCompanion contributionToCompanion(ContributionEntity entity) {
+  return ExpenseContributionsCompanion.insert(
+    id: entity.id,
+    expenseId: entity.expenseId,
+    personName: entity.personName,
+    amount: entity.amount,
+    amountPaise: Value(Money.toPaise(entity.amount)),
+    isSettled: Value(entity.isSettled),
+    settledAt: Value(entity.settledAt?.millisecondsSinceEpoch),
   );
 }

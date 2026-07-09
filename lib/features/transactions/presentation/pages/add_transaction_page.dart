@@ -13,6 +13,9 @@ import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
+import 'package:spendly/features/contributions/presentation/providers/contributions_provider.dart';
+import 'package:spendly/features/contributions/data/repositories/contributions_repository_impl.dart';
+import 'package:spendly/features/contributions/presentation/widgets/contributor_editor.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -84,6 +87,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   String? _selectedCategoryId;
   bool _formAttempted = false;
 
+  List<({String personName, double amount})> _contributors = [];
+  bool _includeSelf = false;
+  double _selfShare = 0;
+
   @override
   void initState() {
     super.initState();
@@ -96,10 +103,24 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       _selectedCategoryId = existing.categoryId;
       _amountController.text = existing.amount.toStringAsFixed(2);
       _noteController.text = existing.note ?? '';
+      _loadContributors(existing.id);
     } else {
       _type = widget.initialType ?? TransactionType.expense;
       _cardType = _type != TransactionType.income ? CardType.debit : null;
     }
+  }
+
+  Future<void> _loadContributors(String expenseId) async {
+    try {
+      final contributions = await ref.read(contributionsRepositoryProvider).getContributions(expenseId);
+      if (mounted) {
+        setState(() {
+          _contributors = contributions
+              .map((c) => (personName: c.personName, amount: c.amount))
+              .toList();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -114,6 +135,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     final amount = Money.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0 || _selectedCategoryId == null) {
       return;
+    }
+
+    if (_type == TransactionType.expense && _contributors.isNotEmpty) {
+      final totalShare = _contributors.fold<double>(0, (s, c) => s + c.amount);
+      final selfAmt = _includeSelf ? _selfShare : 0;
+      if (totalShare + selfAmt > amount) return;
     }
 
     final now = DateTime.now();
@@ -144,6 +171,13 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       await transactionActions.save(entity);
     } else {
       await transactionActions.update(entity);
+    }
+
+    if (_type == TransactionType.expense) {
+      await ref.read(contributionActionsProvider).replaceForExpense(
+        entity.id,
+        _contributors,
+      );
     }
 
     HapticFeedback.selectionClick();
@@ -477,7 +511,21 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  Divider(color: context.border, height: 1),
+                  if (_type == TransactionType.expense) ...[
+                    const SizedBox(height: 22),
+                    ContributorEditor(
+                      totalAmount: Money.tryParse(_amountController.text.trim()) ?? 0,
+                      contributors: _contributors,
+                      onChanged: (v) => setState(() => _contributors = v),
+                      includeSelf: _includeSelf,
+                      onIncludeSelfChanged: (v) => setState(() {
+                        _includeSelf = v;
+                        _selfShare = 0;
+                      }),
+                      selfShare: _includeSelf ? _selfShare : null,
+                      onSelfShareChanged: (v) => setState(() => _selfShare = v),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 54,

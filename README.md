@@ -41,6 +41,14 @@ Track expenses, manage budgets, analyze spending habits, and stay in control of 
 - Subscription tracking
 - Automated recurring entries
 
+### Expense Contributions
+
+- Split expenses with others
+- Track who has paid / hasn't paid
+- Settlement history
+- Contribution invoice PDF export
+- Automatic effective spend calculation
+
 ### Lend & Borrow
 
 - Money lent tracking

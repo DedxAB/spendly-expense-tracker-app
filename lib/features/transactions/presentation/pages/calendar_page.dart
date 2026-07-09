@@ -49,7 +49,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           tx.date.month != _displayMonth.month) {
         continue;
       }
-      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + tx.amount;
+      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + (tx.amount - tx.recoveredAmount);
     }
 
     final monthlyTotal = expenseByDay.values.fold<double>(
@@ -62,11 +62,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             .where((tx) => tx.type == TransactionType.expense)
             .where((tx) => _isSameDay(tx.date, _selectedDate))
             .toList(growable: false)
-          ..sort((a, b) => b.amount.compareTo(a.amount));
+          ..sort((a, b) => (b.amount - b.recoveredAmount).compareTo(a.amount - a.recoveredAmount));
 
     final selectedTotal = selectedItems.fold<double>(
       0,
-      (sum, tx) => sum + tx.amount,
+      (sum, tx) => sum + (tx.amount - tx.recoveredAmount),
     );
     final visibleDays = _buildVisibleDays(_displayMonth);
 

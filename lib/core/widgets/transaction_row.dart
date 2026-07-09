@@ -46,7 +46,10 @@ class TransactionRow extends StatelessWidget {
     required this.iconColor,
     this.paymentMode,
     this.cardType,
+    this.recoveredAmount,
   });
+
+  final double? recoveredAmount;
 
   factory TransactionRow.fromEntity({
     required TransactionEntity tx,
@@ -67,6 +70,7 @@ class TransactionRow extends StatelessWidget {
       iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
       paymentMode: tx.paymentMode,
       cardType: tx.cardType,
+      recoveredAmount: tx.type == TransactionType.expense ? tx.recoveredAmount : null,
     );
   }
 
@@ -169,6 +173,17 @@ class TransactionRow extends StatelessWidget {
                     ? AppColors.homeAccentPurple
                     : context.textPrimary,
               ),
+              if (recoveredAmount != null && recoveredAmount! > 0) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '${Formatters.currency(recoveredAmount!)} recovered',
+                  style: TextStyle(
+                    color: AppColors.homeAccentGreen,
+                    fontSize: AppFontSizes.caption,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 dateLabel,

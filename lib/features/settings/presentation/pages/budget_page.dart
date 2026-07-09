@@ -44,7 +44,7 @@ class BudgetPage extends ConsumerWidget {
 
     final monthlySpend = monthlyItems.fold<double>(
       0,
-      (sum, t) => sum + t.amount,
+      (sum, t) => sum + (t.amount - t.recoveredAmount),
     );
     final remaining = budget - monthlySpend;
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
@@ -54,7 +54,7 @@ class BudgetPage extends ConsumerWidget {
     final byCategory = <String, double>{};
     for (final tx in monthlyItems) {
       byCategory[tx.categoryId] =
-          (byCategory[tx.categoryId] ?? 0.0) + tx.amount;
+          (byCategory[tx.categoryId] ?? 0.0) + (tx.amount - tx.recoveredAmount);
     }
 
     final categoryCards = byCategory.entries.toList(growable: false)

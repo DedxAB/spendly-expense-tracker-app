@@ -1,6 +1,17 @@
 # Changelog
 
-## [1.4.0] - 2026-07-05
+## [1.5.0] - 2026-07-10
+
+### Expense Contributions (Split Expenses)
+
+- **Split expenses with others**: Add contributors when creating an expense — each person gets an equal share by default, with manual override via tappable amounts
+- **Include/exclude self toggle**: Optionally include yourself in the split; your share auto-calculates as the remainder
+- **Overage prevention**: Save is blocked when total shares exceed the expense amount
+- **Settle / unsettle contributions**: Mark individual contributors as paid/unpaid from the settle sheet
+- **Effective amount tracking**: All analytics, history totals, calendar, budget, and home screen use `amount - recoveredAmount` for accurate spend visibility
+- **Recovery indicator**: Transaction rows show a green `₹X recovered` label below the amount when contributions are settled
+- **Contribution PDF export**: Branded invoice PDF with contributor table, settlement status, and summary — follows analytics PDF styling
+- **Reactive updates**: Settling/unsettling a contribution instantly refreshes all transaction streams without app restart
 
 ### UI Polish & Consistency
 

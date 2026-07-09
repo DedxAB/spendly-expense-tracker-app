@@ -167,40 +167,29 @@ class InsightsPage extends ConsumerWidget {
 }
 
 Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const Center(
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: CircularProgressIndicator(strokeWidth: 3),
-      ),
-    ),
-  );
-
-  final month = ref.read(insightsSelectedMonthProvider);
-  final isYearly =
-      ref.read(insightsViewModeProvider) == InsightsViewMode.yearly;
-  final incomeExpense =
-      ref.read(incomeVsExpenseProvider).valueOrNull ??
-      const {'income': 0.0, 'expense': 0.0};
-  final distribution =
-      ref.read(expenseDistributionProvider).valueOrNull ?? const [];
-  final change = ref.read(expenseChangePercentProvider).valueOrNull;
-  final budget = ref.read(monthlyBudgetProvider);
-  final projected = ref.read(projectedExpenseProvider).valueOrNull ?? 0.0;
-  final trend = ref.read(dailyTrendProvider).valueOrNull ?? const [];
-  final yearlyBars =
-      ref.read(yearlyIncomeVsExpenseProvider).valueOrNull ?? const [];
-
-  final userProfile = ref.read(userProfileProvider).valueOrNull;
-  final userName = userProfile != null && userProfile.name.trim().isNotEmpty
-      ? userProfile.name.trim()
-      : null;
-
-  final service = InsightsExportService();
   try {
+    final month = ref.read(insightsSelectedMonthProvider);
+    final isYearly =
+        ref.read(insightsViewModeProvider) == InsightsViewMode.yearly;
+    final incomeExpense =
+        ref.read(incomeVsExpenseProvider).valueOrNull ??
+        const {'income': 0.0, 'expense': 0.0};
+    final distribution =
+        ref.read(expenseDistributionProvider).valueOrNull ?? const [];
+    final change = ref.read(expenseChangePercentProvider).valueOrNull;
+    final budget = ref.read(monthlyBudgetProvider);
+    final projected = ref.read(projectedExpenseProvider).valueOrNull ?? 0.0;
+    final trend = ref.read(dailyTrendProvider).valueOrNull ?? const [];
+    final yearlyBars =
+        ref.read(yearlyIncomeVsExpenseProvider).valueOrNull ?? const [];
+
+    final userProfile = ref.read(userProfileProvider).valueOrNull;
+    final userName = userProfile != null && userProfile.name.trim().isNotEmpty
+        ? userProfile.name.trim()
+        : null;
+
+    final service = InsightsExportService();
+
     final lucideData = await rootBundle.load('assets/fonts/lucide/Lucide.ttf');
     final lucideFont = pw.Font.ttf(lucideData);
 
@@ -233,26 +222,23 @@ Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
       lucideFont: lucideFont,
       baseFont: baseFont,
     );
-    if (context.mounted) {
-      Navigator.of(context).pop();
-      final tempDir = await getTemporaryDirectory();
-      final fileName =
-          'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
-      final tempFile = File('${tempDir.path}/$fileName');
-      await tempFile.writeAsBytes(pdfBytes);
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(tempFile.path, mimeType: 'application/pdf')],
-          subject: 'Spendly Report',
-          text:
-              'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
-        ),
-      );
-    }
+
+    final tempDir = await getTemporaryDirectory();
+    final fileName =
+        'Spendly_Report_${DateFormat('yyyy-MM').format(month)}.pdf';
+    final tempFile = File('${tempDir.path}/$fileName');
+    await tempFile.writeAsBytes(pdfBytes);
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(tempFile.path, mimeType: 'application/pdf')],
+        subject: 'Spendly Report',
+        text:
+            'Spendly Analytics Report - ${DateFormat('MMMM yyyy').format(month)}',
+      ),
+    );
   } catch (e) {
     if (context.mounted) {
-      Navigator.of(context).pop();
-      showAppToast(context, 'Export failed: $e', style: AppToastStyle.error);
+      showAppToast(context, 'Export failed', style: AppToastStyle.error);
     }
   }
 }
@@ -948,9 +934,9 @@ class _ExportButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: const Icon(AppIcons.download, size: 18, color: Color(0xFFE8B830)),
+        icon: const Icon(Icons.download, size: 18, color: Color(0xFFE8B830)),
         label: Text(
-          'Export PDF Report',
+          'Download PDF Report',
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w500,

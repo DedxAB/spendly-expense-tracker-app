@@ -17,6 +17,7 @@ import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:spendly/features/contributions/presentation/widgets/contribution_status.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -84,7 +85,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     }
 
     final grandTotal = entries.fold<double>(
-      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + t.amount),
+      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + (t.type == TransactionType.expense ? t.amount - t.recoveredAmount : 0)),
     );
     return Column(
       children: [
@@ -101,7 +102,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                         Text(entry.key, style: AppTypography.sectionTitle(context)),
                         const Spacer(),
                         Text(
-                          'Total = ${Formatters.currency(grandTotal)}',
+                          'Total Spend ${Formatters.currency(grandTotal)}',
                           style: TextStyle(
                             color: context.textSecondary,
                             fontSize: AppFontSizes.label,
@@ -167,11 +168,23 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                       ],
                     ),
                   ),
-                  child: TransactionRow.fromEntity(
-                    tx: tx,
-                    categoryById: categoryById,
-                    dateLabel: _dateLabel(tx),
-                    isLast: isLast,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (tx.type == TransactionType.expense)
+                        Row(
+                          children: [
+                            const Spacer(),
+                            ContributionStatusChip(expenseId: tx.id),
+                          ],
+                        ),
+                      TransactionRow.fromEntity(
+                        tx: tx,
+                        categoryById: categoryById,
+                        dateLabel: _dateLabel(tx),
+                        isLast: isLast,
+                      ),
+                    ],
                   ),
 
                 );

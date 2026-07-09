@@ -22,6 +22,7 @@ _$TransactionEntityImpl _$$TransactionEntityImplFromJson(
   recurringRuleId: json['recurringRuleId'] as String?,
   isRecurringInstance: json['isRecurringInstance'] as bool? ?? false,
   isDeleted: json['isDeleted'] as bool? ?? false,
+  recoveredAmount: (json['recoveredAmount'] as num?)?.toDouble() ?? 0,
 );
 
 Map<String, dynamic> _$$TransactionEntityImplToJson(
@@ -40,6 +41,7 @@ Map<String, dynamic> _$$TransactionEntityImplToJson(
   'recurringRuleId': instance.recurringRuleId,
   'isRecurringInstance': instance.isRecurringInstance,
   'isDeleted': instance.isDeleted,
+  'recoveredAmount': instance.recoveredAmount,
 };
 
 const _$TransactionTypeEnumMap = {

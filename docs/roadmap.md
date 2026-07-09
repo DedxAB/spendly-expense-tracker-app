@@ -54,6 +54,18 @@ Everything listed here is fully implemented in the codebase.
 - Partial settlement support
 - Per-person balance summary
 
+### Expense Contributions (Split Expenses)
+
+- Add contributors when creating or editing an expense
+- Auto-equal split with manual override per person
+- Include/exclude yourself from the split
+- Overage prevention (shares cannot exceed total expense)
+- Settle/unsettle individual contributions
+- Effective amount (`amount - recoveredAmount`) used across analytics, history, calendar, budget, and home
+- "₹X recovered" label on transaction rows when contributions are settled
+- PDF invoice export with contributor table, status, and summary (branded, matches analytics styling)
+- Reactive stream updates — settle/unsettle instantly reflects everywhere
+
 ### Privacy & Security
 
 - Biometric lock (fingerprint / face / PIN) on app resume
