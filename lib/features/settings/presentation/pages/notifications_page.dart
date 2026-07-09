@@ -7,7 +7,6 @@ import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/features/home/presentation/providers/home_provider.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
-import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
 class NotificationsPage extends ConsumerWidget {
   const NotificationsPage({super.key});
@@ -15,8 +14,6 @@ class NotificationsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(dashboardSummaryProvider).valueOrNull;
-    final recent =
-        ref.watch(recentTransactionsProvider).valueOrNull ?? const [];
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
 
     return Scaffold(
@@ -36,7 +33,7 @@ class NotificationsPage extends ConsumerWidget {
         children: [
           Text(
             'Stay informed about your finances.',
-            style: TextStyle(color: context.textSecondary, fontSize: 14),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
           ),
           const SizedBox(height: 20),
           if (summary != null && summary.remainingBudget < 0)
@@ -47,21 +44,6 @@ class NotificationsPage extends ConsumerWidget {
                   'You are over budget by ${Formatters.currency(summary.remainingBudget.abs())} this month.',
               color: AppColors.expense,
               trailing: _StatusBadge(label: 'OVER', color: AppColors.expense),
-            ),
-          if (recent.isNotEmpty)
-            _NotificationCard(
-              icon: AppIcons.receipt,
-              title: 'Latest transaction',
-              message:
-                  '${recent.first.type.name == 'income' ? 'Income' : 'Expense'} of ${Formatters.currency(recent.first.amount)} added.',
-              color: AppColors.income,
-              trailing: Text(
-                'Just now',
-                style: TextStyle(
-                  color: context.textSecondary,
-                  fontSize: 11,
-                ),
-              ),
             ),
           _NotificationCard(
             icon: AppIcons.bell,
@@ -139,7 +121,7 @@ class _NotificationCard extends StatelessWidget {
                             child: Text(
                               title,
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: AppFontSizes.subhead,
                                 fontWeight: FontWeight.w600,
                                 color: context.textPrimary,
                               ),
@@ -152,7 +134,7 @@ class _NotificationCard extends StatelessWidget {
                       Text(
                         message,
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSizes.body,
                           color: context.textSecondary,
                           height: 1.4,
                         ),
@@ -187,7 +169,7 @@ class _StatusBadge extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontSize: 10,
+          fontSize: AppFontSizes.caption,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
         ),

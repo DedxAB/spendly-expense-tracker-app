@@ -131,7 +131,7 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
                     widget.requiredLabel!,
                     style: TextStyle(
                       color: context.textSecondary,
-                      fontSize: 12,
+                      fontSize: AppFontSizes.label,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -139,7 +139,7 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
                     ' *',
                     style: TextStyle(
                       color: Colors.red,
-                      fontSize: 12,
+                      fontSize: AppFontSizes.label,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -161,7 +161,7 @@ class _AppTextInputDialogState extends State<_AppTextInputDialog> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Name is required',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                 ),
               ),
           ],

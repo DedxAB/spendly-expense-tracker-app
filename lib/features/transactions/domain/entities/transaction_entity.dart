@@ -20,6 +20,7 @@ class TransactionEntity with _$TransactionEntity {
     String? recurringRuleId,
     @Default(false) bool isRecurringInstance,
     @Default(false) bool isDeleted,
+    @Default(0) double recoveredAmount,
   }) = _TransactionEntity;
 
   factory TransactionEntity.fromJson(Map<String, dynamic> json) =>

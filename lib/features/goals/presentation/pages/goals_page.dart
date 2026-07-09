@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
@@ -129,14 +130,11 @@ class GoalsPage extends ConsumerWidget {
                     );
                     if (!context.mounted) return;
                     if (added < amount) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            added > 0
-                                ? "Target nearly reached! Added ₹${added.toInt()} only."
-                                : 'Emergency fund target already reached.',
-                          ),
-                        ),
+                      showAppToast(
+                        context,
+                        added > 0
+                            ? "Target nearly reached! Added ₹${added.toInt()} only."
+                            : 'Emergency fund target already reached.',
                       );
                     }
                     HapticFeedback.selectionClick();
@@ -154,11 +152,7 @@ class GoalsPage extends ConsumerWidget {
                     );
                     if (!context.mounted) return;
                     if (!ok) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Insufficient saved amount.'),
-                        ),
-                      );
+                      showAppToast(context, 'Insufficient saved amount.');
                       return;
                     }
                     HapticFeedback.selectionClick();
@@ -261,19 +255,16 @@ class GoalsPage extends ConsumerWidget {
                       final added = await actions.addToGoal(goal.id, amount);
                       if (!context.mounted) return;
                       if (added < amount) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              added > 0
-                                  ? "Target nearly reached! Added ₹${added.toInt()} only."
-                                  : 'Goal target already reached.',
-                            ),
-                          ),
+                        showAppToast(
+                          context,
+                          added > 0
+                              ? "Target nearly reached! Added ₹${added.toInt()} only."
+                              : 'Goal target already reached.',
                         );
                       }
                       HapticFeedback.selectionClick();
                     },
-                  onQuickRemove: () async {
+                    onQuickRemove: () async {
                     final amount = await _askAmount(
                       context,
                       title: 'Withdraw from ${goal.title}',
@@ -283,11 +274,7 @@ class GoalsPage extends ConsumerWidget {
                     final ok = await actions.removeFromGoal(goal.id, amount);
                     if (!context.mounted) return;
                     if (!ok) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Insufficient saved amount.'),
-                        ),
-                      );
+                      showAppToast(context, 'Insufficient saved amount.');
                       return;
                     }
                     HapticFeedback.selectionClick();
@@ -301,45 +288,7 @@ class GoalsPage extends ConsumerWidget {
           _CreateGoalCard(
             onCreate: () => _openCreateGoalSheet(context, actions),
           ),
-          () {
-            final total = emergencyFunds.fold<double>(
-              0, (sum, f) => sum + f.currentAmount,
-            ) + goals.fold<double>(
-              0, (sum, g) => sum + g.savedAmount,
-            );
-            if (total <= 0) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                decoration: BoxDecoration(
-                  color: context.surface,
-                  border: Border.all(color: context.border),
-                  borderRadius: BorderRadius.circular(AppRadii.card),
-                ),
-                child: Row(
-                  children: [
-                    Text(
-                      'Total Invested',
-                      style: AppTypography.metadata(context).copyWith(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    AmountView(
-                      total,
-                      style: const TextStyle(
-                        color: Color(0xFF8B5CF6),
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }(),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -684,7 +633,17 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                ),
+              ],
+            ),
             const SizedBox(height: 14),
             _GoalTextField(
               controller: _titleController,
@@ -696,7 +655,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Goal name is required',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                 ),
               ),
             const SizedBox(height: 10),
@@ -716,7 +675,7 @@ class _CreateGoalSheetState extends State<_CreateGoalSheet> {
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'Target amount is required',
-                  style: TextStyle(color: Colors.red, fontSize: 12),
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
                 ),
               ),
             const SizedBox(height: 10),
@@ -864,11 +823,22 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
         AppSpacing.md,
         MediaQuery.of(context).viewInsets.bottom + AppSpacing.md,
       ),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+           Row(
+              children: [
+                Expanded(
+                  child: Text(widget.titleText, style: AppTypography.sectionTitle(context)),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                ),
+              ],
+            ),
           const SizedBox(height: 12),
           _GoalTextField(
             controller: _titleController,
@@ -880,7 +850,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
               padding: EdgeInsets.only(top: 4),
               child: Text(
                 'Goal name is required',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
               ),
             ),
           const SizedBox(height: 10),
@@ -895,7 +865,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
               padding: EdgeInsets.only(top: 4),
               child: Text(
                 'Target amount is required',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
               ),
             ),
           const SizedBox(height: 10),
@@ -920,6 +890,7 @@ class _CreateEmergencyFundSheetState extends State<_CreateEmergencyFundSheet> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
@@ -984,7 +955,7 @@ class _EmergencyFundCard extends StatelessWidget {
             'PRIMARY LIQUIDITY / ${liquidityIndex.toString().padLeft(2, '0')}',
             style: TextStyle(
               color: context.textPrimary.withValues(alpha: 0.54),
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               letterSpacing: 4,
               fontWeight: FontWeight.w700,
             ),
@@ -996,7 +967,7 @@ class _EmergencyFundCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: context.textPrimary,
-              fontSize: 50,
+              fontSize: AppFontSizes.hero,
               height: 0.9,
               fontWeight: FontWeight.w900,
             ),
@@ -1006,7 +977,7 @@ class _EmergencyFundCard extends StatelessWidget {
             'CURRENT STATUS',
             style: TextStyle(
               color: context.textPrimary.withValues(alpha: 0.54),
-              fontSize: 11,
+              fontSize: AppFontSizes.small,
               letterSpacing: 1.2,
               fontWeight: FontWeight.w700,
             ),
@@ -1025,7 +996,7 @@ class _EmergencyFundCard extends StatelessWidget {
                       maxLines: 1,
                       style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 40,
+                        fontSize: AppFontSizes.hero,
                         fontWeight: FontWeight.w900,
                         height: 1,
                       ),
@@ -1040,7 +1011,7 @@ class _EmergencyFundCard extends StatelessWidget {
                     maxLines: 1,
                     style: TextStyle(
                       color: context.textPrimary.withValues(alpha: 0.87),
-                      fontSize: 28,
+                      fontSize: AppFontSizes.largeDisplay,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -1176,7 +1147,7 @@ class _AggregateInsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           AmountView(
             totalSaved,
-            style: AppTypography.amount(context, fontSize: 30),
+            style: AppTypography.amount(context, fontSize: AppFontSizes.largeDisplay),
           ),
           const SizedBox(height: 2),
           Text(
@@ -1208,7 +1179,7 @@ class _AggregateInsightCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Aggregate performance = combined progress across all emergency funds and goals.',
-            style: TextStyle(color: context.textSecondary, fontSize: 12),
+            style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
           ),
         ],
       ),
@@ -1223,7 +1194,7 @@ class _AggregateInsightCard extends StatelessWidget {
           label,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 11,
+            fontSize: AppFontSizes.small,
             letterSpacing: 1.1,
           ),
         ),
@@ -1233,7 +1204,7 @@ class _AggregateInsightCard extends StatelessWidget {
           style: TextStyle(
             color: context.textPrimary,
             fontWeight: FontWeight.w700,
-            fontSize: 14,
+            fontSize: AppFontSizes.bodyLarge,
           ),
         ),
       ],
@@ -1307,7 +1278,7 @@ class _GoalCard extends StatelessWidget {
   style: TextStyle(
     color: context.textSecondary,
     letterSpacing: 3,
-    fontSize: 10,
+    fontSize: AppFontSizes.caption,
     fontWeight: FontWeight.w700,
   ),
           ),
@@ -1350,12 +1321,15 @@ class _GoalCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              Text(
-                '${Formatters.currency(goal.savedAmount)} / ${Formatters.currency(goal.targetAmount)}',
-style: TextStyle(
-  color: context.textSecondary,
-  fontWeight: FontWeight.w700,
-),
+              Flexible(
+                child: Text(
+                  '${Formatters.currency(goal.savedAmount)} / ${Formatters.currency(goal.targetAmount)}',
+                  softWrap: false,
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               const Spacer(),
               Text(
@@ -1379,17 +1353,20 @@ style: TextStyle(
             children: [
               Text(
                 _formatTimeline(remainingDays),
-                style: TextStyle(color: context.textSecondary, fontSize: 12),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
               ),
               const Spacer(),
-              Text(
-                'Need ${Formatters.currency(requiredPerMonth)}/mo',
-                style: TextStyle(
-                  color: requiredPerMonth <= goal.monthlyContribution
-                      ? const Color(0xFF3DD07B)
-                      : const Color(0xFFFF8A7A),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  'Need ${Formatters.currency(requiredPerMonth)}/mo',
+                  softWrap: true,
+                  style: TextStyle(
+                    color: requiredPerMonth <= goal.monthlyContribution
+                        ? const Color(0xFF3DD07B)
+                        : const Color(0xFFFF8A7A),
+                    fontSize: AppFontSizes.label,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -1443,7 +1420,7 @@ class _CreateGoalCard extends StatelessWidget {
                     'CREATE GOAL',
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 34,
+                      fontSize: AppFontSizes.hero,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
@@ -1453,7 +1430,7 @@ class _CreateGoalCard extends StatelessWidget {
                     style: TextStyle(
                       color: context.textSecondary,
                       letterSpacing: 2.2,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                     ),
                   ),
                 ],
@@ -1511,7 +1488,7 @@ class _GoalTextField extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
+              style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
             ),
             if (required)
               const Text(' *', style: TextStyle(color: Colors.red)),

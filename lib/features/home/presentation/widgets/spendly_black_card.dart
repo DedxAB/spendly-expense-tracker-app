@@ -56,7 +56,7 @@ class SpendlyBlackCard extends StatelessWidget {
                           'SPEND SNAPSHOT',
                           style: TextStyle(
                             color: context.textSecondary,
-                            fontSize: 12,
+                            fontSize: AppFontSizes.label,
                             fontWeight: FontWeight.w500,
                             letterSpacing: 0.6,
                           ),
@@ -85,10 +85,10 @@ class SpendlyBlackCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Total Balance',
+                            'Available Balance',
                             style: TextStyle(
                               color: context.textPrimary,
-                              fontSize: 17,
+                              fontSize: AppFontSizes.heading,
                               fontWeight: FontWeight.w500,
                               letterSpacing: -0.2,
                             ),
@@ -104,7 +104,7 @@ class SpendlyBlackCard extends StatelessWidget {
                                   balance,
                                   style: TextStyle(
                                     color: context.textPrimary,
-                                    fontSize: 24,
+                                    fontSize: AppFontSizes.largeHeading,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: -1.1,
                                     height: 1,
@@ -128,7 +128,7 @@ class SpendlyBlackCard extends StatelessWidget {
                           'Tap for transactions',
                           style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: 15,
+                            fontSize: AppFontSizes.subhead,
                             fontWeight: FontWeight.w400,
                           ),
                         ),

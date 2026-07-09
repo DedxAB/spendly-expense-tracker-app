@@ -61,7 +61,8 @@ class SwipeActionsInfoButton extends StatelessWidget {
               AppSpacing.md,
               AppSpacing.lg,
             ),
-            child: Column(
+            child: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,7 +91,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                   message,
                   style: TextStyle(
                     color: context.textSecondary,
-                    fontSize: 13,
+                    fontSize: AppFontSizes.body,
                     height: 1.4,
                   ),
                 ),
@@ -113,6 +114,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                   text: rightActionLabel,
                 ),
               ],
+            ),
             ),
           ),
         );
@@ -162,7 +164,7 @@ class _SwipeHintRow extends StatelessWidget {
               text,
               style: TextStyle(
                         color: context.textPrimary,
-                        fontSize: 14,
+                        fontSize: AppFontSizes.bodyLarge,
                         fontWeight: FontWeight.w600,
                       ),
             ),

@@ -49,7 +49,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           tx.date.month != _displayMonth.month) {
         continue;
       }
-      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + tx.amount;
+      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + (tx.amount - tx.recoveredAmount);
     }
 
     final monthlyTotal = expenseByDay.values.fold<double>(
@@ -62,11 +62,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             .where((tx) => tx.type == TransactionType.expense)
             .where((tx) => _isSameDay(tx.date, _selectedDate))
             .toList(growable: false)
-          ..sort((a, b) => b.amount.compareTo(a.amount));
+          ..sort((a, b) => (b.amount - b.recoveredAmount).compareTo(a.amount - a.recoveredAmount));
 
     final selectedTotal = selectedItems.fold<double>(
       0,
-      (sum, tx) => sum + tx.amount,
+      (sum, tx) => sum + (tx.amount - tx.recoveredAmount),
     );
     final visibleDays = _buildVisibleDays(_displayMonth);
 
@@ -139,7 +139,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               Text(
                 _currency.format(selectedTotal),
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: AppFontSizes.largeHeading,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -356,7 +356,7 @@ class _MonthGrid extends StatelessWidget {
                       Text(
                         '${day.day}',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: AppFontSizes.body,
                           fontWeight: FontWeight.w600,
                           color: isSelected
                               ? context.textPrimary
@@ -370,7 +370,7 @@ class _MonthGrid extends StatelessWidget {
                         Text(
                           _shortCurrency(spend),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: AppFontSizes.label,
                             fontWeight: FontWeight.w600,
                             color: isSelected ? context.textPrimary : context.textPrimary,
                           ),

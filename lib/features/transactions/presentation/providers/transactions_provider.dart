@@ -219,7 +219,9 @@ final transactionFilterProvider =
     );
 
 final allTransactionsProvider = StreamProvider<List<TransactionEntity>>((ref) {
-  return ref.watch(transactionsRepositoryProvider).watchAll();
+  return ref.watch(transactionsRepositoryProvider).watchAll().map(
+    (transactions) => transactions.where((t) => t.categoryId != 'cat_goal_transfer').toList(),
+  );
 });
 
 final filteredTransactionsProvider =

@@ -7820,6 +7820,477 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
   }
 }
 
+class $ExpenseContributionsTable extends ExpenseContributions
+    with TableInfo<$ExpenseContributionsTable, ExpenseContribution> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseContributionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _expenseIdMeta = const VerificationMeta(
+    'expenseId',
+  );
+  @override
+  late final GeneratedColumn<String> expenseId = GeneratedColumn<String>(
+    'expense_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _personNameMeta = const VerificationMeta(
+    'personName',
+  );
+  @override
+  late final GeneratedColumn<String> personName = GeneratedColumn<String>(
+    'person_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountPaiseMeta = const VerificationMeta(
+    'amountPaise',
+  );
+  @override
+  late final GeneratedColumn<int> amountPaise = GeneratedColumn<int>(
+    'amount_paise',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isSettledMeta = const VerificationMeta(
+    'isSettled',
+  );
+  @override
+  late final GeneratedColumn<bool> isSettled = GeneratedColumn<bool>(
+    'is_settled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_settled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _settledAtMeta = const VerificationMeta(
+    'settledAt',
+  );
+  @override
+  late final GeneratedColumn<int> settledAt = GeneratedColumn<int>(
+    'settled_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    expenseId,
+    personName,
+    amount,
+    amountPaise,
+    isSettled,
+    settledAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_contributions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ExpenseContribution> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('expense_id')) {
+      context.handle(
+        _expenseIdMeta,
+        expenseId.isAcceptableOrUnknown(data['expense_id']!, _expenseIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_expenseIdMeta);
+    }
+    if (data.containsKey('person_name')) {
+      context.handle(
+        _personNameMeta,
+        personName.isAcceptableOrUnknown(data['person_name']!, _personNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_personNameMeta);
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('amount_paise')) {
+      context.handle(
+        _amountPaiseMeta,
+        amountPaise.isAcceptableOrUnknown(
+          data['amount_paise']!,
+          _amountPaiseMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_settled')) {
+      context.handle(
+        _isSettledMeta,
+        isSettled.isAcceptableOrUnknown(data['is_settled']!, _isSettledMeta),
+      );
+    }
+    if (data.containsKey('settled_at')) {
+      context.handle(
+        _settledAtMeta,
+        settledAt.isAcceptableOrUnknown(data['settled_at']!, _settledAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExpenseContribution map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseContribution(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      expenseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expense_id'],
+      )!,
+      personName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}person_name'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      )!,
+      amountPaise: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_paise'],
+      )!,
+      isSettled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_settled'],
+      )!,
+      settledAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}settled_at'],
+      ),
+    );
+  }
+
+  @override
+  $ExpenseContributionsTable createAlias(String alias) {
+    return $ExpenseContributionsTable(attachedDatabase, alias);
+  }
+}
+
+class ExpenseContribution extends DataClass
+    implements Insertable<ExpenseContribution> {
+  final String id;
+  final String expenseId;
+  final String personName;
+  final double amount;
+  final int amountPaise;
+  final bool isSettled;
+  final int? settledAt;
+  const ExpenseContribution({
+    required this.id,
+    required this.expenseId,
+    required this.personName,
+    required this.amount,
+    required this.amountPaise,
+    required this.isSettled,
+    this.settledAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['expense_id'] = Variable<String>(expenseId);
+    map['person_name'] = Variable<String>(personName);
+    map['amount'] = Variable<double>(amount);
+    map['amount_paise'] = Variable<int>(amountPaise);
+    map['is_settled'] = Variable<bool>(isSettled);
+    if (!nullToAbsent || settledAt != null) {
+      map['settled_at'] = Variable<int>(settledAt);
+    }
+    return map;
+  }
+
+  ExpenseContributionsCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseContributionsCompanion(
+      id: Value(id),
+      expenseId: Value(expenseId),
+      personName: Value(personName),
+      amount: Value(amount),
+      amountPaise: Value(amountPaise),
+      isSettled: Value(isSettled),
+      settledAt: settledAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(settledAt),
+    );
+  }
+
+  factory ExpenseContribution.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseContribution(
+      id: serializer.fromJson<String>(json['id']),
+      expenseId: serializer.fromJson<String>(json['expenseId']),
+      personName: serializer.fromJson<String>(json['personName']),
+      amount: serializer.fromJson<double>(json['amount']),
+      amountPaise: serializer.fromJson<int>(json['amountPaise']),
+      isSettled: serializer.fromJson<bool>(json['isSettled']),
+      settledAt: serializer.fromJson<int?>(json['settledAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'expenseId': serializer.toJson<String>(expenseId),
+      'personName': serializer.toJson<String>(personName),
+      'amount': serializer.toJson<double>(amount),
+      'amountPaise': serializer.toJson<int>(amountPaise),
+      'isSettled': serializer.toJson<bool>(isSettled),
+      'settledAt': serializer.toJson<int?>(settledAt),
+    };
+  }
+
+  ExpenseContribution copyWith({
+    String? id,
+    String? expenseId,
+    String? personName,
+    double? amount,
+    int? amountPaise,
+    bool? isSettled,
+    Value<int?> settledAt = const Value.absent(),
+  }) => ExpenseContribution(
+    id: id ?? this.id,
+    expenseId: expenseId ?? this.expenseId,
+    personName: personName ?? this.personName,
+    amount: amount ?? this.amount,
+    amountPaise: amountPaise ?? this.amountPaise,
+    isSettled: isSettled ?? this.isSettled,
+    settledAt: settledAt.present ? settledAt.value : this.settledAt,
+  );
+  ExpenseContribution copyWithCompanion(ExpenseContributionsCompanion data) {
+    return ExpenseContribution(
+      id: data.id.present ? data.id.value : this.id,
+      expenseId: data.expenseId.present ? data.expenseId.value : this.expenseId,
+      personName: data.personName.present
+          ? data.personName.value
+          : this.personName,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      amountPaise: data.amountPaise.present
+          ? data.amountPaise.value
+          : this.amountPaise,
+      isSettled: data.isSettled.present ? data.isSettled.value : this.isSettled,
+      settledAt: data.settledAt.present ? data.settledAt.value : this.settledAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseContribution(')
+          ..write('id: $id, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('personName: $personName, ')
+          ..write('amount: $amount, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('isSettled: $isSettled, ')
+          ..write('settledAt: $settledAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    expenseId,
+    personName,
+    amount,
+    amountPaise,
+    isSettled,
+    settledAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseContribution &&
+          other.id == this.id &&
+          other.expenseId == this.expenseId &&
+          other.personName == this.personName &&
+          other.amount == this.amount &&
+          other.amountPaise == this.amountPaise &&
+          other.isSettled == this.isSettled &&
+          other.settledAt == this.settledAt);
+}
+
+class ExpenseContributionsCompanion
+    extends UpdateCompanion<ExpenseContribution> {
+  final Value<String> id;
+  final Value<String> expenseId;
+  final Value<String> personName;
+  final Value<double> amount;
+  final Value<int> amountPaise;
+  final Value<bool> isSettled;
+  final Value<int?> settledAt;
+  final Value<int> rowid;
+  const ExpenseContributionsCompanion({
+    this.id = const Value.absent(),
+    this.expenseId = const Value.absent(),
+    this.personName = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.amountPaise = const Value.absent(),
+    this.isSettled = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ExpenseContributionsCompanion.insert({
+    required String id,
+    required String expenseId,
+    required String personName,
+    required double amount,
+    this.amountPaise = const Value.absent(),
+    this.isSettled = const Value.absent(),
+    this.settledAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       expenseId = Value(expenseId),
+       personName = Value(personName),
+       amount = Value(amount);
+  static Insertable<ExpenseContribution> custom({
+    Expression<String>? id,
+    Expression<String>? expenseId,
+    Expression<String>? personName,
+    Expression<double>? amount,
+    Expression<int>? amountPaise,
+    Expression<bool>? isSettled,
+    Expression<int>? settledAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (expenseId != null) 'expense_id': expenseId,
+      if (personName != null) 'person_name': personName,
+      if (amount != null) 'amount': amount,
+      if (amountPaise != null) 'amount_paise': amountPaise,
+      if (isSettled != null) 'is_settled': isSettled,
+      if (settledAt != null) 'settled_at': settledAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ExpenseContributionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? expenseId,
+    Value<String>? personName,
+    Value<double>? amount,
+    Value<int>? amountPaise,
+    Value<bool>? isSettled,
+    Value<int?>? settledAt,
+    Value<int>? rowid,
+  }) {
+    return ExpenseContributionsCompanion(
+      id: id ?? this.id,
+      expenseId: expenseId ?? this.expenseId,
+      personName: personName ?? this.personName,
+      amount: amount ?? this.amount,
+      amountPaise: amountPaise ?? this.amountPaise,
+      isSettled: isSettled ?? this.isSettled,
+      settledAt: settledAt ?? this.settledAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (expenseId.present) {
+      map['expense_id'] = Variable<String>(expenseId.value);
+    }
+    if (personName.present) {
+      map['person_name'] = Variable<String>(personName.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (amountPaise.present) {
+      map['amount_paise'] = Variable<int>(amountPaise.value);
+    }
+    if (isSettled.present) {
+      map['is_settled'] = Variable<bool>(isSettled.value);
+    }
+    if (settledAt.present) {
+      map['settled_at'] = Variable<int>(settledAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseContributionsCompanion(')
+          ..write('id: $id, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('personName: $personName, ')
+          ..write('amount: $amount, ')
+          ..write('amountPaise: $amountPaise, ')
+          ..write('isSettled: $isSettled, ')
+          ..write('settledAt: $settledAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7842,6 +8313,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalFundsTable goalFunds = $GoalFundsTable(this);
   late final $GoalContributionsTable goalContributions =
       $GoalContributionsTable(this);
+  late final $ExpenseContributionsTable expenseContributions =
+      $ExpenseContributionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7861,6 +8334,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appUsageDays,
     goalFunds,
     goalContributions,
+    expenseContributions,
   ];
 }
 
@@ -11789,6 +12263,264 @@ typedef $$GoalContributionsTableProcessedTableManager =
       GoalContribution,
       PrefetchHooks Function()
     >;
+typedef $$ExpenseContributionsTableCreateCompanionBuilder =
+    ExpenseContributionsCompanion Function({
+      required String id,
+      required String expenseId,
+      required String personName,
+      required double amount,
+      Value<int> amountPaise,
+      Value<bool> isSettled,
+      Value<int?> settledAt,
+      Value<int> rowid,
+    });
+typedef $$ExpenseContributionsTableUpdateCompanionBuilder =
+    ExpenseContributionsCompanion Function({
+      Value<String> id,
+      Value<String> expenseId,
+      Value<String> personName,
+      Value<double> amount,
+      Value<int> amountPaise,
+      Value<bool> isSettled,
+      Value<int?> settledAt,
+      Value<int> rowid,
+    });
+
+class $$ExpenseContributionsTableFilterComposer
+    extends Composer<_$AppDatabase, $ExpenseContributionsTable> {
+  $$ExpenseContributionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expenseId => $composableBuilder(
+    column: $table.expenseId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get personName => $composableBuilder(
+    column: $table.personName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSettled => $composableBuilder(
+    column: $table.isSettled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ExpenseContributionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExpenseContributionsTable> {
+  $$ExpenseContributionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get expenseId => $composableBuilder(
+    column: $table.expenseId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get personName => $composableBuilder(
+    column: $table.personName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSettled => $composableBuilder(
+    column: $table.isSettled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get settledAt => $composableBuilder(
+    column: $table.settledAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ExpenseContributionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExpenseContributionsTable> {
+  $$ExpenseContributionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get expenseId =>
+      $composableBuilder(column: $table.expenseId, builder: (column) => column);
+
+  GeneratedColumn<String> get personName => $composableBuilder(
+    column: $table.personName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<int> get amountPaise => $composableBuilder(
+    column: $table.amountPaise,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isSettled =>
+      $composableBuilder(column: $table.isSettled, builder: (column) => column);
+
+  GeneratedColumn<int> get settledAt =>
+      $composableBuilder(column: $table.settledAt, builder: (column) => column);
+}
+
+class $$ExpenseContributionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ExpenseContributionsTable,
+          ExpenseContribution,
+          $$ExpenseContributionsTableFilterComposer,
+          $$ExpenseContributionsTableOrderingComposer,
+          $$ExpenseContributionsTableAnnotationComposer,
+          $$ExpenseContributionsTableCreateCompanionBuilder,
+          $$ExpenseContributionsTableUpdateCompanionBuilder,
+          (
+            ExpenseContribution,
+            BaseReferences<
+              _$AppDatabase,
+              $ExpenseContributionsTable,
+              ExpenseContribution
+            >,
+          ),
+          ExpenseContribution,
+          PrefetchHooks Function()
+        > {
+  $$ExpenseContributionsTableTableManager(
+    _$AppDatabase db,
+    $ExpenseContributionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseContributionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseContributionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$ExpenseContributionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> expenseId = const Value.absent(),
+                Value<String> personName = const Value.absent(),
+                Value<double> amount = const Value.absent(),
+                Value<int> amountPaise = const Value.absent(),
+                Value<bool> isSettled = const Value.absent(),
+                Value<int?> settledAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseContributionsCompanion(
+                id: id,
+                expenseId: expenseId,
+                personName: personName,
+                amount: amount,
+                amountPaise: amountPaise,
+                isSettled: isSettled,
+                settledAt: settledAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String expenseId,
+                required String personName,
+                required double amount,
+                Value<int> amountPaise = const Value.absent(),
+                Value<bool> isSettled = const Value.absent(),
+                Value<int?> settledAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ExpenseContributionsCompanion.insert(
+                id: id,
+                expenseId: expenseId,
+                personName: personName,
+                amount: amount,
+                amountPaise: amountPaise,
+                isSettled: isSettled,
+                settledAt: settledAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ExpenseContributionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ExpenseContributionsTable,
+      ExpenseContribution,
+      $$ExpenseContributionsTableFilterComposer,
+      $$ExpenseContributionsTableOrderingComposer,
+      $$ExpenseContributionsTableAnnotationComposer,
+      $$ExpenseContributionsTableCreateCompanionBuilder,
+      $$ExpenseContributionsTableUpdateCompanionBuilder,
+      (
+        ExpenseContribution,
+        BaseReferences<
+          _$AppDatabase,
+          $ExpenseContributionsTable,
+          ExpenseContribution
+        >,
+      ),
+      ExpenseContribution,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11821,4 +12553,6 @@ class $AppDatabaseManager {
       $$GoalFundsTableTableManager(_db, _db.goalFunds);
   $$GoalContributionsTableTableManager get goalContributions =>
       $$GoalContributionsTableTableManager(_db, _db.goalContributions);
+  $$ExpenseContributionsTableTableManager get expenseContributions =>
+      $$ExpenseContributionsTableTableManager(_db, _db.expenseContributions);
 }

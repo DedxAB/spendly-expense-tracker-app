@@ -152,7 +152,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
           child: Text(
             'Spendly',
             style: TextStyle(
-              fontSize: 64,
+              fontSize: AppFontSizes.splash,
               fontWeight: FontWeight.w800,
               color: context.textPrimary,
               letterSpacing: -1.5,
@@ -316,7 +316,7 @@ class _ShellNavTile extends StatelessWidget {
               Text(
                 item.label,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 10,
+                  fontSize: AppFontSizes.caption,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   letterSpacing: 0,
                   color: selected

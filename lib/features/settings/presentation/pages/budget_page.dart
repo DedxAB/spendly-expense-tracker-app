@@ -44,7 +44,7 @@ class BudgetPage extends ConsumerWidget {
 
     final monthlySpend = monthlyItems.fold<double>(
       0,
-      (sum, t) => sum + t.amount,
+      (sum, t) => sum + (t.amount - t.recoveredAmount),
     );
     final remaining = budget - monthlySpend;
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
@@ -54,7 +54,7 @@ class BudgetPage extends ConsumerWidget {
     final byCategory = <String, double>{};
     for (final tx in monthlyItems) {
       byCategory[tx.categoryId] =
-          (byCategory[tx.categoryId] ?? 0.0) + tx.amount;
+          (byCategory[tx.categoryId] ?? 0.0) + (tx.amount - tx.recoveredAmount);
     }
 
     final categoryCards = byCategory.entries.toList(growable: false)
@@ -82,14 +82,10 @@ class BudgetPage extends ConsumerWidget {
           AppSpacing.md,
         ),
         children: [
-          Text('Budget', style: AppTypography.screenTitle(context)),
-          const SizedBox(height: 4),
           Text(
             '${DateFormat('MMMM').format(now)} Overview',
-            style: TextStyle(color: context.textSecondary),
+            style: AppTypography.screenTitle(context),
           ),
-          const SizedBox(height: 10),
-          Divider(color: context.border),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(18),
@@ -107,7 +103,7 @@ class BudgetPage extends ConsumerWidget {
                     'TOTAL AVAILABLE VS USED',
                     style: TextStyle(
                       letterSpacing: 1.8,
-                      fontSize: 11,
+                      fontSize: AppFontSizes.small,
                       color: context.textSecondary,
                     ),
                   ),
@@ -120,11 +116,14 @@ class BudgetPage extends ConsumerWidget {
                       style: AppTypography.amount(context),
                       maskColor: context.textPrimary,
                     ),
-                    Text(
-                      ' / ${Formatters.currency(budget)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: context.textSecondary,
+                    Flexible(
+                      child: Text(
+                        ' / ${Formatters.currency(budget)}',
+                        softWrap: false,
+                        style: TextStyle(
+                          fontSize: AppFontSizes.heading,
+                          color: context.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -143,8 +142,11 @@ class BudgetPage extends ConsumerWidget {
                       '${(budget <= 0 ? 0 : ((monthlySpend / budget) * 100)).toStringAsFixed(0)}% Used',
                     ),
                     const Spacer(),
-                    Text(
-                      '${Formatters.currency(remaining.abs())} ${remaining >= 0 ? 'Remaining' : 'Over'}',
+                    Flexible(
+                      child: Text(
+                        '${Formatters.currency(remaining.abs())} ${remaining >= 0 ? 'Remaining' : 'Over'}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -160,7 +162,7 @@ class BudgetPage extends ConsumerWidget {
                           Text(
                             'Safe to Spend',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: AppFontSizes.label,
                               color: context.textSecondary,
                             ),
                           ),
@@ -170,7 +172,7 @@ class BudgetPage extends ConsumerWidget {
                               AmountView(
                                 safePerDay.abs(),
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: AppFontSizes.heading,
                                   fontWeight: FontWeight.w700,
                                   color: safePerDay >= 0
                                       ? const Color(0xFF3DD07B)
@@ -184,7 +186,7 @@ class BudgetPage extends ConsumerWidget {
                               Text(
                                 ' / day',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: AppFontSizes.heading,
                                   fontWeight: FontWeight.w700,
                                   color: safePerDay >= 0
                                       ? const Color(0xFF3DD07B)
@@ -209,7 +211,7 @@ class BudgetPage extends ConsumerWidget {
                       child: Text(
                         remaining >= 0 ? 'ON TRACK' : 'OVER BUDGET',
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: AppFontSizes.small,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -412,7 +414,8 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
             AppSpacing.sm,
             MediaQuery.of(context).viewInsets.bottom + AppSpacing.sm,
           ),
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -424,7 +427,17 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                 ),
               ),
               const SizedBox(height: AppSpacing.smPlus),
-              Text('Edit Budget', style: AppTypography.sectionTitle(context)),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text('Edit Budget', style: AppTypography.sectionTitle(context)),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.sm),
               const _ModalFieldLabel('Monthly Budget'),
               const SizedBox(height: 6),
@@ -463,7 +476,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
                   'Total category budgets (${Formatters.currency(totalCategoryBudget)}) cannot exceed monthly budget (${Formatters.currency(monthlyBudgetValue)}).',
                   style: const TextStyle(
                     color: Color(0xFFFF8A7A),
-                    fontSize: 12,
+                    fontSize: AppFontSizes.label,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -488,6 +501,7 @@ class _BudgetEditorSheetState extends ConsumerState<_BudgetEditorSheet> {
               ),
             ],
           ),
+          ),
         ),
       ),
     );
@@ -505,7 +519,7 @@ class _ModalFieldLabel extends StatelessWidget {
       label,
       style: TextStyle(
         color: context.textSecondary,
-        fontSize: 12,
+        fontSize: AppFontSizes.label,
         fontWeight: FontWeight.w600,
       ),
     );
@@ -565,7 +579,7 @@ class _BudgetCategoryCard extends StatelessWidget {
                 const Text(
                   'OVER BUDGET',
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: AppFontSizes.caption,
                     letterSpacing: 1.2,
                     color: Color(0xFFFF8A7A),
                   ),

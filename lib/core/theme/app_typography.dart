@@ -16,7 +16,7 @@ class AppTypography {
     return TextTheme(
       headlineLarge: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 28,
+        fontSize: AppFontSizes.largeDisplay,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.18,
@@ -24,7 +24,7 @@ class AppTypography {
       ),
       headlineMedium: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 22,
+        fontSize: AppFontSizes.display,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.24,
@@ -32,7 +32,7 @@ class AppTypography {
       ),
       headlineSmall: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 20,
+        fontSize: AppFontSizes.largeHeading,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.25,
@@ -40,7 +40,7 @@ class AppTypography {
       ),
       titleLarge: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 18,
+        fontSize: AppFontSizes.heading,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.28,
@@ -48,7 +48,7 @@ class AppTypography {
       ),
       titleMedium: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 16,
+        fontSize: AppFontSizes.title,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.3,
@@ -56,49 +56,49 @@ class AppTypography {
       ),
       titleSmall: TextStyle(
         fontFamily: headingFamily,
-        fontSize: 14,
+        fontSize: AppFontSizes.bodyLarge,
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
         height: 1.32,
         color: primary,
       ),
       bodyLarge: GoogleFonts.inter(
-        fontSize: 16,
+        fontSize: AppFontSizes.title,
         fontWeight: FontWeight.w400,
         letterSpacing: 0,
         height: 1.56,
         color: secondary,
       ),
       bodyMedium: GoogleFonts.inter(
-        fontSize: 15,
+        fontSize: AppFontSizes.subhead,
         fontWeight: FontWeight.w400,
         letterSpacing: 0,
         height: 1.5,
         color: secondary,
       ),
       bodySmall: GoogleFonts.inter(
-        fontSize: 13,
+        fontSize: AppFontSizes.body,
         fontWeight: FontWeight.w400,
         letterSpacing: 0,
         height: 1.45,
         color: secondary,
       ),
       labelLarge: GoogleFonts.inter(
-        fontSize: 13,
+        fontSize: AppFontSizes.body,
         fontWeight: FontWeight.w600,
         letterSpacing: 0,
         height: 1.35,
         color: secondary,
       ),
       labelMedium: GoogleFonts.inter(
-        fontSize: 12,
+        fontSize: AppFontSizes.label,
         fontWeight: FontWeight.w500,
         letterSpacing: 0,
         height: 1.38,
         color: secondary,
       ),
       labelSmall: GoogleFonts.inter(
-        fontSize: 10,
+        fontSize: AppFontSizes.caption,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.15,
         height: 1.35,
@@ -128,7 +128,7 @@ class AppTypography {
   static TextStyle amount(
     BuildContext context, {
     Color? color,
-    double fontSize = 20,
+    double fontSize = AppFontSizes.largeHeading,
   }) {
     return GoogleFonts.inter(
       fontSize: fontSize,
@@ -140,7 +140,7 @@ class AppTypography {
   }
 
   static TextStyle amountStyle(Color color) => GoogleFonts.inter(
-    fontSize: 20,
+    fontSize: AppFontSizes.largeHeading,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
     height: 1.16,

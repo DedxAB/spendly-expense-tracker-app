@@ -1,9 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
+import 'package:spendly/features/categories/domain/entities/category_entity.dart';
+import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
+
+IconData _categoryIcon(String categoryName) {
+  return AppIcons.getIconForCategory(categoryName);
+}
+
+Color _categoryIconColor(CategoryEntity? category, TransactionType type) {
+  if (category != null) {
+    return AppIcons.getColorForCategory(category.name, type);
+  }
+  return switch (type) {
+    TransactionType.income => AppColors.income,
+    TransactionType.investment => const Color(0xFF8B5CF6),
+    TransactionType.expense => AppColors.expense,
+  };
+}
+
+String _transactionTitle(TransactionEntity tx, Map<String, CategoryEntity> categoryById) {
+  return tx.note?.trim().isNotEmpty == true
+      ? tx.note!.trim()
+      : (categoryById[tx.categoryId]?.name ?? tx.categoryId);
+}
+
+String _transactionSubtitle(TransactionEntity tx, Map<String, CategoryEntity> categoryById) {
+  return categoryById[tx.categoryId]?.name ?? tx.categoryId;
+}
 
 class TransactionRow extends StatelessWidget {
   const TransactionRow({
@@ -18,7 +46,33 @@ class TransactionRow extends StatelessWidget {
     required this.iconColor,
     this.paymentMode,
     this.cardType,
+    this.recoveredAmount,
   });
+
+  final double? recoveredAmount;
+
+  factory TransactionRow.fromEntity({
+    required TransactionEntity tx,
+    required Map<String, CategoryEntity> categoryById,
+    required String dateLabel,
+    required bool isLast,
+    Key? key,
+  }) {
+    return TransactionRow(
+      key: key,
+      title: _transactionTitle(tx, categoryById),
+      subtitle: _transactionSubtitle(tx, categoryById),
+      amount: tx.amount,
+      type: tx.type,
+      isLast: isLast,
+      dateLabel: dateLabel,
+      icon: _categoryIcon(categoryById[tx.categoryId]?.name ?? tx.categoryId),
+      iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
+      paymentMode: tx.paymentMode,
+      cardType: tx.cardType,
+      recoveredAmount: tx.type == TransactionType.expense ? tx.recoveredAmount : null,
+    );
+  }
 
   final String title;
   final String subtitle;
@@ -66,7 +120,7 @@ class TransactionRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: context.textPrimary,
-                    fontSize: 14,
+                    fontSize: AppFontSizes.bodyLarge,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -79,7 +133,7 @@ class TransactionRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 12,
+                          fontSize: AppFontSizes.label,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -119,10 +173,21 @@ class TransactionRow extends StatelessWidget {
                     ? AppColors.homeAccentPurple
                     : context.textPrimary,
               ),
+              if (recoveredAmount != null && recoveredAmount! > 0) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '${Formatters.currency(recoveredAmount!)} recovered',
+                  style: TextStyle(
+                    color: AppColors.homeAccentGreen,
+                    fontSize: AppFontSizes.caption,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 dateLabel,
-                style: TextStyle(color: context.textSecondary, fontSize: 11),
+                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.small),
               ),
             ],
           ),
@@ -151,7 +216,7 @@ class _TagChip extends StatelessWidget {
         label,
         style: TextStyle(
           color: tint,
-          fontSize: 10,
+          fontSize: AppFontSizes.caption,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -209,14 +274,14 @@ class _AmountWithSign extends StatelessWidget {
           sign,
           style: TextStyle(
             color: textColor,
-            fontSize: 15,
+            fontSize: AppFontSizes.subhead,
             fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(width: 1),
         AmountView(
           absAmount,
-          style: AppTypography.amount(context, fontSize: 15).copyWith(
+          style: AppTypography.amount(context, fontSize: AppFontSizes.subhead).copyWith(
             color: textColor,
           ),
           maskColor: textColor,

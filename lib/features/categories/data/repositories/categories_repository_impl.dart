@@ -62,7 +62,10 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
         .read(appDatabaseProvider)
         .watchCategories()
         .map(
-          (rows) => rows.map((row) => row.toEntity()).toList(growable: false),
+          (rows) => rows
+              .where((row) => row.id != 'cat_goal_transfer')
+              .map((row) => row.toEntity())
+              .toList(growable: false),
         );
   }
 
@@ -72,7 +75,10 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
         .read(appDatabaseProvider)
         .watchCategories(type: type)
         .map(
-          (rows) => rows.map((row) => row.toEntity()).toList(growable: false),
+          (rows) => rows
+              .where((row) => row.id != 'cat_goal_transfer')
+              .map((row) => row.toEntity())
+              .toList(growable: false),
         );
   }
 }

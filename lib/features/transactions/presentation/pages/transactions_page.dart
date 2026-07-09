@@ -9,15 +9,15 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
-import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
-import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:spendly/features/contributions/presentation/widgets/contribution_status.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -29,7 +29,6 @@ class TransactionsPage extends ConsumerStatefulWidget {
 }
 
 class _TransactionsPageState extends ConsumerState<TransactionsPage> {
-  late final TextEditingController _searchController;
   late final ScrollController _scrollController;
   static const _pageSize = 30;
   int _visibleCount = _pageSize;
@@ -37,16 +36,12 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(
-      text: ref.read(transactionFilterProvider).searchQuery,
-    );
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -89,15 +84,35 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
       shown += entry.value.length;
     }
 
+    final grandTotal = entries.fold<double>(
+      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + (t.type == TransactionType.expense ? t.amount - t.recoveredAmount : 0)),
+    );
     return Column(
       children: [
-        ...visible.map((entry) => Padding(
-          padding: const EdgeInsets.only(top: 26),
+        ...visible.asMap().entries.map((group) {
+          final entry = group.value;
+          return Padding(
+          padding: EdgeInsets.only(top: AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(entry.key, style: AppTypography.sectionTitle(context)),
-              const SizedBox(height: 12),
+              group.key == 0
+                  ? Row(
+                      children: [
+                        Text(entry.key, style: AppTypography.sectionTitle(context)),
+                        const Spacer(),
+                        Text(
+                          'Total Spend ${Formatters.currency(grandTotal)}',
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(entry.key, style: AppTypography.sectionTitle(context)),
+              SizedBox(height: AppSpacing.smPlus),
               Divider(color: context.border),
               ...entry.value.asMap().entries.map((item) {
                 final tx = item.value;
@@ -121,12 +136,12 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   background: Container(
                     alignment: Alignment.centerLeft,
                     color: const Color(0xFF11261B),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Row(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(AppIcons.edit, color: AppColors.income),
-                        SizedBox(width: 8),
+                        SizedBox(width: AppSpacing.xs),
                         Text('EDIT', style: TextStyle(
                           color: AppColors.income,
                           fontWeight: FontWeight.w800,
@@ -138,8 +153,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   secondaryBackground: Container(
                     alignment: Alignment.centerRight,
                     color: const Color(0xFF2A1313),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: const Row(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -148,34 +163,39 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.1,
                         )),
-                        SizedBox(width: 8),
+                        SizedBox(width: AppSpacing.xs),
                         Icon(AppIcons.trash, color: AppColors.expense),
                       ],
                     ),
                   ),
-                  child: TransactionRow(
-                    title: tx.note?.trim().isNotEmpty == true
-                        ? tx.note!.trim()
-                        : (categoryById[tx.categoryId]?.name ?? tx.categoryId),
-                    subtitle: categoryById[tx.categoryId]?.name ?? tx.categoryId,
-                    amount: tx.amount,
-                    type: tx.type,
-                    isLast: isLast,
-                    dateLabel: _dateLabel(tx),
-                    icon: _iconFor(categoryById[tx.categoryId]?.name ?? tx.categoryId),
-                    iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
-                    paymentMode: tx.paymentMode,
-                    cardType: tx.cardType,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (tx.type == TransactionType.expense)
+                        Row(
+                          children: [
+                            const Spacer(),
+                            ContributionStatusChip(expenseId: tx.id),
+                          ],
+                        ),
+                      TransactionRow.fromEntity(
+                        tx: tx,
+                        categoryById: categoryById,
+                        dateLabel: _dateLabel(tx),
+                        isLast: isLast,
+                      ),
+                    ],
                   ),
 
                 );
               }),
             ],
           ),
-        )),
+        );
+          }),
         if (shown < totalCount)
           Padding(
-            padding: const EdgeInsets.only(top: 16),
+            padding: EdgeInsets.only(top: AppSpacing.sm),
             child: SizedBox(
               width: double.infinity,
               child: OutlinedButton(
@@ -183,7 +203,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: context.border),
                   backgroundColor: context.surface,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.lg),
                   ),
@@ -199,40 +219,12 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     );
   }
 
-  void _setSearchQuery(String query) {
-    if (_searchController.text != query) {
-      _searchController.value = TextEditingValue(
-        text: query,
-        selection: TextSelection.collapsed(offset: query.length),
-      );
-    }
-    ref.read(transactionFilterProvider.notifier).setSearchQuery(query);
-  }
-
-  void _clearAllFilters() {
-    _searchController.clear();
-    ref.read(transactionFilterProvider.notifier).clearAll();
-  }
-
   @override
   Widget build(BuildContext context) {
     final filters = ref.watch(transactionFilterProvider);
-    final filterController = ref.read(transactionFilterProvider.notifier);
     final transactions = ref.watch(filteredTransactionsProvider);
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
     final categoryById = {for (final c in categories) c.id: c};
-    final activeCategoryName = filters.categoryId == null
-        ? null
-        : categoryById[filters.categoryId!]?.name;
-    final hasActiveFilters =
-        filters.searchQuery.trim().isNotEmpty ||
-        filters.type != null ||
-        filters.categoryId != null ||
-        filters.paymentMode != null ||
-        filters.minAmount != null ||
-        filters.maxAmount != null ||
-        filters.sortOption != TransactionSortOption.newestFirst ||
-        filters.datePreset != TransactionDatePreset.allTime;
 
     ref.listen(transactionFilterProvider, (previous, next) {
       if (previous != null && previous != next) _resetPagination();
@@ -246,231 +238,36 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
       ),
       body: ListView(
         controller: _scrollController,
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.smPlus,
-          AppSpacing.mdPlus,
+          AppSpacing.smPlus,
           AppSpacing.smPlus,
           AppSpacing.md,
         ),
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Search Ledger',
-                  style: AppTypography.screenTitle(context),
-                ),
-              ),
-              const SwipeActionsInfoButton(
-                tooltip: 'Transaction swipe help',
-                title: 'Transaction swipe actions',
-                message:
-                    'Transactions support quick gestures so you can act without opening another screen.',
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.smPlus),
-          TextField(
-            controller: _searchController,
-            onChanged: _setSearchQuery,
-            style: const TextStyle(fontSize: 18),
-            decoration: const InputDecoration(
-              hintText: 'MERCHANT, CATEGORY, OR AMOUNT',
-              prefixIcon: Icon(AppIcons.search),
+          SizedBox(
+            height: 36,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: _buildFilterChips(filters, categories),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: SizedBox(
-              width: 134,
-              child: OutlinedButton.icon(
-                onPressed: () => _openFilters(context, filters),
-                icon: const Icon(AppIcons.filter, size: 16),
-                label: const Text('Filters'),
-              ),
-            ),
-          ),
-          if (hasActiveFilters) ...[
-            const SizedBox(height: AppSpacing.sm),
-            _ActiveFilterBar(
-              filters: filters,
-              onClearAll: _clearAllFilters,
-              onClearSearch: filters.searchQuery.trim().isNotEmpty
-                  ? () => _setSearchQuery('')
-                  : null,
-              onClearType: filters.type != null
-                  ? () => filterController.setType(null)
-                  : null,
-              onClearPaymentMode: filters.paymentMode != null
-                  ? () => ref
-                        .read(transactionFilterProvider.notifier)
-                        .applyAdvanced(
-                          datePreset: filters.datePreset,
-                          paymentMode: null,
-                          minAmount: filters.minAmount,
-                          maxAmount: filters.maxAmount,
-                          sortOption: filters.sortOption,
-                          customFrom: filters.customFrom,
-                          customTo: filters.customTo,
-                        )
-                  : null,
-              onClearCategory: filters.categoryId != null
-                  ? () => filterController.setCategory(null)
-                  : null,
-              onClearAmounts:
-                  filters.minAmount != null || filters.maxAmount != null
-                  ? () => ref
-                        .read(transactionFilterProvider.notifier)
-                        .applyAdvanced(
-                          datePreset: filters.datePreset,
-                          paymentMode: filters.paymentMode,
-                          minAmount: null,
-                          maxAmount: null,
-                          sortOption: filters.sortOption,
-                          customFrom: filters.customFrom,
-                          customTo: filters.customTo,
-                        )
-                  : null,
-              onClearSort:
-                  filters.sortOption != TransactionSortOption.newestFirst
-                  ? () => ref
-                        .read(transactionFilterProvider.notifier)
-                        .applyAdvanced(
-                          datePreset: filters.datePreset,
-                          paymentMode: filters.paymentMode,
-                          minAmount: filters.minAmount,
-                          maxAmount: filters.maxAmount,
-                          sortOption: TransactionSortOption.newestFirst,
-                          customFrom: filters.customFrom,
-                          customTo: filters.customTo,
-                        )
-                  : null,
-              onClearDatePreset:
-                  filters.datePreset != TransactionDatePreset.allTime
-                  ? () => ref
-                        .read(transactionFilterProvider.notifier)
-                        .applyAdvanced(
-                          datePreset: TransactionDatePreset.allTime,
-                          paymentMode: filters.paymentMode,
-                          minAmount: filters.minAmount,
-                          maxAmount: filters.maxAmount,
-                          sortOption: filters.sortOption,
-                        )
-                  : null,
-              categoryName: activeCategoryName,
-            ),
-          ],
-          const SizedBox(height: AppSpacing.mdPlus),
-          Divider(color: context.border),
+          SizedBox(height: AppSpacing.smPlus),
           transactions.when(
             data: (items) {
               if (items.isEmpty) {
                 return const Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: Text('No transactions found'),
+                  padding: EdgeInsets.only(top: 60),
+                  child: EmptyTransactionIllustration(),
                 );
               }
 
-              double upiExpense = 0;
-              double cardExpense = 0;
-              double cashExpense = 0;
-              double totalIncome = 0;
-              for (final tx in items) {
-                final amt = tx.amount;
-                if (tx.paymentMode == PaymentMode.upi) {
-                  if (tx.type == TransactionType.expense) {
-                    upiExpense += amt;
-                  } else {
-                    totalIncome += amt;
-                  }
-                } else if (tx.paymentMode == PaymentMode.card) {
-                  if (tx.type == TransactionType.expense) {
-                    cardExpense += amt;
-                  } else {
-                    totalIncome += amt;
-                  }
-                } else if (tx.paymentMode == PaymentMode.cash) {
-                  if (tx.type == TransactionType.expense) {
-                    cashExpense += amt;
-                  } else {
-                    totalIncome += amt;
-                  }
-                }
-              }
-
               final grouped = _groupByDate(items);
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.surface,
-                      border: Border.all(color: context.border),
-                      borderRadius: BorderRadius.circular(AppRadii.lg),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          'INCOME',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: context.textPrimary,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                        const Spacer(),
-                        AmountView(
-                          totalIncome,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF5DD48C),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _AccountBreakupCard(
-                          name: 'UPI',
-                          expense: upiExpense,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _AccountBreakupCard(
-                          name: 'Card',
-                          expense: cardExpense,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _AccountBreakupCard(
-                          name: 'Cash',
-                          expense: cashExpense,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Divider(color: context.border),
-                  _buildTransactionGroups(grouped, items.length, categoryById),
-                ],
-              );
+              return _buildTransactionGroups(grouped, items.length, categoryById);
             },
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: Center(child: CircularProgressIndicator()),
+            loading: () => Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: const Center(child: CircularProgressIndicator()),
             ),
             error: (e, _) => Text('Failed to load: $e'),
           ),
@@ -498,31 +295,83 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     return map;
   }
 
-  static IconData _iconFor(String text) {
-    return AppIcons.getIconForCategory(text);
+  List<Widget> _buildFilterChips(
+    TransactionFilterState filters,
+    List<CategoryEntity> categories,
+  ) {
+    final categoryById = {for (final c in categories) c.id: c.name};
+    return [
+      _buildChip('Filter', Icons.keyboard_arrow_down, true, () => _openFilters(context, filters)),
+      _buildChip('Date', null, true, () => _openFilters(context, filters, _FilterTab.date),
+          subtitle: _datePresetLabel(filters.datePreset)),
+      _buildChip('Type', null, filters.type != null, () => _openFilters(context, filters, _FilterTab.type),
+          subtitle: filters.type != null ? _typeLabel(filters.type!) : 'All'),
+      _buildChip('Payment', null, filters.paymentMode != null, () => _openFilters(context, filters, _FilterTab.payment),
+          subtitle: filters.paymentMode?.label ?? 'All'),
+      _buildChip('Category', null, filters.categoryId != null, () => _openFilters(context, filters, _FilterTab.category),
+          subtitle: filters.categoryId != null
+              ? (categoryById[filters.categoryId] ?? 'Selected')
+              : 'All'),
+      _buildChip('Amount', null, filters.minAmount != null || filters.maxAmount != null,
+          () => _openFilters(context, filters, _FilterTab.amount),
+          subtitle: filters.minAmount != null || filters.maxAmount != null ? 'Set' : 'All'),
+      _buildChip('Sort', null, filters.sortOption != TransactionSortOption.newestFirst,
+          () => _openFilters(context, filters, _FilterTab.sort),
+          subtitle: _sortLabel(filters.sortOption)),
+    ];
   }
 
-  static Color _categoryIconColor(
-    CategoryEntity? category,
-    TransactionType type,
-  ) {
-    if (category != null) {
-      return AppIcons.getColorForCategory(category.name, type);
-    }
-    switch (type) {
-      case TransactionType.income:
-        return AppColors.income;
-      case TransactionType.investment:
-        return const Color(0xFF8B5CF6);
-      case TransactionType.expense:
-        return AppColors.expense;
-    }
+  Widget _buildChip(String label, IconData? icon, bool active, VoidCallback onTap, {String? subtitle}) {
+    return Padding(
+      padding: EdgeInsets.only(right: AppSpacing.sm),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 36,
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.smPlus),
+          decoration: BoxDecoration(
+            color: active ? context.textPrimary : context.surfaceAlt,
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            border: Border.all(color: active ? context.textPrimary : context.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: active ? context.surface : context.textPrimary,
+                  fontSize: AppFontSizes.body,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (subtitle != null) ...[
+                SizedBox(width: 4),
+                Text(
+                  ': $subtitle',
+                  style: TextStyle(
+                    color: active ? context.surface.withValues(alpha: 0.7) : context.textSecondary,
+                    fontSize: AppFontSizes.body,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+              if (icon != null) ...[
+                SizedBox(width: 2),
+                Icon(icon, size: 16, color: active ? context.surface : context.textPrimary),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _openFilters(
     BuildContext context,
-    TransactionFilterState filters,
-  ) async {
+    TransactionFilterState filters, [
+    _FilterTab? initialTab,
+  ]) async {
     final availableCategories =
         ref.read(allCategoriesProvider).valueOrNull ?? const [];
     var selectedDatePreset = filters.datePreset;
@@ -595,6 +444,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
       showDragHandle: false,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
+        var activeTab = initialTab ?? _FilterTab.date;
         return AppModalSurface(
           child: StatefulBuilder(
             builder: (context, setState) {
@@ -631,6 +481,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
               }
 
               void resetFilters() {
+                activeTab = _FilterTab.date;
                 setState(() {
                   selectedDatePreset = TransactionDatePreset.allTime;
                   selectedType = null;
@@ -646,276 +497,179 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                 });
               }
 
+              const sidebarLabels = [
+                'Date',
+                'Type',
+                'Payment',
+                'Category',
+                'Amount',
+                'Sort',
+              ];
+              const sidebarTabs = [
+                _FilterTab.date,
+                _FilterTab.type,
+                _FilterTab.payment,
+                _FilterTab.category,
+                _FilterTab.amount,
+                _FilterTab.sort,
+              ];
+
               return Padding(
                 padding: EdgeInsets.fromLTRB(
                   AppSpacing.sm,
-                  AppSpacing.xs,
+                  AppSpacing.md,
                   AppSpacing.sm,
                   MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.sm,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 64,
-                        height: 4,
-                        color: context.textSecondary,
+                child: SizedBox(
+                  height: 420,
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          icon: Icon(AppIcons.close, color: context.textPrimary, size: 28),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.smPlus),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Filters',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: resetFilters,
-                          child: const Text('Reset'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Date Range'),
-                    const SizedBox(height: 8),
-                    _FilterSegment(
-                      selectedIndex: selectedDatePreset.index,
-                      labels: const [
-                        'All time',
-                        'This month',
-                        'Last month',
-                        'This year',
-                        'Custom',
-                      ],
-                      onChanged: (index) {
-                        setState(() {
-                          selectedDatePreset =
-                              TransactionDatePreset.values[index];
-                          if (selectedDatePreset !=
-                              TransactionDatePreset.custom) {
-                            customFrom = null;
-                            customTo = null;
-                          }
-                        });
-                      },
-                    ),
-                    if (selectedDatePreset == TransactionDatePreset.custom) ...[
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _DateRangeButton(
-                              label: customFrom == null
-                                  ? 'From'
-                                  : DateFormat(
-                                      'd MMM yyyy',
-                                    ).format(customFrom!),
-                              onTap: chooseFrom,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 96,
+                              child: ListView(
+                                padding: EdgeInsets.zero,
+                                children: List.generate(sidebarLabels.length, (index) {
+                                  final isSelected = sidebarTabs[index] == activeTab;
+                                  return Padding(
+                                    padding: EdgeInsets.only(bottom: AppSpacing.xxs),
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () => setState(() => activeTab = sidebarTabs[index]),
+                                      child: Container(
+                                        height: 42,
+                                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? context.textPrimary : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(AppRadii.md),
+                                        ),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          sidebarLabels[index],
+                                          style: TextStyle(
+                                            color: isSelected ? context.surface : context.textPrimary,
+                                            fontSize: AppFontSizes.body,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _DateRangeButton(
-                              label: customTo == null
-                                  ? 'To'
-                                  : DateFormat('d MMM yyyy').format(customTo!),
-                              onTap: chooseTo,
+                            SizedBox(width: AppSpacing.smPlus),
+                            Container(width: 1, color: context.border),
+                            SizedBox(width: AppSpacing.smPlus),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: _buildFilterPanel(
+                                  context: context,
+                                  tab: activeTab,
+                                  selectedDatePreset: selectedDatePreset,
+                                  customFrom: customFrom,
+                                  customTo: customTo,
+                                  selectedType: selectedType,
+                                  selectedPaymentMode: selectedPaymentMode,
+                                  selectedCategoryId: selectedCategoryId,
+                                  selectedMinAmount: selectedMinAmount,
+                                  selectedMaxAmount: selectedMaxAmount,
+                                  selectedSortOption: selectedSortOption,
+                                  availableCategories: availableCategories,
+                                  minAmountController: minAmountController,
+                                  maxAmountController: maxAmountController,
+                                  onChooseFrom: chooseFrom,
+                                  onChooseTo: chooseTo,
+                                  onSetDatePreset: (p) {
+                                    setState(() {
+                                      selectedDatePreset = p;
+                                      if (p != TransactionDatePreset.custom) {
+                                        customFrom = null;
+                                        customTo = null;
+                                      }
+                                    });
+                                  },
+                                  onSetType: (t) =>
+                                      setState(() => selectedType = t),
+                                  onSetPaymentMode: (p) =>
+                                      setState(() => selectedPaymentMode = p),
+                                  onSetCategoryId: (id) =>
+                                      setState(() => selectedCategoryId = id),
+                                  onSyncAmount: syncAmountState,
+                                  onSetSort: (s) =>
+                                      setState(() => selectedSortOption = s),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: AppSpacing.md),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: resetFilters,
+                                style: OutlinedButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(52),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(AppRadii.md),
+                                  ),
+                                ),
+                                child: const Text('Reset'),
+                              ),
+                            ),
+                            SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  syncAmountState();
+                                  ref
+                                      .read(transactionFilterProvider.notifier)
+                                      .setType(selectedType);
+                                  ref
+                                      .read(transactionFilterProvider.notifier)
+                                      .setCategory(selectedCategoryId);
+                                  ref
+                                      .read(transactionFilterProvider.notifier)
+                                      .applyAdvanced(
+                                        datePreset: selectedDatePreset,
+                                        paymentMode: selectedPaymentMode,
+                                        minAmount: selectedMinAmount,
+                                        maxAmount: selectedMaxAmount,
+                                        sortOption: selectedSortOption,
+                                        customFrom:
+                                            selectedDatePreset ==
+                                                TransactionDatePreset.custom
+                                            ? customFrom
+                                            : null,
+                                        customTo:
+                                            selectedDatePreset ==
+                                                TransactionDatePreset.custom
+                                            ? customTo
+                                            : null,
+                                      );
+                                  Navigator.pop(sheetContext);
+                                },
+                                child: const Text('Apply'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Type'),
-                    const SizedBox(height: 8),
-                    _FilterSegment(
-                      selectedIndex: selectedType == null
-                          ? 0
-                          : selectedType == 'income'
-                          ? 1
-                          : selectedType == 'expense'
-                          ? 2
-                          : 3,
-                      labels: const ['All', 'Income', 'Expense', 'Investment'],
-                      onChanged: (index) {
-                        setState(() {
-                          if (index == 0) {
-                            selectedType = null;
-                          } else if (index == 1) {
-                            selectedType = 'income';
-                          } else if (index == 2) {
-                            selectedType = 'expense';
-                          } else {
-                            selectedType = 'investment';
-                          }
-                        });
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Payment Mode'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: AppSpacing.xs,
-                      runSpacing: AppSpacing.xs,
-                      children: [
-                        _FilterChip(
-                          label: 'All',
-                          selected: selectedPaymentMode == null,
-                          onTap: () =>
-                              setState(() => selectedPaymentMode = null),
-                        ),
-                        ...PaymentMode.values.map(
-                          (m) => _FilterChip(
-                            label: m.label,
-                            selected: selectedPaymentMode == m,
-                            onTap: () => setState(() {
-                              selectedPaymentMode = selectedPaymentMode == m
-                                  ? null
-                                  : m;
-                            }),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Category'),
-                    const SizedBox(height: 8),
-                    if (availableCategories.isEmpty)
-                      Text(
-                        'No categories available.',
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: 12,
-                        ),
-                      )
-                    else
-                      Wrap(
-                        spacing: AppSpacing.xs,
-                        runSpacing: AppSpacing.xs,
-                        children: [
-                          _FilterChip(
-                            label: 'All',
-                            selected: selectedCategoryId == null,
-                            onTap: () =>
-                                setState(() => selectedCategoryId = null),
-                          ),
-                          ...availableCategories.map(
-                            (category) => _FilterChip(
-                              label: category.name,
-                              selected: selectedCategoryId == category.id,
-                              onTap: () => setState(() {
-                                selectedCategoryId =
-                                    selectedCategoryId == category.id
-                                    ? null
-                                    : category.id;
-                              }),
-                            ),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Amount'),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: minAmountController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9.,]'),
-                              ),
-                            ],
-                            onChanged: (_) => setState(syncAmountState),
-                            decoration: const InputDecoration(
-                              hintText: 'Min amount',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextField(
-                            controller: maxAmountController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9.,]'),
-                              ),
-                            ],
-                            onChanged: (_) => setState(syncAmountState),
-                            decoration: const InputDecoration(
-                              hintText: 'Max amount',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    const _FilterSectionLabel('Sort'),
-                    const SizedBox(height: 8),
-                    _FilterSegment(
-                      selectedIndex: selectedSortOption.index,
-                      labels: const ['Newest', 'Oldest', 'High', 'Low'],
-                      onChanged: (index) {
-                        setState(() {
-                          selectedSortOption =
-                              TransactionSortOption.values[index];
-                        });
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(sheetContext),
-                            child: const Text('Close'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: FilledButton(
-                            onPressed: () {
-                              syncAmountState();
-                              ref
-                                  .read(transactionFilterProvider.notifier)
-                                  .setCategory(selectedCategoryId);
-                              ref
-                                  .read(transactionFilterProvider.notifier)
-                                  .applyAdvanced(
-                                    datePreset: selectedDatePreset,
-                                    paymentMode: selectedPaymentMode,
-                                    minAmount: selectedMinAmount,
-                                    maxAmount: selectedMaxAmount,
-                                    sortOption: selectedSortOption,
-                                    customFrom:
-                                        selectedDatePreset ==
-                                            TransactionDatePreset.custom
-                                        ? customFrom
-                                        : null,
-                                    customTo:
-                                        selectedDatePreset ==
-                                            TransactionDatePreset.custom
-                                        ? customTo
-                                        : null,
-                                  );
-                              Navigator.pop(sheetContext);
-                            },
-                            child: const Text('Apply'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               );
             },
@@ -929,377 +683,85 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   }
 }
 
-class _FilterSectionLabel extends StatelessWidget {
-  const _FilterSectionLabel(this.label);
+enum _FilterTab { date, type, payment, category, amount, sort }
 
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        color: context.textSecondary,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-      ),
-    );
+String _typeLabel(String type) {
+  switch (type) {
+    case 'income':
+      return 'Income';
+    case 'expense':
+      return 'Expense';
+    case 'investment':
+      return 'Investment';
+    default:
+      return type;
   }
 }
 
-class _FilterSegment extends StatelessWidget {
-  const _FilterSegment({
-    required this.selectedIndex,
-    required this.labels,
-    required this.onChanged,
-  });
-
-  final int selectedIndex;
-  final List<String> labels;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        child: Row(
-          children: List.generate(labels.length, (index) {
-          final isSelected = selectedIndex == index;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(index),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == labels.length - 1
-                          ? Colors.transparent
-                          : context.border,
-                    ),
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  labels[index],
-                  style: TextStyle(
-                    color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: 12,
-                    letterSpacing: 0.2,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
-        ),
-      ),
-    );
+String _datePresetLabel(TransactionDatePreset preset) {
+  switch (preset) {
+    case TransactionDatePreset.allTime:
+      return 'All time';
+    case TransactionDatePreset.thisMonth:
+      return 'This month';
+    case TransactionDatePreset.lastMonth:
+      return 'Last month';
+    case TransactionDatePreset.thisYear:
+      return 'This year';
+    case TransactionDatePreset.custom:
+      return 'Custom range';
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? context.textPrimary : context.surface,
-          border: Border.all(
-            color: selected ? context.textPrimary : context.border,
-          ),
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? context.surface : context.textPrimary,
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ActiveFilterBar extends StatelessWidget {
-  const _ActiveFilterBar({
-    required this.filters,
-    required this.onClearAll,
-    required this.onClearSearch,
-    required this.onClearType,
-    required this.onClearPaymentMode,
-    required this.onClearCategory,
-    required this.onClearAmounts,
-    required this.onClearSort,
-    required this.onClearDatePreset,
-    required this.categoryName,
-  });
-
-  final TransactionFilterState filters;
-  final VoidCallback onClearAll;
-  final VoidCallback? onClearSearch;
-  final VoidCallback? onClearType;
-  final VoidCallback? onClearPaymentMode;
-  final VoidCallback? onClearCategory;
-  final VoidCallback? onClearAmounts;
-  final VoidCallback? onClearSort;
-  final VoidCallback? onClearDatePreset;
-  final String? categoryName;
-
-  @override
-  Widget build(BuildContext context) {
-    final chips = <Widget>[];
-
-    if (filters.datePreset == TransactionDatePreset.custom &&
-        filters.customFrom != null &&
-        filters.customTo != null) {
-      chips.add(
-        _SummaryChip(
-          label:
-              'Date: ${DateFormat('d MMM').format(filters.customFrom!)} - ${DateFormat('d MMM').format(filters.customTo!)}',
-          onRemove: onClearDatePreset,
-        ),
-      );
-    } else if (filters.datePreset != TransactionDatePreset.allTime) {
-      chips.add(
-        _SummaryChip(
-          label: _datePresetLabel(filters.datePreset),
-          onRemove: onClearDatePreset,
-        ),
-      );
-    }
-
-    if (filters.searchQuery.trim().isNotEmpty) {
-      chips.add(
-        _SummaryChip(
-          label: 'Search: ${filters.searchQuery.trim()}',
-          onRemove: onClearSearch,
-        ),
-      );
-    }
-
-    if (filters.type != null) {
-      chips.add(
-        _SummaryChip(
-          label: 'Type: ${_typeLabel(filters.type!)}',
-          onRemove: onClearType,
-        ),
-      );
-    }
-
-    if (filters.paymentMode != null) {
-      chips.add(
-        _SummaryChip(
-          label: 'Mode: ${filters.paymentMode!.label}',
-          onRemove: onClearPaymentMode,
-        ),
-      );
-    }
-
-    if (filters.categoryId != null) {
-      chips.add(
-        _SummaryChip(
-          label: 'Category: ${categoryName ?? 'Selected'}',
-          onRemove: onClearCategory,
-        ),
-      );
-    }
-
-    if (filters.minAmount != null || filters.maxAmount != null) {
-      chips.add(
-        _SummaryChip(
-          label: _amountLabel(filters.minAmount, filters.maxAmount),
-          onRemove: onClearAmounts,
-        ),
-      );
-    }
-
-    if (filters.sortOption != TransactionSortOption.newestFirst) {
-      chips.add(
-        _SummaryChip(
-          label: 'Sort: ${_sortLabel(filters.sortOption)}',
-          onRemove: onClearSort,
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.surface,
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'ACTIVE FILTERS',
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: 11,
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: onClearAll,
-                style: TextButton.styleFrom(
-                  foregroundColor: context.textPrimary,
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 32),
-                ),
-                child: const Text('Clear all'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (chips.isEmpty)
-            Text(
-              'No filters applied.',
-              style: TextStyle(color: context.textSecondary, fontSize: 12),
-            )
-          else
-            Wrap(spacing: 8, runSpacing: 8, children: chips),
-        ],
-      ),
-    );
-  }
-
-  static String _datePresetLabel(TransactionDatePreset preset) {
-    switch (preset) {
-      case TransactionDatePreset.allTime:
-        return 'All time';
-      case TransactionDatePreset.thisMonth:
-        return 'This month';
-      case TransactionDatePreset.lastMonth:
-        return 'Last month';
-      case TransactionDatePreset.thisYear:
-        return 'This year';
-      case TransactionDatePreset.custom:
-        return 'Custom range';
-    }
-  }
-
-  static String _sortLabel(TransactionSortOption sortOption) {
-    switch (sortOption) {
-      case TransactionSortOption.newestFirst:
-        return 'Newest';
-      case TransactionSortOption.oldestFirst:
-        return 'Oldest';
-      case TransactionSortOption.highestAmount:
-        return 'Highest';
-      case TransactionSortOption.lowestAmount:
-        return 'Lowest';
-    }
-  }
-
-  static String _amountLabel(double? minAmount, double? maxAmount) {
-    if (minAmount != null && maxAmount != null) {
-      return 'Amount: ${Formatters.currency(minAmount)} - ${Formatters.currency(maxAmount)}';
-    }
-    if (minAmount != null) {
-      return 'Amount: >= ${Formatters.currency(minAmount)}';
-    }
-    return 'Amount: <= ${Formatters.currency(maxAmount ?? 0)}';
-  }
-}
-
-class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({required this.label, this.onRemove});
-
-  final String label;
-  final VoidCallback? onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: context.border),
-        color: context.surfaceAlt,
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: context.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          if (onRemove != null) ...[
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: onRemove,
-              child: Icon(
-                Icons.close,
-                size: 14,
-                color: context.textSecondary,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+String _sortLabel(TransactionSortOption sortOption) {
+  switch (sortOption) {
+    case TransactionSortOption.newestFirst:
+      return 'Newest';
+    case TransactionSortOption.oldestFirst:
+      return 'Oldest';
+    case TransactionSortOption.highestAmount:
+      return 'Highest';
+    case TransactionSortOption.lowestAmount:
+      return 'Lowest';
   }
 }
 
 class _DateRangeButton extends StatelessWidget {
-  const _DateRangeButton({required this.label, required this.onTap});
+  const _DateRangeButton({required this.label, required this.onTap, this.selected = false});
 
   final String label;
   final VoidCallback onTap;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        height: 38,
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.smPlus),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(
-          color: context.surface,
-          border: Border.all(color: context.border),
+          color: selected ? context.textPrimary : context.surface,
+          border: Border.all(color: selected ? context.textPrimary : context.border),
           borderRadius: BorderRadius.circular(AppRadii.md),
         ),
-        child: Text(
-          label,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: context.textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: selected ? context.surface : context.textPrimary,
+                  fontSize: AppFontSizes.body,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (selected)
+              Icon(Icons.check, size: 16, color: context.surface),
+          ],
         ),
       ),
     );
@@ -1317,61 +779,225 @@ double? _parseAmountInput(String text) {
   return double.tryParse(normalized);
 }
 
-class _AccountBreakupCard extends StatelessWidget {
-  const _AccountBreakupCard({required this.name, required this.expense});
+String _dateLabel(dynamic tx) {
+  return DateFormat('h:mm a').format(tx.date as DateTime);
+}
 
-  final String name;
-  final double expense;
+Widget _buildFilterPanel({
+  required BuildContext context,
+  required _FilterTab tab,
+  required TransactionDatePreset selectedDatePreset,
+  required DateTime? customFrom,
+  required DateTime? customTo,
+  required String? selectedType,
+  required PaymentMode? selectedPaymentMode,
+  required String? selectedCategoryId,
+  required double? selectedMinAmount,
+  required double? selectedMaxAmount,
+  required TransactionSortOption selectedSortOption,
+  required List<CategoryEntity> availableCategories,
+  required TextEditingController minAmountController,
+  required TextEditingController maxAmountController,
+  required VoidCallback onChooseFrom,
+  required VoidCallback onChooseTo,
+  required ValueChanged<TransactionDatePreset> onSetDatePreset,
+  required ValueChanged<String?> onSetType,
+  required ValueChanged<PaymentMode?> onSetPaymentMode,
+  required ValueChanged<String?> onSetCategoryId,
+  required VoidCallback onSyncAmount,
+  required ValueChanged<TransactionSortOption> onSetSort,
+}) {
+  switch (tab) {
+    case _FilterTab.date:
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...TransactionDatePreset.values.map(
+            (preset) => Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _DateRangeButton(
+                label: _datePresetLabel(preset),
+                selected: selectedDatePreset == preset,
+                onTap: () => onSetDatePreset(preset),
+              ),
+            ),
+          ),
+          if (selectedDatePreset == TransactionDatePreset.custom) ...[
+            SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: _DateRangeButton(
+                    label: customFrom != null
+                        ? DateFormat('MMM d, yyyy').format(customFrom)
+                        : 'From',
+                    selected: customFrom != null,
+                    onTap: onChooseFrom,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: _DateRangeButton(
+                    label: customTo != null
+                        ? DateFormat('MMM d, yyyy').format(customTo)
+                        : 'To',
+                    selected: customTo != null,
+                    onTap: onChooseTo,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      );
+    case _FilterTab.type:
+      return Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: [
+          for (final t in TransactionType.values)
+            _FilterSelectionChip(
+              label: t.value,
+              selected: selectedType == t.value,
+              onTap: () => onSetType(selectedType == t.value ? null : t.value),
+            ),
+        ],
+      );
+    case _FilterTab.payment:
+      return Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: [
+          for (final m in PaymentMode.values)
+            _FilterSelectionChip(
+              label: m.label,
+              selected: selectedPaymentMode == m,
+              onTap: () =>
+                  onSetPaymentMode(selectedPaymentMode == m ? null : m),
+            ),
+        ],
+      );
+    case _FilterTab.category:
+      return Wrap(
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: [
+          for (final c in availableCategories)
+            _FilterSelectionChip(
+              label: c.name,
+              selected: selectedCategoryId == c.id,
+              onTap: () =>
+                  onSetCategoryId(selectedCategoryId == c.id ? null : c.id),
+            ),
+        ],
+      );
+    case _FilterTab.amount:
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: minAmountController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                  ],
+                  onChanged: (_) => onSyncAmount(),
+                  decoration: InputDecoration(
+                    hintText: 'Min',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.md),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.sm,
+                    ),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: TextField(
+                  controller: maxAmountController,
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                  ],
+                  onChanged: (_) => onSyncAmount(),
+                  decoration: InputDecoration(
+                    hintText: 'Max',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadii.md),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.sm,
+                    ),
+                    isDense: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    case _FilterTab.sort:
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final s in TransactionSortOption.values)
+            Padding(
+              padding: EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _DateRangeButton(
+                label: _sortLabel(s),
+                selected: selectedSortOption == s,
+                onTap: () => onSetSort(s),
+              ),
+            ),
+        ],
+      );
+  }
+}
+
+class _FilterSelectionChip extends StatelessWidget {
+  const _FilterSelectionChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: context.surface,
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.premiumCard),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            name.toUpperCase(),
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: context.textPrimary,
-              letterSpacing: 1.0,
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.smPlus,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? context.textPrimary : context.surface,
+          border: Border.all(
+            color: selected ? context.textPrimary : context.border,
           ),
-          const SizedBox(height: 6),
-          Text(
-            '-${Formatters.currency(expense)}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFF8A7A),
-            ),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+        ),
+        child: Text(
+          label[0].toUpperCase() + label.substring(1),
+          style: TextStyle(
+            color: selected ? context.surface : context.textPrimary,
+            fontSize: AppFontSizes.label,
+            fontWeight: FontWeight.w700,
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-String _typeLabel(String type) {
-  switch (type) {
-    case 'income':
-      return 'Income';
-    case 'expense':
-      return 'Expense';
-    case 'investment':
-      return 'Investment';
-    default:
-      return type;
-  }
-}
-
-String _dateLabel(dynamic tx) {
-  return DateFormat('h:mm a').format(tx.date as DateTime);
 }

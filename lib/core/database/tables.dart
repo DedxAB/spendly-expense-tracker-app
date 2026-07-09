@@ -243,6 +243,21 @@ class GoalFunds extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+class ExpenseContributions extends Table {
+  TextColumn get id => text()();
+  TextColumn get expenseId => text().named('expense_id')();
+  TextColumn get personName => text().named('person_name')();
+  RealColumn get amount => real()();
+  IntColumn get amountPaise =>
+      integer().named('amount_paise').withDefault(const Constant(0))();
+  BoolColumn get isSettled =>
+      boolean().named('is_settled').withDefault(const Constant(false))();
+  IntColumn get settledAt => integer().named('settled_at').nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 class GoalContributions extends Table {
   TextColumn get id => text()();
   TextColumn get goalId => text().named('goal_id')();

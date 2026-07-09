@@ -58,9 +58,12 @@ class MonthlySummaryCard extends ConsumerWidget {
             children: [
               const Icon(Icons.auto_awesome, color: Color(0xFFE8B830), size: 18),
               const SizedBox(width: 8),
-              Text(
-                isYearly ? 'Year in Review' : 'Monthly Insights',
-                style: AppTypography.sectionTitle(context),
+              Flexible(
+                child: Text(
+                  isYearly ? 'Year in Review' : 'Monthly Insights',
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.sectionTitle(context),
+                ),
               ),
             ],
           ),
@@ -73,7 +76,7 @@ class MonthlySummaryCard extends ConsumerWidget {
                 children: [
                   Text(
                     '\u2022',
-                    style: TextStyle(color: context.textSecondary, fontSize: 14),
+                    style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.bodyLarge),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -81,7 +84,7 @@ class MonthlySummaryCard extends ConsumerWidget {
                       line,
                       style: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 14,
+                        fontSize: AppFontSizes.bodyLarge,
                         height: 1.5,
                       ),
                     ),

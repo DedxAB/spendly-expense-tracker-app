@@ -9,9 +9,13 @@ import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/money.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
+import 'package:spendly/features/contributions/presentation/providers/contributions_provider.dart';
+import 'package:spendly/features/contributions/data/repositories/contributions_repository_impl.dart';
+import 'package:spendly/features/contributions/presentation/widgets/contributor_editor.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -83,6 +87,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   String? _selectedCategoryId;
   bool _formAttempted = false;
 
+  List<({String personName, double amount})> _contributors = [];
+  bool _includeSelf = false;
+  double _selfShare = 0;
+
   @override
   void initState() {
     super.initState();
@@ -95,10 +103,24 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       _selectedCategoryId = existing.categoryId;
       _amountController.text = existing.amount.toStringAsFixed(2);
       _noteController.text = existing.note ?? '';
+      _loadContributors(existing.id);
     } else {
       _type = widget.initialType ?? TransactionType.expense;
       _cardType = _type != TransactionType.income ? CardType.debit : null;
     }
+  }
+
+  Future<void> _loadContributors(String expenseId) async {
+    try {
+      final contributions = await ref.read(contributionsRepositoryProvider).getContributions(expenseId);
+      if (mounted) {
+        setState(() {
+          _contributors = contributions
+              .map((c) => (personName: c.personName, amount: c.amount))
+              .toList();
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -113,6 +135,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     final amount = Money.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0 || _selectedCategoryId == null) {
       return;
+    }
+
+    if (_type == TransactionType.expense && _contributors.isNotEmpty) {
+      final totalShare = _contributors.fold<double>(0, (s, c) => s + c.amount);
+      final selfAmt = _includeSelf ? _selfShare : 0;
+      if (totalShare + selfAmt > amount) return;
     }
 
     final now = DateTime.now();
@@ -137,16 +165,24 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       isDeleted: false,
     );
 
+    final transactionActions = ref.read(transactionActionsProvider);
+
     if (widget.existing == null) {
-      await ref.read(transactionActionsProvider).save(entity);
+      await transactionActions.save(entity);
     } else {
-      await ref.read(transactionActionsProvider).update(entity);
+      await transactionActions.update(entity);
+    }
+
+    if (_type == TransactionType.expense) {
+      await ref.read(contributionActionsProvider).replaceForExpense(
+        entity.id,
+        _contributors,
+      );
     }
 
     HapticFeedback.selectionClick();
 
     if (!mounted) return;
-    final messenger = ScaffoldMessenger.maybeOf(context);
     final navigator = Navigator.of(context);
 
     if (!widget.embedded) {
@@ -155,20 +191,13 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
       navigator.maybePop();
     }
 
-    // Show feedback without reading inherited widgets from a deactivated context.
-    messenger?.showSnackBar(
-      SnackBar(
-        content: Text(
-          widget.existing == null ? 'Transaction added' : 'Transaction updated',
-        ),
-        action: widget.existing == null
-            ? SnackBarAction(
-                label: 'Undo',
-                onPressed: () =>
-                    ref.read(transactionActionsProvider).softDelete(entity.id),
-              )
-            : null,
-      ),
+    showAppToast(
+      context,
+      widget.existing == null ? 'Transaction added' : 'Transaction updated',
+      actionLabel: widget.existing == null ? 'Undo' : null,
+      onAction: widget.existing == null
+          ? () => transactionActions.softDelete(entity.id)
+          : null,
     );
   }
 
@@ -197,13 +226,21 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     onSurface: Color(0xFF111111),
                   ),
             dialogTheme: DialogThemeData(
-              backgroundColor: isDark ? const Color(0xFF0E0E0E) : const Color(0xFFFFFFFF),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+              backgroundColor: isDark
+                  ? const Color(0xFF0E0E0E)
+                  : const Color(0xFFFFFFFF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+              ),
             ),
-            datePickerTheme: isDark ? AppDatePickerTheme.darkBoxy() : AppDatePickerTheme.lightBoxy(),
+            datePickerTheme: isDark
+                ? AppDatePickerTheme.darkBoxy()
+                : AppDatePickerTheme.lightBoxy(),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor: isDark ? Colors.white : const Color(0xFF111111),
+                foregroundColor: isDark
+                    ? Colors.white
+                    : const Color(0xFF111111),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.md),
                 ),
@@ -287,7 +324,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: context.textPrimary,
-                      fontSize: 20,
+                      fontSize: AppFontSizes.largeHeading,
                       fontWeight: FontWeight.w700,
                       height: 1,
                     ),
@@ -296,12 +333,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       prefixText: '${AppConstants.currencySymbol} ',
                       prefixStyle: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 16,
+                        fontSize: AppFontSizes.title,
                         fontWeight: FontWeight.w600,
                       ),
                       hintStyle: TextStyle(
                         color: context.textSecondary,
-                        fontSize: 18,
+                        fontSize: AppFontSizes.heading,
                         fontWeight: FontWeight.w600,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -310,13 +347,17 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  if (_formAttempted && (Money.tryParse(_amountController.text.trim()) == null ||
-                      Money.tryParse(_amountController.text.trim())! <= 0))
+                  if (_formAttempted &&
+                      (Money.tryParse(_amountController.text.trim()) == null ||
+                          Money.tryParse(_amountController.text.trim())! <= 0))
                     const Padding(
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Enter a valid amount',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
+                        style: TextStyle(
+                          color: Color(0xFFF55C5C),
+                          fontSize: AppFontSizes.small,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 14),
@@ -369,7 +410,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Select a category',
-                        style: TextStyle(color: Color(0xFFF55C5C), fontSize: 11),
+                        style: TextStyle(
+                          color: Color(0xFFF55C5C),
+                          fontSize: AppFontSizes.small,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 22),
@@ -417,7 +461,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                               ).formatMediumDate(_date),
                               style: TextStyle(
                                 color: context.textPrimary,
-                                fontSize: 16,
+                                fontSize: AppFontSizes.title,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -444,7 +488,10 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     child: TextField(
                       controller: _noteController,
                       maxLines: 1,
-                      style: TextStyle(color: context.textPrimary, fontSize: 16),
+                      style: TextStyle(
+                        color: context.textPrimary,
+                        fontSize: AppFontSizes.title,
+                      ),
                       decoration: InputDecoration(
                         filled: false,
                         enabledBorder: InputBorder.none,
@@ -455,7 +502,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                         hintText: 'What was this for?',
                         hintStyle: TextStyle(
                           color: context.textSecondary,
-                          fontSize: 16,
+                          fontSize: AppFontSizes.title,
                           fontWeight: FontWeight.w500,
                         ),
                         border: InputBorder.none,
@@ -464,7 +511,21 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                       ),
                     ),
                   ),
-                  Divider(color: context.border, height: 1),
+                  if (_type == TransactionType.expense) ...[
+                    const SizedBox(height: 22),
+                    ContributorEditor(
+                      totalAmount: Money.tryParse(_amountController.text.trim()) ?? 0,
+                      contributors: _contributors,
+                      onChanged: (v) => setState(() => _contributors = v),
+                      includeSelf: _includeSelf,
+                      onIncludeSelfChanged: (v) => setState(() {
+                        _includeSelf = v;
+                        _selfShare = 0;
+                      }),
+                      selfShare: _includeSelf ? _selfShare : null,
+                      onSelfShareChanged: (v) => setState(() => _selfShare = v),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   SizedBox(
                     height: 54,
@@ -475,7 +536,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                             ? _saveButtonLabel(_type)
                             : _updateButtonLabel(_type),
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: AppFontSizes.subhead,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0,
                         ),
@@ -515,7 +576,7 @@ class _SheetLabel extends StatelessWidget {
           text,
           style: TextStyle(
             color: context.textSecondary,
-            fontSize: 12,
+            fontSize: AppFontSizes.label,
             letterSpacing: 1.6,
             fontWeight: FontWeight.w700,
           ),
@@ -527,7 +588,7 @@ class _SheetLabel extends StatelessWidget {
               '*',
               style: TextStyle(
                 color: Color(0xFFF55C5C),
-                fontSize: 14,
+                fontSize: AppFontSizes.bodyLarge,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -572,7 +633,7 @@ class _SheetChoiceChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected ? context.surface : context.textPrimary,
-            fontSize: 13,
+            fontSize: AppFontSizes.body,
             letterSpacing: 0.8,
             fontWeight: FontWeight.w700,
           ),
@@ -605,36 +666,40 @@ class _AccountSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: selected == item.$1 ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected == item.$1
+                        ? context.textPrimary
+                        : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: selected == item.$1
+                          ? context.surface
+                          : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: 13,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );
@@ -663,37 +728,37 @@ class _CardTypeSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = selected == item.$1;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            final isSelected = selected == item.$1;
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isSelected ? context.textPrimary : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: isSelected ? context.surface : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: 13,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );
@@ -723,36 +788,40 @@ class _TypeSegment extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.md),
         child: Row(
           children: List.generate(items.length, (index) {
-          final item = items[index];
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: selected == item.$1 ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
+            final item = items[index];
+            return Expanded(
+              child: InkWell(
+                onTap: () => onChanged(item.$1),
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: selected == item.$1
+                        ? context.textPrimary
+                        : context.surface,
+                    border: Border(
+                      right: BorderSide(
+                        color: index == items.length - 1
+                            ? Colors.transparent
+                            : context.border,
+                      ),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    item.$2,
+                    style: TextStyle(
+                      color: selected == item.$1
+                          ? context.surface
+                          : context.textPrimary,
+                      fontSize: AppFontSizes.body,
+                      letterSpacing: 0,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: selected == item.$1 ? context.surface : context.textPrimary,
-                    fontSize: 13,
-                    letterSpacing: 0,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
         ),
       ),
     );
