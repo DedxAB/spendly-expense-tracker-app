@@ -169,6 +169,17 @@ class BudgetPage extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Row(
                             children: [
+                              Text(
+                                safePerDay < 0 ? '-' : '',
+                                style: TextStyle(
+                                  fontSize: AppFontSizes.heading,
+                                  fontWeight: FontWeight.w700,
+                                  color: safePerDay >= 0
+                                      ? const Color(0xFF3DD07B)
+                                      : const Color(0xFFFF8A7A),
+                                  height: 1,
+                                ),
+                              ),
                               AmountView(
                                 safePerDay.abs(),
                                 style: TextStyle(

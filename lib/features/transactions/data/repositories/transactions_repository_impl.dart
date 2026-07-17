@@ -176,7 +176,7 @@ class TransactionsRepositoryImpl implements TransactionsRepository {
         'investment': netInvestment,
         'grossInvestment': grossInvestment,
         'goalTransfers': goalTransfers,
-        'balance': income - expense - netInvestment - goalTransfers,
+        'balance': income - expense - netInvestment,
       };
     });
   }

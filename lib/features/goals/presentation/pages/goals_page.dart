@@ -9,8 +9,8 @@ import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
-import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/goals/presentation/providers/goals_provider.dart';
 
@@ -118,18 +118,19 @@ class GoalsPage extends ConsumerWidget {
                   emergency: entry.value,
                   liquidityIndex: entry.key + 1,
                   onAddFunds: () async {
-                    final amount = await _askAmount(
+                    final result = await _askAmountWithNote(
                       context,
                       title: 'Add to emergency fund',
                       confirmText: 'Add',
                     );
-                    if (amount == null) return;
+                    if (result == null) return;
                     final added = await actions.addToEmergencyFund(
-                      amount,
+                      result.amount,
                       fundId: entry.value.id,
+                      note: result.note,
                     );
                     if (!context.mounted) return;
-                    if (added < amount) {
+                    if (added < result.amount) {
                       showAppToast(
                         context,
                         added > 0
@@ -140,15 +141,16 @@ class GoalsPage extends ConsumerWidget {
                     HapticFeedback.selectionClick();
                   },
                   onRemoveFunds: () async {
-                    final amount = await _askAmount(
+                    final result = await _askAmountWithNote(
                       context,
                       title: 'Withdraw from emergency fund',
                       confirmText: 'Remove',
                     );
-                    if (amount == null) return;
+                    if (result == null) return;
                     final ok = await actions.removeFromEmergencyFund(
                       entry.value.id,
-                      amount,
+                      result.amount,
+                      note: result.note,
                     );
                     if (!context.mounted) return;
                     if (!ok) {
@@ -247,14 +249,18 @@ class GoalsPage extends ConsumerWidget {
                 child: _GoalCard(
                   goal: goal,
                     onQuickAdd: () async {
-                      final amount = await _askAmount(
+                      final result = await _askAmountWithNote(
                         context,
                         title: 'Add funds to ${goal.title}',
                       );
-                      if (amount == null) return;
-                      final added = await actions.addToGoal(goal.id, amount);
+                      if (result == null) return;
+                      final added = await actions.addToGoal(
+                        goal.id,
+                        result.amount,
+                        note: result.note,
+                      );
                       if (!context.mounted) return;
-                      if (added < amount) {
+                      if (added < result.amount) {
                         showAppToast(
                           context,
                           added > 0
@@ -265,13 +271,17 @@ class GoalsPage extends ConsumerWidget {
                       HapticFeedback.selectionClick();
                     },
                     onQuickRemove: () async {
-                    final amount = await _askAmount(
+                    final result = await _askAmountWithNote(
                       context,
                       title: 'Withdraw from ${goal.title}',
                       confirmText: 'Remove',
                     );
-                    if (amount == null) return;
-                    final ok = await actions.removeFromGoal(goal.id, amount);
+                    if (result == null) return;
+                    final ok = await actions.removeFromGoal(
+                      goal.id,
+                      result.amount,
+                      note: result.note,
+                    );
                     if (!context.mounted) return;
                     if (!ok) {
                       showAppToast(context, 'Insufficient saved amount.');
@@ -415,21 +425,19 @@ class GoalsPage extends ConsumerWidget {
     return goal.remaining / months;
   }
 
-  static Future<double?> _askAmount(
+  static Future<({double amount, String? note})?> _askAmountWithNote(
     BuildContext context, {
     required String title,
     String confirmText = 'Add',
   }) async {
-    final value = await showAppTextInputDialog(
-      context,
-      title: title,
-      hintText: 'Amount',
-      confirmText: confirmText,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    return showDialog<({double amount, String? note})>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogContext) => _AmountWithNoteDialog(
+        title: title,
+        confirmText: confirmText,
+      ),
     );
-    final amount = double.tryParse((value ?? '').trim());
-    if (amount == null || amount <= 0) return null;
-    return amount;
   }
 
   static Future<bool> _confirmDelete(
@@ -494,9 +502,25 @@ class GoalsPage extends ConsumerWidget {
                             return Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    '${Formatters.currency(item.amount)} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
-                                    style: TextStyle(color: context.textPrimary),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${Formatters.currency(item.amount)} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
+                                        style: TextStyle(color: context.textPrimary),
+                                      ),
+                                      if (item.note != null && item.note!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            item.note!,
+                                            style: TextStyle(
+                                              color: context.textSecondary,
+                                              fontSize: AppFontSizes.small,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                                 IconButton(
@@ -1517,9 +1541,104 @@ class _GoalTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadii.md),
               borderSide: BorderSide(color: context.border),
             ),
-          ),
+           ),
+         ),
+       ],
+     );
+   }
+ }
+
+class _AmountWithNoteDialog extends StatefulWidget {
+  const _AmountWithNoteDialog({
+    required this.title,
+    required this.confirmText,
+  });
+
+  final String title;
+  final String confirmText;
+
+  @override
+  State<_AmountWithNoteDialog> createState() => _AmountWithNoteDialogState();
+}
+
+class _AmountWithNoteDialogState extends State<_AmountWithNoteDialog> {
+  final _amountController = TextEditingController();
+  final _noteController = TextEditingController();
+  var _formAttempted = false;
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      titlePadding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, AppSpacing.sm, AppSpacing.sm, AppSpacing.xs,
+      ),
+      contentPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm,
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm, 0, AppSpacing.sm, AppSpacing.sm,
+      ),
+      title: Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
+      content: SizedBox(
+        width: AppModalSizes.dialogContentWidth,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _amountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Amount'),
+            ),
+            if (_formAttempted && _amountController.text.trim().isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'Amount is required',
+                  style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
+                ),
+              ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(
+                hintText: 'Reason (optional)',
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        DialogActionsRow(
+          cancelText: 'Cancel',
+          confirmText: widget.confirmText,
+          onCancel: () => Navigator.of(context, rootNavigator: true).pop(null),
+          onConfirm: () {
+            setState(() => _formAttempted = true);
+            final rawAmount = _amountController.text.trim();
+            final amount = double.tryParse(rawAmount);
+            if (amount == null || amount <= 0) return;
+            final trimmed = _noteController.text.trim();
+            Navigator.of(context, rootNavigator: true).pop((
+              amount: amount,
+              note: trimmed.isEmpty ? null : trimmed,
+            ));
+          },
         ),
       ],
     );
   }
 }
+
