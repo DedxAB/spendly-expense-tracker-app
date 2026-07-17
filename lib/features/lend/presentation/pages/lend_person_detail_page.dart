@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -16,6 +17,8 @@ import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
+import 'package:spendly/features/lend/domain/entities/lend_settlement_event_entity.dart';
+import 'package:spendly/features/lend/presentation/services/lend_export_service.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
 
 class LendPersonDetailPage extends ConsumerWidget {
@@ -38,6 +41,40 @@ class LendPersonDetailPage extends ConsumerWidget {
     await repository.deletePerson(personId);
     if (context.mounted) {
       context.go('/lend');
+    }
+  }
+
+  Future<void> _exportPdf(
+    BuildContext context,
+    WidgetRef ref,
+    String personName,
+    List<LendEntryEntity> entries,
+    List<LendSettlementEventEntity> settlementEvents,
+  ) async {
+    final active = entries
+        .where((e) => !e.isDeleted && (e.amount - e.settledAmount) > 0)
+        .toList(growable: false);
+    final totalLent = active
+        .where((e) => e.type == LendEntryType.lent)
+        .fold<double>(0, (sum, e) => sum + (e.amount - e.settledAmount).clamp(0, e.amount));
+    final totalBorrowed = active
+        .where((e) => e.type == LendEntryType.borrowed)
+        .fold<double>(0, (sum, e) => sum + (e.amount - e.settledAmount).clamp(0, e.amount));
+    final net = totalLent - totalBorrowed;
+
+    try {
+      await saveAndShareLendHistory(
+        personName: personName,
+        entries: entries,
+        settlementEvents: settlementEvents,
+        totalLent: totalLent,
+        totalBorrowed: totalBorrowed,
+        net: net,
+      );
+    } catch (_) {
+      if (context.mounted) {
+        showAppToast(context, 'Export failed', style: AppToastStyle.error);
+      }
     }
   }
 
@@ -390,7 +427,12 @@ class LendPersonDetailPage extends ConsumerWidget {
                   style: AppTypography.screenTitle(context),
                 ),
               ),
-              if (person != null)
+              if (person != null) ...[
+                IconButton(
+                  tooltip: 'Export PDF',
+                  onPressed: () => _exportPdf(context, ref, person.name, entriesAsync.valueOrNull ?? const [], settlementEvents),
+                  icon: const Icon(AppIcons.download),
+                ),
                 IconButton(
                   tooltip: 'Delete person',
                   onPressed: () {
@@ -406,6 +448,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                     color: AppIcons.getColorForIcon(AppIcons.trash),
                   ),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
