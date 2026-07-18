@@ -105,7 +105,7 @@ class SettingsPage extends ConsumerWidget {
         context,
         'Logged out. Local data cleared. Google backup preserved.',
       );
-      context.go('/splash');
+      context.go('/onboarding/profile');
     } catch (_) {
       if (!context.mounted) return;
       showAppToast(context, 'Logout failed. Please try again.');
@@ -1132,7 +1132,7 @@ class SettingsPage extends ConsumerWidget {
             ? 'All data erased. Google account disconnected.'
             : 'All data erased.',
       );
-      context.go('/splash');
+      context.go('/onboarding/profile');
     } catch (_) {
       if (!context.mounted) return;
       showAppToast(context, 'Erase failed. Please try again.',

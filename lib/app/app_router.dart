@@ -26,7 +26,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     routes: [
-      GoRoute(path: '/splash', builder: (context, state) => const SplashPage()),
+      GoRoute(path: '/splash', builder: (context, state) => const BootstrapPage()),
       GoRoute(
         path: '/onboarding/profile',
         builder: (context, state) => const ProfileOnboardingPage(),
@@ -102,31 +102,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class SplashPage extends ConsumerStatefulWidget {
-  const SplashPage({super.key});
+class BootstrapPage extends ConsumerStatefulWidget {
+  const BootstrapPage({super.key});
 
   @override
-  ConsumerState<SplashPage> createState() => _SplashPageState();
+  ConsumerState<BootstrapPage> createState() => _BootstrapPageState();
 }
 
-class _SplashPageState extends ConsumerState<SplashPage>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
+class _BootstrapPageState extends ConsumerState<BootstrapPage> {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
-
     _bootstrap();
   }
 
   Future<void> _bootstrap() async {
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-    if (!mounted) return;
     ref.read(cloudSyncRepositoryProvider).runDailyBackupIfNeeded();
     final profile = await ref.read(userProfileProvider.future);
     if (!mounted) return;
@@ -138,29 +128,8 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FadeTransition(
-        opacity: CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-        child: Center(
-          child: Text(
-            'Spendly',
-            style: TextStyle(
-              fontSize: AppFontSizes.splash,
-              fontWeight: FontWeight.w800,
-              color: context.textPrimary,
-              letterSpacing: -1.5,
-            ),
-          ),
-        ),
-      ),
-    );
+    return const Scaffold();
   }
 }
 

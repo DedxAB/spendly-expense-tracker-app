@@ -64,7 +64,6 @@ flutter:
         - asset: assets/fonts/general_sans/GeneralSans-Bold.ttf
           weight: 700
   assets:
-    - assets/images/spendly_splash.png
     - assets/icons/ic_launcher_round.png
     - assets/fonts/lucide/
 
