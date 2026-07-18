@@ -129,7 +129,36 @@ class _BootstrapPageState extends ConsumerState<BootstrapPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? Colors.black : Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Spendly',
+              style: TextStyle(
+                fontFamily: 'General Sans',
+                fontSize: 72,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black,
+                letterSpacing: 0,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
