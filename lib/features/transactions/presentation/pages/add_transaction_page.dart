@@ -120,7 +120,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               .toList();
         });
       }
-    } catch (_) {}
+    } catch (_) {
+      // Contributors are loaded asynchronously; failures are non-critical and silently handled.
+    }
   }
 
   @override

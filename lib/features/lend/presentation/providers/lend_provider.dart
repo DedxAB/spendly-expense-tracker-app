@@ -60,10 +60,10 @@ final lendOverviewProvider = Provider<AsyncValue<LendOverview>>((ref) {
     return const AsyncValue.loading();
   }
   if (peopleAsync.hasError) {
-    return AsyncValue.error(peopleAsync.error!, peopleAsync.stackTrace!);
+    return AsyncValue.error(peopleAsync.error!, peopleAsync.stackTrace ?? StackTrace.current);
   }
   if (entriesAsync.hasError) {
-    return AsyncValue.error(entriesAsync.error!, entriesAsync.stackTrace!);
+    return AsyncValue.error(entriesAsync.error!, entriesAsync.stackTrace ?? StackTrace.current);
   }
 
   final people = peopleAsync.valueOrNull ?? const <LendPersonEntity>[];

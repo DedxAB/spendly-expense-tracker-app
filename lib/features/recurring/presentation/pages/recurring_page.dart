@@ -367,7 +367,7 @@ class RecurringPage extends ConsumerWidget {
                               },
                               background: Container(
                                 alignment: Alignment.centerLeft,
-                                color: const Color(0xFF11261B),
+                                color: AppColors.incomeTintBg,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
@@ -392,7 +392,7 @@ class RecurringPage extends ConsumerWidget {
                               ),
                               secondaryBackground: Container(
                                 alignment: Alignment.centerRight,
-                                color: const Color(0xFF2A1313),
+                                color: AppColors.expenseTintBg,
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),

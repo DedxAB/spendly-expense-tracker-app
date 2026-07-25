@@ -280,108 +280,126 @@ class _MonthGrid extends StatelessWidget {
     const weekdays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     final now = DateTime.now();
 
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).dividerColor),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              for (final day in weekdays)
-                Expanded(
-                  child: Container(
-                    height: 42,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(color: context.border),
-                        bottom: BorderSide(color: context.border),
-                      ),
-                    ),
-                    child: Text(
-                      day,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: visibleDays.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              childAspectRatio: 0.9,
-            ),
-            itemBuilder: (context, index) {
-              final day = visibleDays[index];
-              final isCurrentMonth =
-                  day.month == displayMonth.month &&
-                  day.year == displayMonth.year;
-              final isSelected =
-                  day.year == selectedDate.year &&
-                  day.month == selectedDate.month &&
-                  day.day == selectedDate.day;
-              final isToday =
-                  day.year == now.year &&
-                  day.month == now.month &&
-                  day.day == now.day;
-              final double spend = isCurrentMonth
-                  ? (expenseByDay[day.day] ?? 0.0)
-                  : 0.0;
-
-              return InkWell(
-                onTap: () => onTapDay(day),
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? context.surfaceAlt
-                        : (isToday ? context.surfaceAlt : context.surface),
-                    border: Border.all(
-                      color: isToday && !isSelected
-                          ? context.textPrimary
-                          : (isSelected
-                                ? context.textPrimary
-                                : context.border),
-                      width: isToday && !isSelected ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${day.day}',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.body,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? context.textPrimary
-                              : (isCurrentMonth
-                                    ? context.textPrimary
-                                    : context.border),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadii.lg),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                for (int i = 0; i < weekdays.length; i++)
+                  Expanded(
+                    child: Container(
+                      height: 42,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          right: i < weekdays.length - 1
+                              ? BorderSide(color: context.border)
+                              : BorderSide.none,
+                          bottom: BorderSide(color: context.border),
                         ),
                       ),
-                      const Spacer(),
-                      if (spend > 0)
+                      child: Text(
+                        weekdays[i],
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: visibleDays.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                childAspectRatio: 1.05,
+              ),
+              itemBuilder: (context, index) {
+                final day = visibleDays[index];
+                final col = index % 7;
+                final row = index ~/ 7;
+                final isCurrentMonth =
+                    day.month == displayMonth.month &&
+                    day.year == displayMonth.year;
+                final isSelected =
+                    day.year == selectedDate.year &&
+                    day.month == selectedDate.month &&
+                    day.day == selectedDate.day;
+                final isToday =
+                    day.year == now.year &&
+                    day.month == now.month &&
+                    day.day == now.day;
+                final double spend = isCurrentMonth
+                    ? (expenseByDay[day.day] ?? 0.0)
+                    : 0.0;
+
+                return InkWell(
+                  onTap: () => onTapDay(day),
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? context.surfaceAlt
+                          : context.surface,
+                      border: isToday || isSelected
+                          ? Border.all(
+                              color: context.textPrimary,
+                              width: 1.5,
+                            )
+                          : Border(
+                              right: col < 6
+                                  ? BorderSide(color: context.border)
+                                  : BorderSide.none,
+                              bottom: row < 4
+                                  ? BorderSide(color: context.border)
+                                  : BorderSide.none,
+                            ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          _shortCurrency(spend),
+                          '${day.day}',
                           style: TextStyle(
-                            fontSize: AppFontSizes.label,
+                            fontSize: AppFontSizes.body,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? context.textPrimary : context.textPrimary,
+                            color: isSelected
+                                ? context.textPrimary
+                                : (isCurrentMonth
+                                      ? context.textPrimary
+                                      : context.border),
                           ),
                         ),
-                    ],
+                        const Spacer(),
+                        if (spend > 0)
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              _shortCurrency(spend),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: AppFontSizes.label,
+                                fontWeight: FontWeight.w600,
+                                color: context.textPrimary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

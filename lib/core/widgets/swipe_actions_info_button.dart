@@ -99,7 +99,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                 _SwipeHintRow(
                   color: AppColors.income,
                   background: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF11261B)
+                      ? AppColors.incomeTintBg
                       : const Color(0xFFE6F7E6),
                   icon: AppIcons.edit,
                   text: leftActionLabel,
@@ -108,7 +108,7 @@ class SwipeActionsInfoButton extends StatelessWidget {
                 _SwipeHintRow(
                   color: AppColors.expense,
                   background: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF2A1313)
+                      ? AppColors.expenseTintBg
                       : const Color(0xFFFDE8E8),
                   icon: AppIcons.trash,
                   text: rightActionLabel,

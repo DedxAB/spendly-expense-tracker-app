@@ -135,7 +135,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   },
                   background: Container(
                     alignment: Alignment.centerLeft,
-                    color: const Color(0xFF11261B),
+                    color: AppColors.incomeTintBg,
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -152,7 +152,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   ),
                   secondaryBackground: Container(
                     alignment: Alignment.centerRight,
-                    color: const Color(0xFF2A1313),
+                    color: AppColors.expenseTintBg,
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -779,9 +779,8 @@ double? _parseAmountInput(String text) {
   return double.tryParse(normalized);
 }
 
-String _dateLabel(dynamic tx) {
-  return DateFormat('h:mm a').format(tx.date as DateTime);
-}
+String _dateLabel(TransactionEntity tx) =>
+    Formatters.transactionDateLabel(tx);
 
 Widget _buildFilterPanel({
   required BuildContext context,

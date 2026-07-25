@@ -130,10 +130,9 @@ class GoogleAuthService {
   }
 
   GoogleAccount _toGoogleAccount(GoogleSignInAccount account) {
+    final displayName = (account.displayName ?? '').trim();
     return GoogleAccount(
-      name: (account.displayName ?? '').trim().isEmpty
-          ? 'User'
-          : account.displayName!.trim(),
+      name: displayName.isEmpty ? 'User' : displayName,
       email: account.email.trim(),
       photoUrl: account.photoUrl,
     );

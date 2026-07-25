@@ -48,7 +48,9 @@ Future<void> saveAndShareLendHistory({
         text: 'Lending history with $personName',
       ),
     );
-  } catch (_) {}
+    } catch (_) {
+      // Sharing may fail silently (e.g., user cancels the share sheet).
+    }
 }
 
 Future<Uint8List> _generateLendPdf({

@@ -7,6 +7,7 @@ class PrivacyGuard {
     try {
       await _channel.invokeMethod('setWindowSecure', {'secure': secure});
     } catch (_) {
+      // Best-effort; the method channel may not be implemented on all platforms.
     }
   }
 }

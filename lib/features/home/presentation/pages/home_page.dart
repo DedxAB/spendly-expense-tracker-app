@@ -1,8 +1,10 @@
+import 'dart:math' show pi;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
+import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/amount_visibility.dart';
@@ -222,14 +224,8 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  static String _dateLabel(dynamic tx) {
-    final now = DateTime.now();
-    final d = tx.date as DateTime;
-    if (d.year == now.year && d.month == now.month && d.day == now.day) {
-      return 'Today, ${DateFormat('h:mm a').format(d)}';
-    }
-    return Formatters.date(d);
-  }
+  static String _dateLabel(TransactionEntity tx) =>
+      Formatters.transactionDateLabel(tx);
 
   static _SpendComparison _todayComparison(double today, double yesterday) {
     if (today <= 0 && yesterday <= 0) {
@@ -579,10 +575,10 @@ class _RingPainter extends CustomPainter {
       ..color = accent;
 
     canvas.drawCircle(center, radius, basePaint);
-    final sweep = (value.clamp(0, 100) / 100) * 2 * 3.1415926535897932;
+    final sweep = (value.clamp(0, 100) / 100) * 2 * pi;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -1.5707963267948966,
+      -pi / 2,
       sweep,
       false,
       valuePaint,

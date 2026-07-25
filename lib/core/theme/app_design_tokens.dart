@@ -16,6 +16,8 @@ class AppColors {
 
   static const income = success;
   static const expense = danger;
+  static const incomeTintBg = Color(0xFF11261B);
+  static const expenseTintBg = Color(0xFF2A1313);
 
   static const darkBackground = darkBackgroundColor;
   static const darkSurface = darkSurfaceColor;

@@ -24,6 +24,7 @@ Future<File> _resolveDatabaseFile() async {
     final dir = await getApplicationDocumentsDirectory();
     return File(p.join(dir.path, 'spendly.sqlite'));
   } catch (_) {
+    // Fallback to system temp if app documents directory is unavailable.
     return File(p.join(Directory.systemTemp.path, 'spendly.sqlite'));
   }
 }
