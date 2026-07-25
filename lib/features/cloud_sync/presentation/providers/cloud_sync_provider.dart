@@ -35,9 +35,10 @@ class CloudSyncController extends AsyncNotifier<CloudSyncState> {
         await ref
             .read(userProfileRepositoryProvider)
             .updateProfile(
-              name: (googleProfile.displayName ?? '').trim().isNotEmpty
-                  ? googleProfile.displayName!.trim()
-                  : (currentProfile?.name ?? 'User'),
+              name: switch ((googleProfile.displayName ?? '').trim()) {
+                final n when n.isNotEmpty => n,
+                _ => currentProfile?.name ?? 'User',
+              },
               imageUrl: googleProfile.photoUrl ?? currentProfile?.imageUrl,
               email: googleProfile.email,
               phone: currentProfile?.phone,

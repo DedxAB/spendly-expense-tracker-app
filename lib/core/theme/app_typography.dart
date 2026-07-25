@@ -108,22 +108,25 @@ class AppTypography {
   }
 
   static TextStyle screenTitle(BuildContext context) =>
-      Theme.of(context).textTheme.headlineMedium!;
+      Theme.of(context).textTheme.headlineMedium ?? AppTypography._fallbackStyle(context, 24);
 
   static TextStyle sectionTitle(BuildContext context) =>
-      Theme.of(context).textTheme.titleLarge!;
+      Theme.of(context).textTheme.titleLarge ?? AppTypography._fallbackStyle(context, 20);
 
   static TextStyle cardTitle(BuildContext context) =>
-      Theme.of(context).textTheme.titleMedium!;
+      Theme.of(context).textTheme.titleMedium ?? AppTypography._fallbackStyle(context, 16);
 
   static TextStyle rowTitle(BuildContext context) =>
-      Theme.of(context).textTheme.bodyLarge!.copyWith(
+      (Theme.of(context).textTheme.bodyLarge ?? AppTypography._fallbackStyle(context, 14)).copyWith(
         color: Theme.of(context).colorScheme.onSurface,
         fontWeight: FontWeight.w500,
       );
 
   static TextStyle metadata(BuildContext context) =>
-      Theme.of(context).textTheme.labelSmall!;
+      Theme.of(context).textTheme.labelSmall ?? AppTypography._fallbackStyle(context, 11);
+
+  static TextStyle _fallbackStyle(BuildContext context, double size) =>
+      TextStyle(fontSize: size, color: Theme.of(context).colorScheme.onSurface);
 
   static TextStyle amount(
     BuildContext context, {

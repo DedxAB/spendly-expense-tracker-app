@@ -566,7 +566,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         background: Container(
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: const Color(0xFF11261B),
+                          color: AppColors.incomeTintBg,
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -586,7 +586,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         secondaryBackground: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: const Color(0xFF2A1313),
+                          color: AppColors.expenseTintBg,
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,
@@ -702,7 +702,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         background: Container(
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: const Color(0xFF11261B),
+                          color: AppColors.incomeTintBg,
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -722,7 +722,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                         secondaryBackground: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: const Color(0xFF2A1313),
+                          color: AppColors.expenseTintBg,
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,

@@ -170,7 +170,7 @@ class LendPage extends ConsumerWidget {
                     background: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: const Color(0xFF11261B),
+                      color: AppColors.incomeTintBg,
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -190,7 +190,7 @@ class LendPage extends ConsumerWidget {
                     secondaryBackground: Container(
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: const Color(0xFF2A1313),
+                      color: AppColors.expenseTintBg,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         mainAxisSize: MainAxisSize.min,

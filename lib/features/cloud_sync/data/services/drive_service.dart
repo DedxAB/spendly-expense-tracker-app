@@ -210,10 +210,11 @@ class DriveService {
       $fields: 'files(id,name,modifiedTime,size)',
       pageSize: 1,
     );
-    if (result.files?.isEmpty ?? true) {
+    final files = result.files;
+    if (files == null || files.isEmpty) {
       return null;
     }
-    return result.files!.first;
+    return files.first;
   }
 
   Future<T> _withDriveApi<T>({

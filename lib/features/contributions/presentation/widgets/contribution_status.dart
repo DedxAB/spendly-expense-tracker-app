@@ -175,7 +175,9 @@ class ContributorSettleSheet extends ConsumerWidget {
                                   contributions: contributions,
                                   userName: userName,
                                 );
-                              } catch (_) {}
+                              } catch (_) {
+                                // Sharing may fail silently.
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
