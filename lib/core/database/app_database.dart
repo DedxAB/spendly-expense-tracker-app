@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -198,6 +198,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 23) {
         await m.createTable(expenseContributions);
       }
+      if (from < 24) {
+        final hasPreventScreenshots = await _hasColumn(
+          'settings',
+          'prevent_screenshots_enabled',
+        );
+        if (!hasPreventScreenshots) {
+          await m.addColumn(settings, settings.preventScreenshotsEnabled);
+        }
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -262,6 +271,7 @@ class AppDatabase extends _$AppDatabase {
         transactionHintsSeen: const Value(false),
         dailyReminderEnabled: const Value(false),
         privacyLockEnabled: const Value(false),
+        preventScreenshotsEnabled: const Value(false),
         showAmountsEnabled: const Value(true),
         lastBudgetAlertAt: const Value(null),
         updatedAt: DateTime.now().millisecondsSinceEpoch,

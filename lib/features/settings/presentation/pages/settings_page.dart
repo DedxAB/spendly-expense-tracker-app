@@ -314,6 +314,7 @@ class SettingsPage extends ConsumerWidget {
     final budgetAlerts = settings?.budgetAlertsEnabled ?? true;
     final dailyReminder = settings?.dailyReminderEnabled ?? false;
     final privacyLock = settings?.privacyLockEnabled ?? false;
+    final preventScreenshots = settings?.preventScreenshotsEnabled ?? false;
     final cloudSync = ref.watch(cloudSyncControllerProvider).valueOrNull;
 
     final name = (profile?.name.trim().isNotEmpty ?? false)
@@ -490,6 +491,15 @@ class SettingsPage extends ConsumerWidget {
                 _PrivacyShieldTile(
                   enabled: privacyLock,
                   onChanged: (value) => _setPrivacyLock(context, ref, value),
+                  dividerColor: divider,
+                ),
+                _PreventScreenshotsTile(
+                  enabled: preventScreenshots,
+                  onChanged: (value) => _setPreventScreenshots(
+                    context,
+                    ref,
+                    value,
+                  ),
                   dividerColor: divider,
                 ),
                 _ProfileRow(
@@ -818,6 +828,28 @@ class SettingsPage extends ConsumerWidget {
     } catch (_) {
       if (!context.mounted) return;
       showAppToast(context, 'Privacy Shield update failed.');
+    }
+  }
+
+  Future<void> _setPreventScreenshots(
+    BuildContext context,
+    WidgetRef ref,
+    bool enabled,
+  ) async {
+    try {
+      await ref
+          .read(settingsRepositoryProvider)
+          .setPreventScreenshotsEnabled(enabled);
+      if (!context.mounted) return;
+      showAppToast(
+        context,
+        enabled
+            ? 'Screenshots blocked for this app.'
+            : 'Screenshots allowed again.',
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      showAppToast(context, 'Screenshot setting update failed.');
     }
   }
 
@@ -1242,6 +1274,81 @@ class _PrivacyShieldTile extends StatelessWidget {
                 Text(
                   'Require fingerprint, face, or device PIN for app access',
                   style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.label),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: enabled, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreventScreenshotsTile extends StatelessWidget {
+  const _PreventScreenshotsTile({
+    required this.enabled,
+    required this.onChanged,
+    required this.dividerColor,
+  });
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+  final Color dividerColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: dividerColor)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: enabled
+                  ? const Color(0xFF142119)
+                  : const Color(0xFFF5873A).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              border: Border.all(
+                color: enabled
+                    ? const Color(0xFF2F6F46)
+                    : context.border,
+              ),
+            ),
+            child: Icon(
+              AppIcons.cameraOff,
+              color: enabled
+                  ? Colors.white
+                  : AppIcons.getColorForIcon(
+                      AppIcons.cameraOff,
+                      brightness: Theme.of(context).brightness,
+                    ),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Prevent Screenshots',
+                  style: TextStyle(
+                    fontSize: AppFontSizes.heading,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Block screenshots and screen recording in the app',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: AppFontSizes.label,
+                  ),
                 ),
               ],
             ),

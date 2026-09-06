@@ -60,6 +60,7 @@ extension SettingMapper on Setting {
       budgetAlertsEnabled: transactionHintsSeen,
       dailyReminderEnabled: dailyReminderEnabled,
       privacyLockEnabled: privacyLockEnabled,
+      preventScreenshotsEnabled: preventScreenshotsEnabled,
       showAmountsEnabled: showAmountsEnabled,
       themeMode: AppThemeModeX.fromValue(themeMode),
       lastBudgetAlertAt: lastBudgetAlertAt == null
@@ -207,6 +208,7 @@ SettingsCompanion settingsToCompanion(SettingsEntity entity) {
     transactionHintsSeen: Value(entity.budgetAlertsEnabled),
     dailyReminderEnabled: Value(entity.dailyReminderEnabled),
     privacyLockEnabled: Value(entity.privacyLockEnabled),
+    preventScreenshotsEnabled: Value(entity.preventScreenshotsEnabled),
     showAmountsEnabled: Value(entity.showAmountsEnabled),
     lastBudgetAlertAt: Value(entity.lastBudgetAlertAt?.millisecondsSinceEpoch),
     updatedAt: entity.updatedAt.millisecondsSinceEpoch,
