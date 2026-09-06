@@ -26,6 +26,8 @@ class AppIcons {
   static const chevronLeft = LucideIcons.chevronLeft;
   static const user = LucideIcons.userRound;
   static const shield = LucideIcons.shield;
+  static const camera = LucideIcons.camera;
+  static const cameraOff = LucideIcons.cameraOff;
   static const notifications = LucideIcons.bell;
   static const categories = LucideIcons.grid2x2;
   static const repeat = LucideIcons.repeat;
@@ -155,6 +157,9 @@ class AppIcons {
     }
     if (icon == AppIcons.shield) {
       return _iconFor(brightness, const Color(0xFF2D9F63), const Color(0xFF3DD07B));
+    }
+    if (icon == AppIcons.camera || icon == AppIcons.cameraOff) {
+      return _iconFor(brightness, const Color(0xFFE6732A), const Color(0xFFF5873A));
     }
     if (icon == AppIcons.money ||
         name.contains('salary') ||

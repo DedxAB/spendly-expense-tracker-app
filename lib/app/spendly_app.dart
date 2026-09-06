@@ -23,7 +23,7 @@ class SpendlyApp extends ConsumerWidget {
       final settings = next.valueOrNull;
       if (settings == null) return;
       AmountVisibilityController.setVisible(settings.showAmountsEnabled);
-      await PrivacyGuard.setWindowSecure(settings.privacyLockEnabled);
+      await PrivacyGuard.setWindowSecure(settings.preventScreenshotsEnabled);
       final notifications = ref.read(localNotificationServiceProvider);
       await notifications.initialize();
       if (settings.dailyReminderEnabled) {

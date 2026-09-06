@@ -35,7 +35,7 @@ class GoalsPage extends ConsumerWidget {
       );
     }
     final emergencyCards = emergencyFunds;
-    final state = GoalsState(emergencyFund: emergency, goals: goals);
+    final state = GoalsState(emergencyFunds: emergencyFunds, goals: goals);
     final onTrackCount = goals
         .where((goal) => _requiredPerMonth(goal) <= goal.monthlyContribution)
         .length;

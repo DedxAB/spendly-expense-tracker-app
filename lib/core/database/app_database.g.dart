@@ -2276,6 +2276,21 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _preventScreenshotsEnabledMeta =
+      const VerificationMeta('preventScreenshotsEnabled');
+  @override
+  late final GeneratedColumn<bool> preventScreenshotsEnabled =
+      GeneratedColumn<bool>(
+        'prevent_screenshots_enabled',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("prevent_screenshots_enabled" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   static const VerificationMeta _showAmountsEnabledMeta =
       const VerificationMeta('showAmountsEnabled');
   @override
@@ -2322,6 +2337,7 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
     transactionHintsSeen,
     dailyReminderEnabled,
     privacyLockEnabled,
+    preventScreenshotsEnabled,
     showAmountsEnabled,
     lastBudgetAlertAt,
     updatedAt,
@@ -2398,6 +2414,15 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         ),
       );
     }
+    if (data.containsKey('prevent_screenshots_enabled')) {
+      context.handle(
+        _preventScreenshotsEnabledMeta,
+        preventScreenshotsEnabled.isAcceptableOrUnknown(
+          data['prevent_screenshots_enabled']!,
+          _preventScreenshotsEnabledMeta,
+        ),
+      );
+    }
     if (data.containsKey('show_amounts_enabled')) {
       context.handle(
         _showAmountsEnabledMeta,
@@ -2465,6 +2490,10 @@ class $SettingsTable extends Settings with TableInfo<$SettingsTable, Setting> {
         DriftSqlType.bool,
         data['${effectivePrefix}privacy_lock_enabled'],
       )!,
+      preventScreenshotsEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}prevent_screenshots_enabled'],
+      )!,
       showAmountsEnabled: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}show_amounts_enabled'],
@@ -2495,6 +2524,7 @@ class Setting extends DataClass implements Insertable<Setting> {
   final bool transactionHintsSeen;
   final bool dailyReminderEnabled;
   final bool privacyLockEnabled;
+  final bool preventScreenshotsEnabled;
   final bool showAmountsEnabled;
   final int? lastBudgetAlertAt;
   final int updatedAt;
@@ -2507,6 +2537,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     required this.transactionHintsSeen,
     required this.dailyReminderEnabled,
     required this.privacyLockEnabled,
+    required this.preventScreenshotsEnabled,
     required this.showAmountsEnabled,
     this.lastBudgetAlertAt,
     required this.updatedAt,
@@ -2522,6 +2553,9 @@ class Setting extends DataClass implements Insertable<Setting> {
     map['transaction_hints_seen'] = Variable<bool>(transactionHintsSeen);
     map['daily_reminder_enabled'] = Variable<bool>(dailyReminderEnabled);
     map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled);
+    map['prevent_screenshots_enabled'] = Variable<bool>(
+      preventScreenshotsEnabled,
+    );
     map['show_amounts_enabled'] = Variable<bool>(showAmountsEnabled);
     if (!nullToAbsent || lastBudgetAlertAt != null) {
       map['last_budget_alert_at'] = Variable<int>(lastBudgetAlertAt);
@@ -2540,6 +2574,7 @@ class Setting extends DataClass implements Insertable<Setting> {
       transactionHintsSeen: Value(transactionHintsSeen),
       dailyReminderEnabled: Value(dailyReminderEnabled),
       privacyLockEnabled: Value(privacyLockEnabled),
+      preventScreenshotsEnabled: Value(preventScreenshotsEnabled),
       showAmountsEnabled: Value(showAmountsEnabled),
       lastBudgetAlertAt: lastBudgetAlertAt == null && nullToAbsent
           ? const Value.absent()
@@ -2566,6 +2601,9 @@ class Setting extends DataClass implements Insertable<Setting> {
         json['dailyReminderEnabled'],
       ),
       privacyLockEnabled: serializer.fromJson<bool>(json['privacyLockEnabled']),
+      preventScreenshotsEnabled: serializer.fromJson<bool>(
+        json['preventScreenshotsEnabled'],
+      ),
       showAmountsEnabled: serializer.fromJson<bool>(json['showAmountsEnabled']),
       lastBudgetAlertAt: serializer.fromJson<int?>(json['lastBudgetAlertAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
@@ -2583,6 +2621,9 @@ class Setting extends DataClass implements Insertable<Setting> {
       'transactionHintsSeen': serializer.toJson<bool>(transactionHintsSeen),
       'dailyReminderEnabled': serializer.toJson<bool>(dailyReminderEnabled),
       'privacyLockEnabled': serializer.toJson<bool>(privacyLockEnabled),
+      'preventScreenshotsEnabled': serializer.toJson<bool>(
+        preventScreenshotsEnabled,
+      ),
       'showAmountsEnabled': serializer.toJson<bool>(showAmountsEnabled),
       'lastBudgetAlertAt': serializer.toJson<int?>(lastBudgetAlertAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
@@ -2598,6 +2639,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     bool? transactionHintsSeen,
     bool? dailyReminderEnabled,
     bool? privacyLockEnabled,
+    bool? preventScreenshotsEnabled,
     bool? showAmountsEnabled,
     Value<int?> lastBudgetAlertAt = const Value.absent(),
     int? updatedAt,
@@ -2610,6 +2652,8 @@ class Setting extends DataClass implements Insertable<Setting> {
     transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
     dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
     privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
+    preventScreenshotsEnabled:
+        preventScreenshotsEnabled ?? this.preventScreenshotsEnabled,
     showAmountsEnabled: showAmountsEnabled ?? this.showAmountsEnabled,
     lastBudgetAlertAt: lastBudgetAlertAt.present
         ? lastBudgetAlertAt.value
@@ -2636,6 +2680,9 @@ class Setting extends DataClass implements Insertable<Setting> {
       privacyLockEnabled: data.privacyLockEnabled.present
           ? data.privacyLockEnabled.value
           : this.privacyLockEnabled,
+      preventScreenshotsEnabled: data.preventScreenshotsEnabled.present
+          ? data.preventScreenshotsEnabled.value
+          : this.preventScreenshotsEnabled,
       showAmountsEnabled: data.showAmountsEnabled.present
           ? data.showAmountsEnabled.value
           : this.showAmountsEnabled,
@@ -2657,6 +2704,7 @@ class Setting extends DataClass implements Insertable<Setting> {
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
           ..write('privacyLockEnabled: $privacyLockEnabled, ')
+          ..write('preventScreenshotsEnabled: $preventScreenshotsEnabled, ')
           ..write('showAmountsEnabled: $showAmountsEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
           ..write('updatedAt: $updatedAt')
@@ -2674,6 +2722,7 @@ class Setting extends DataClass implements Insertable<Setting> {
     transactionHintsSeen,
     dailyReminderEnabled,
     privacyLockEnabled,
+    preventScreenshotsEnabled,
     showAmountsEnabled,
     lastBudgetAlertAt,
     updatedAt,
@@ -2690,6 +2739,7 @@ class Setting extends DataClass implements Insertable<Setting> {
           other.transactionHintsSeen == this.transactionHintsSeen &&
           other.dailyReminderEnabled == this.dailyReminderEnabled &&
           other.privacyLockEnabled == this.privacyLockEnabled &&
+          other.preventScreenshotsEnabled == this.preventScreenshotsEnabled &&
           other.showAmountsEnabled == this.showAmountsEnabled &&
           other.lastBudgetAlertAt == this.lastBudgetAlertAt &&
           other.updatedAt == this.updatedAt);
@@ -2704,6 +2754,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
   final Value<bool> transactionHintsSeen;
   final Value<bool> dailyReminderEnabled;
   final Value<bool> privacyLockEnabled;
+  final Value<bool> preventScreenshotsEnabled;
   final Value<bool> showAmountsEnabled;
   final Value<int?> lastBudgetAlertAt;
   final Value<int> updatedAt;
@@ -2716,6 +2767,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
     this.privacyLockEnabled = const Value.absent(),
+    this.preventScreenshotsEnabled = const Value.absent(),
     this.showAmountsEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -2729,6 +2781,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     this.transactionHintsSeen = const Value.absent(),
     this.dailyReminderEnabled = const Value.absent(),
     this.privacyLockEnabled = const Value.absent(),
+    this.preventScreenshotsEnabled = const Value.absent(),
     this.showAmountsEnabled = const Value.absent(),
     this.lastBudgetAlertAt = const Value.absent(),
     required int updatedAt,
@@ -2742,6 +2795,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Expression<bool>? transactionHintsSeen,
     Expression<bool>? dailyReminderEnabled,
     Expression<bool>? privacyLockEnabled,
+    Expression<bool>? preventScreenshotsEnabled,
     Expression<bool>? showAmountsEnabled,
     Expression<int>? lastBudgetAlertAt,
     Expression<int>? updatedAt,
@@ -2759,6 +2813,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
         'daily_reminder_enabled': dailyReminderEnabled,
       if (privacyLockEnabled != null)
         'privacy_lock_enabled': privacyLockEnabled,
+      if (preventScreenshotsEnabled != null)
+        'prevent_screenshots_enabled': preventScreenshotsEnabled,
       if (showAmountsEnabled != null)
         'show_amounts_enabled': showAmountsEnabled,
       if (lastBudgetAlertAt != null) 'last_budget_alert_at': lastBudgetAlertAt,
@@ -2775,6 +2831,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     Value<bool>? transactionHintsSeen,
     Value<bool>? dailyReminderEnabled,
     Value<bool>? privacyLockEnabled,
+    Value<bool>? preventScreenshotsEnabled,
     Value<bool>? showAmountsEnabled,
     Value<int?>? lastBudgetAlertAt,
     Value<int>? updatedAt,
@@ -2788,6 +2845,8 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
       transactionHintsSeen: transactionHintsSeen ?? this.transactionHintsSeen,
       dailyReminderEnabled: dailyReminderEnabled ?? this.dailyReminderEnabled,
       privacyLockEnabled: privacyLockEnabled ?? this.privacyLockEnabled,
+      preventScreenshotsEnabled:
+          preventScreenshotsEnabled ?? this.preventScreenshotsEnabled,
       showAmountsEnabled: showAmountsEnabled ?? this.showAmountsEnabled,
       lastBudgetAlertAt: lastBudgetAlertAt ?? this.lastBudgetAlertAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -2825,6 +2884,11 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
     if (privacyLockEnabled.present) {
       map['privacy_lock_enabled'] = Variable<bool>(privacyLockEnabled.value);
     }
+    if (preventScreenshotsEnabled.present) {
+      map['prevent_screenshots_enabled'] = Variable<bool>(
+        preventScreenshotsEnabled.value,
+      );
+    }
     if (showAmountsEnabled.present) {
       map['show_amounts_enabled'] = Variable<bool>(showAmountsEnabled.value);
     }
@@ -2848,6 +2912,7 @@ class SettingsCompanion extends UpdateCompanion<Setting> {
           ..write('transactionHintsSeen: $transactionHintsSeen, ')
           ..write('dailyReminderEnabled: $dailyReminderEnabled, ')
           ..write('privacyLockEnabled: $privacyLockEnabled, ')
+          ..write('preventScreenshotsEnabled: $preventScreenshotsEnabled, ')
           ..write('showAmountsEnabled: $showAmountsEnabled, ')
           ..write('lastBudgetAlertAt: $lastBudgetAlertAt, ')
           ..write('updatedAt: $updatedAt')
@@ -9380,6 +9445,7 @@ typedef $$SettingsTableCreateCompanionBuilder =
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
       Value<bool> privacyLockEnabled,
+      Value<bool> preventScreenshotsEnabled,
       Value<bool> showAmountsEnabled,
       Value<int?> lastBudgetAlertAt,
       required int updatedAt,
@@ -9394,6 +9460,7 @@ typedef $$SettingsTableUpdateCompanionBuilder =
       Value<bool> transactionHintsSeen,
       Value<bool> dailyReminderEnabled,
       Value<bool> privacyLockEnabled,
+      Value<bool> preventScreenshotsEnabled,
       Value<bool> showAmountsEnabled,
       Value<int?> lastBudgetAlertAt,
       Value<int> updatedAt,
@@ -9445,6 +9512,11 @@ class $$SettingsTableFilterComposer
 
   ColumnFilters<bool> get privacyLockEnabled => $composableBuilder(
     column: $table.privacyLockEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get preventScreenshotsEnabled => $composableBuilder(
+    column: $table.preventScreenshotsEnabled,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9513,6 +9585,11 @@ class $$SettingsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get preventScreenshotsEnabled => $composableBuilder(
+    column: $table.preventScreenshotsEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get showAmountsEnabled => $composableBuilder(
     column: $table.showAmountsEnabled,
     builder: (column) => ColumnOrderings(column),
@@ -9572,6 +9649,11 @@ class $$SettingsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get preventScreenshotsEnabled => $composableBuilder(
+    column: $table.preventScreenshotsEnabled,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get showAmountsEnabled => $composableBuilder(
     column: $table.showAmountsEnabled,
     builder: (column) => column,
@@ -9622,6 +9704,7 @@ class $$SettingsTableTableManager
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
                 Value<bool> privacyLockEnabled = const Value.absent(),
+                Value<bool> preventScreenshotsEnabled = const Value.absent(),
                 Value<bool> showAmountsEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
@@ -9634,6 +9717,7 @@ class $$SettingsTableTableManager
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
                 privacyLockEnabled: privacyLockEnabled,
+                preventScreenshotsEnabled: preventScreenshotsEnabled,
                 showAmountsEnabled: showAmountsEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
                 updatedAt: updatedAt,
@@ -9648,6 +9732,7 @@ class $$SettingsTableTableManager
                 Value<bool> transactionHintsSeen = const Value.absent(),
                 Value<bool> dailyReminderEnabled = const Value.absent(),
                 Value<bool> privacyLockEnabled = const Value.absent(),
+                Value<bool> preventScreenshotsEnabled = const Value.absent(),
                 Value<bool> showAmountsEnabled = const Value.absent(),
                 Value<int?> lastBudgetAlertAt = const Value.absent(),
                 required int updatedAt,
@@ -9660,6 +9745,7 @@ class $$SettingsTableTableManager
                 transactionHintsSeen: transactionHintsSeen,
                 dailyReminderEnabled: dailyReminderEnabled,
                 privacyLockEnabled: privacyLockEnabled,
+                preventScreenshotsEnabled: preventScreenshotsEnabled,
                 showAmountsEnabled: showAmountsEnabled,
                 lastBudgetAlertAt: lastBudgetAlertAt,
                 updatedAt: updatedAt,

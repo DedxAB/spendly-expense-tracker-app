@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spendly/core/constants/app_enums.dart';
+import 'package:spendly/features/goals/presentation/providers/goals_provider.dart';
 import 'package:spendly/features/home/domain/entities/dashboard_summary.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
 import 'package:spendly/features/transactions/data/repositories/transactions_repository_impl.dart';
@@ -8,6 +9,7 @@ import 'package:spendly/features/transactions/presentation/providers/transaction
 final dashboardSummaryProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
   final totals = ref.watch(monthlyTotalsProvider);
   final settings = ref.watch(settingsStreamProvider);
+  final goalAllocation = ref.watch(monthlyGoalAllocationProvider);
 
   return totals.whenData((map) {
     final budget = settings.valueOrNull?.monthlyBudget ?? 0;
@@ -15,12 +17,17 @@ final dashboardSummaryProvider = Provider<AsyncValue<DashboardSummary>>((ref) {
     final expense = map['expense'] ?? 0;
     final investment = map['grossInvestment'] ?? map['investment'] ?? 0;
     final balance = map['balance'] ?? 0;
+    final allocation = goalAllocation.valueOrNull ?? 0;
+    final availableToSpend =
+        income - expense - investment - allocation;
 
     return DashboardSummary(
       currentBalance: balance,
+      availableToSpend: availableToSpend,
       monthlyIncome: income,
       monthlyExpense: expense,
       monthlyInvestment: investment,
+      monthlyGoalAllocation: allocation,
       remainingBudget: budget - expense,
     );
   });

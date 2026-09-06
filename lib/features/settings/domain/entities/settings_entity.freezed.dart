@@ -27,6 +27,7 @@ mixin _$SettingsEntity {
   bool get budgetAlertsEnabled => throw _privateConstructorUsedError;
   bool get dailyReminderEnabled => throw _privateConstructorUsedError;
   bool get privacyLockEnabled => throw _privateConstructorUsedError;
+  bool get preventScreenshotsEnabled => throw _privateConstructorUsedError;
   bool get showAmountsEnabled => throw _privateConstructorUsedError;
   AppThemeMode get themeMode => throw _privateConstructorUsedError;
   DateTime? get lastBudgetAlertAt => throw _privateConstructorUsedError;
@@ -56,6 +57,7 @@ abstract class $SettingsEntityCopyWith<$Res> {
     bool budgetAlertsEnabled,
     bool dailyReminderEnabled,
     bool privacyLockEnabled,
+    bool preventScreenshotsEnabled,
     bool showAmountsEnabled,
     AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,
@@ -84,6 +86,7 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
     Object? budgetAlertsEnabled = null,
     Object? dailyReminderEnabled = null,
     Object? privacyLockEnabled = null,
+    Object? preventScreenshotsEnabled = null,
     Object? showAmountsEnabled = null,
     Object? themeMode = null,
     Object? lastBudgetAlertAt = freezed,
@@ -114,6 +117,10 @@ class _$SettingsEntityCopyWithImpl<$Res, $Val extends SettingsEntity>
             privacyLockEnabled: null == privacyLockEnabled
                 ? _value.privacyLockEnabled
                 : privacyLockEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            preventScreenshotsEnabled: null == preventScreenshotsEnabled
+                ? _value.preventScreenshotsEnabled
+                : preventScreenshotsEnabled // ignore: cast_nullable_to_non_nullable
                       as bool,
             showAmountsEnabled: null == showAmountsEnabled
                 ? _value.showAmountsEnabled
@@ -153,6 +160,7 @@ abstract class _$$SettingsEntityImplCopyWith<$Res>
     bool budgetAlertsEnabled,
     bool dailyReminderEnabled,
     bool privacyLockEnabled,
+    bool preventScreenshotsEnabled,
     bool showAmountsEnabled,
     AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,
@@ -180,6 +188,7 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
     Object? budgetAlertsEnabled = null,
     Object? dailyReminderEnabled = null,
     Object? privacyLockEnabled = null,
+    Object? preventScreenshotsEnabled = null,
     Object? showAmountsEnabled = null,
     Object? themeMode = null,
     Object? lastBudgetAlertAt = freezed,
@@ -210,6 +219,10 @@ class __$$SettingsEntityImplCopyWithImpl<$Res>
         privacyLockEnabled: null == privacyLockEnabled
             ? _value.privacyLockEnabled
             : privacyLockEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        preventScreenshotsEnabled: null == preventScreenshotsEnabled
+            ? _value.preventScreenshotsEnabled
+            : preventScreenshotsEnabled // ignore: cast_nullable_to_non_nullable
                   as bool,
         showAmountsEnabled: null == showAmountsEnabled
             ? _value.showAmountsEnabled
@@ -242,6 +255,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     this.budgetAlertsEnabled = false,
     this.dailyReminderEnabled = false,
     this.privacyLockEnabled = false,
+    this.preventScreenshotsEnabled = false,
     this.showAmountsEnabled = true,
     this.themeMode = AppThemeMode.system,
     this.lastBudgetAlertAt,
@@ -271,6 +285,9 @@ class _$SettingsEntityImpl implements _SettingsEntity {
   final bool privacyLockEnabled;
   @override
   @JsonKey()
+  final bool preventScreenshotsEnabled;
+  @override
+  @JsonKey()
   final bool showAmountsEnabled;
   @override
   @JsonKey()
@@ -282,7 +299,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
 
   @override
   String toString() {
-    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, privacyLockEnabled: $privacyLockEnabled, showAmountsEnabled: $showAmountsEnabled, themeMode: $themeMode, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
+    return 'SettingsEntity(id: $id, monthlyBudget: $monthlyBudget, currency: $currency, budgetAlertsEnabled: $budgetAlertsEnabled, dailyReminderEnabled: $dailyReminderEnabled, privacyLockEnabled: $privacyLockEnabled, preventScreenshotsEnabled: $preventScreenshotsEnabled, showAmountsEnabled: $showAmountsEnabled, themeMode: $themeMode, lastBudgetAlertAt: $lastBudgetAlertAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -301,6 +318,11 @@ class _$SettingsEntityImpl implements _SettingsEntity {
                 other.dailyReminderEnabled == dailyReminderEnabled) &&
             (identical(other.privacyLockEnabled, privacyLockEnabled) ||
                 other.privacyLockEnabled == privacyLockEnabled) &&
+            (identical(
+                  other.preventScreenshotsEnabled,
+                  preventScreenshotsEnabled,
+                ) ||
+                other.preventScreenshotsEnabled == preventScreenshotsEnabled) &&
             (identical(other.showAmountsEnabled, showAmountsEnabled) ||
                 other.showAmountsEnabled == showAmountsEnabled) &&
             (identical(other.themeMode, themeMode) ||
@@ -321,6 +343,7 @@ class _$SettingsEntityImpl implements _SettingsEntity {
     budgetAlertsEnabled,
     dailyReminderEnabled,
     privacyLockEnabled,
+    preventScreenshotsEnabled,
     showAmountsEnabled,
     themeMode,
     lastBudgetAlertAt,
@@ -352,6 +375,7 @@ abstract class _SettingsEntity implements SettingsEntity {
     final bool budgetAlertsEnabled,
     final bool dailyReminderEnabled,
     final bool privacyLockEnabled,
+    final bool preventScreenshotsEnabled,
     final bool showAmountsEnabled,
     final AppThemeMode themeMode,
     final DateTime? lastBudgetAlertAt,
@@ -373,6 +397,8 @@ abstract class _SettingsEntity implements SettingsEntity {
   bool get dailyReminderEnabled;
   @override
   bool get privacyLockEnabled;
+  @override
+  bool get preventScreenshotsEnabled;
   @override
   bool get showAmountsEnabled;
   @override

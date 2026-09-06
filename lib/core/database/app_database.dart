@@ -57,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -198,6 +198,15 @@ class AppDatabase extends _$AppDatabase {
       if (from < 23) {
         await m.createTable(expenseContributions);
       }
+      if (from < 24) {
+        final hasPreventScreenshots = await _hasColumn(
+          'settings',
+          'prevent_screenshots_enabled',
+        );
+        if (!hasPreventScreenshots) {
+          await m.addColumn(settings, settings.preventScreenshotsEnabled);
+        }
+      }
     },
     beforeOpen: (details) async {
       if (details.versionNow >= 12) {
@@ -262,6 +271,7 @@ class AppDatabase extends _$AppDatabase {
         transactionHintsSeen: const Value(false),
         dailyReminderEnabled: const Value(false),
         privacyLockEnabled: const Value(false),
+        preventScreenshotsEnabled: const Value(false),
         showAmountsEnabled: const Value(true),
         lastBudgetAlertAt: const Value(null),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -834,6 +844,27 @@ class AppDatabase extends _$AppDatabase {
       ..where((tbl) => tbl.isEmergency.equals(false))
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.targetDate)]));
     return query.watch();
+  }
+
+  Stream<double> watchMonthlyGoalAllocation(DateTime month) {
+    final start = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
+    final end = DateTime(
+      month.year,
+      month.month + 1,
+      1,
+    ).millisecondsSinceEpoch;
+    final query = select(goalContributions)
+      ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.createdAt.isBiggerOrEqualValue(start))
+      ..where((tbl) => tbl.createdAt.isSmallerThanValue(end));
+    return query.watch().map((rows) {
+      return rows.fold<double>(0, (sum, row) {
+        final amount = row.amountPaise > 0
+            ? Money.fromPaise(row.amountPaise)
+            : row.amount;
+        return sum + amount;
+      });
+    });
   }
 
   Stream<List<GoalContribution>> watchGoalContributions(String goalId) {

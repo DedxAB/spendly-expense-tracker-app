@@ -562,6 +562,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -592,6 +595,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -618,6 +624,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(budgetAlertsEnabled),
         dailyReminderEnabled: Value(dailyReminderEnabled),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -641,6 +650,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(enabled),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -653,6 +665,38 @@ class SettingsRepositoryImpl implements SettingsRepository {
           title: 'Privacy Shield',
           description:
               'Biometric app lock was ${enabled ? 'enabled' : 'disabled'}.',
+        );
+  }
+
+  @override
+  Future<void> setPreventScreenshotsEnabled(bool enabled) async {
+    final db = _ref.read(appDatabaseProvider);
+    final current = await db.getSettingsRow();
+    await db.upsertSettings(
+      SettingsCompanion.insert(
+        id: const Value(1),
+        monthlyBudget: Value(current?.monthlyBudget ?? 0),
+        monthlyBudgetPaise: Value(
+          Money.toPaise((current?.monthlyBudget ?? 0).toDouble()),
+        ),
+        currency: Value(current?.currency ?? 'INR'),
+        themeMode: Value(current?.themeMode ?? 'dark'),
+        transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
+        dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
+        privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(enabled),
+        showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
+        lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
+        updatedAt: DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+    await _ref
+        .read(activityRepositoryProvider)
+        .recordEvent(
+          kind: 'privacy',
+          title: 'Prevent Screenshots',
+          description:
+              'Screenshot blocking was ${enabled ? 'enabled' : 'disabled'}.',
         );
   }
 
@@ -672,6 +716,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(current?.showAmountsEnabled ?? true),
         lastBudgetAlertAt: Value(at.millisecondsSinceEpoch),
         updatedAt: DateTime.now().millisecondsSinceEpoch,
@@ -695,6 +742,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
         transactionHintsSeen: Value(current?.transactionHintsSeen ?? false),
         dailyReminderEnabled: Value(current?.dailyReminderEnabled ?? false),
         privacyLockEnabled: Value(current?.privacyLockEnabled ?? false),
+        preventScreenshotsEnabled: Value(
+          current?.preventScreenshotsEnabled ?? false,
+        ),
         showAmountsEnabled: Value(enabled),
         lastBudgetAlertAt: Value(current?.lastBudgetAlertAt),
         updatedAt: DateTime.now().millisecondsSinceEpoch,

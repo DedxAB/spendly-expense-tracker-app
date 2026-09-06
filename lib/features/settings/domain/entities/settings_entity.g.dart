@@ -14,6 +14,8 @@ _$SettingsEntityImpl _$$SettingsEntityImplFromJson(Map<String, dynamic> json) =>
       budgetAlertsEnabled: json['budgetAlertsEnabled'] as bool? ?? false,
       dailyReminderEnabled: json['dailyReminderEnabled'] as bool? ?? false,
       privacyLockEnabled: json['privacyLockEnabled'] as bool? ?? false,
+      preventScreenshotsEnabled:
+          json['preventScreenshotsEnabled'] as bool? ?? false,
       showAmountsEnabled: json['showAmountsEnabled'] as bool? ?? true,
       themeMode:
           $enumDecodeNullable(_$AppThemeModeEnumMap, json['themeMode']) ??
@@ -33,6 +35,7 @@ Map<String, dynamic> _$$SettingsEntityImplToJson(
   'budgetAlertsEnabled': instance.budgetAlertsEnabled,
   'dailyReminderEnabled': instance.dailyReminderEnabled,
   'privacyLockEnabled': instance.privacyLockEnabled,
+  'preventScreenshotsEnabled': instance.preventScreenshotsEnabled,
   'showAmountsEnabled': instance.showAmountsEnabled,
   'themeMode': _$AppThemeModeEnumMap[instance.themeMode]!,
   'lastBudgetAlertAt': instance.lastBudgetAlertAt?.toIso8601String(),

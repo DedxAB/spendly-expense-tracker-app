@@ -85,6 +85,9 @@ class Settings extends Table {
   BoolColumn get privacyLockEnabled => boolean()
       .named('privacy_lock_enabled')
       .withDefault(const Constant(false))();
+  BoolColumn get preventScreenshotsEnabled => boolean()
+      .named('prevent_screenshots_enabled')
+      .withDefault(const Constant(false))();
   BoolColumn get showAmountsEnabled => boolean()
       .named('show_amounts_enabled')
       .withDefault(const Constant(true))();

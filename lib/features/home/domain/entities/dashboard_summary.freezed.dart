@@ -18,9 +18,11 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$DashboardSummary {
   double get currentBalance => throw _privateConstructorUsedError;
+  double get availableToSpend => throw _privateConstructorUsedError;
   double get monthlyIncome => throw _privateConstructorUsedError;
   double get monthlyExpense => throw _privateConstructorUsedError;
   double get monthlyInvestment => throw _privateConstructorUsedError;
+  double get monthlyGoalAllocation => throw _privateConstructorUsedError;
   double get remainingBudget => throw _privateConstructorUsedError;
 
   /// Create a copy of DashboardSummary
@@ -39,9 +41,11 @@ abstract class $DashboardSummaryCopyWith<$Res> {
   @useResult
   $Res call({
     double currentBalance,
+    double availableToSpend,
     double monthlyIncome,
     double monthlyExpense,
     double monthlyInvestment,
+    double monthlyGoalAllocation,
     double remainingBudget,
   });
 }
@@ -62,9 +66,11 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
   @override
   $Res call({
     Object? currentBalance = null,
+    Object? availableToSpend = null,
     Object? monthlyIncome = null,
     Object? monthlyExpense = null,
     Object? monthlyInvestment = null,
+    Object? monthlyGoalAllocation = null,
     Object? remainingBudget = null,
   }) {
     return _then(
@@ -72,6 +78,10 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
             currentBalance: null == currentBalance
                 ? _value.currentBalance
                 : currentBalance // ignore: cast_nullable_to_non_nullable
+                      as double,
+            availableToSpend: null == availableToSpend
+                ? _value.availableToSpend
+                : availableToSpend // ignore: cast_nullable_to_non_nullable
                       as double,
             monthlyIncome: null == monthlyIncome
                 ? _value.monthlyIncome
@@ -84,6 +94,10 @@ class _$DashboardSummaryCopyWithImpl<$Res, $Val extends DashboardSummary>
             monthlyInvestment: null == monthlyInvestment
                 ? _value.monthlyInvestment
                 : monthlyInvestment // ignore: cast_nullable_to_non_nullable
+                      as double,
+            monthlyGoalAllocation: null == monthlyGoalAllocation
+                ? _value.monthlyGoalAllocation
+                : monthlyGoalAllocation // ignore: cast_nullable_to_non_nullable
                       as double,
             remainingBudget: null == remainingBudget
                 ? _value.remainingBudget
@@ -106,9 +120,11 @@ abstract class _$$DashboardSummaryImplCopyWith<$Res>
   @useResult
   $Res call({
     double currentBalance,
+    double availableToSpend,
     double monthlyIncome,
     double monthlyExpense,
     double monthlyInvestment,
+    double monthlyGoalAllocation,
     double remainingBudget,
   });
 }
@@ -128,9 +144,11 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? currentBalance = null,
+    Object? availableToSpend = null,
     Object? monthlyIncome = null,
     Object? monthlyExpense = null,
     Object? monthlyInvestment = null,
+    Object? monthlyGoalAllocation = null,
     Object? remainingBudget = null,
   }) {
     return _then(
@@ -138,6 +156,10 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
         currentBalance: null == currentBalance
             ? _value.currentBalance
             : currentBalance // ignore: cast_nullable_to_non_nullable
+                  as double,
+        availableToSpend: null == availableToSpend
+            ? _value.availableToSpend
+            : availableToSpend // ignore: cast_nullable_to_non_nullable
                   as double,
         monthlyIncome: null == monthlyIncome
             ? _value.monthlyIncome
@@ -150,6 +172,10 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
         monthlyInvestment: null == monthlyInvestment
             ? _value.monthlyInvestment
             : monthlyInvestment // ignore: cast_nullable_to_non_nullable
+                  as double,
+        monthlyGoalAllocation: null == monthlyGoalAllocation
+            ? _value.monthlyGoalAllocation
+            : monthlyGoalAllocation // ignore: cast_nullable_to_non_nullable
                   as double,
         remainingBudget: null == remainingBudget
             ? _value.remainingBudget
@@ -165,14 +191,18 @@ class __$$DashboardSummaryImplCopyWithImpl<$Res>
 class _$DashboardSummaryImpl implements _DashboardSummary {
   const _$DashboardSummaryImpl({
     required this.currentBalance,
+    required this.availableToSpend,
     required this.monthlyIncome,
     required this.monthlyExpense,
     required this.monthlyInvestment,
+    required this.monthlyGoalAllocation,
     required this.remainingBudget,
   });
 
   @override
   final double currentBalance;
+  @override
+  final double availableToSpend;
   @override
   final double monthlyIncome;
   @override
@@ -180,11 +210,13 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
   @override
   final double monthlyInvestment;
   @override
+  final double monthlyGoalAllocation;
+  @override
   final double remainingBudget;
 
   @override
   String toString() {
-    return 'DashboardSummary(currentBalance: $currentBalance, monthlyIncome: $monthlyIncome, monthlyExpense: $monthlyExpense, monthlyInvestment: $monthlyInvestment, remainingBudget: $remainingBudget)';
+    return 'DashboardSummary(currentBalance: $currentBalance, availableToSpend: $availableToSpend, monthlyIncome: $monthlyIncome, monthlyExpense: $monthlyExpense, monthlyInvestment: $monthlyInvestment, monthlyGoalAllocation: $monthlyGoalAllocation, remainingBudget: $remainingBudget)';
   }
 
   @override
@@ -194,12 +226,16 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
             other is _$DashboardSummaryImpl &&
             (identical(other.currentBalance, currentBalance) ||
                 other.currentBalance == currentBalance) &&
+            (identical(other.availableToSpend, availableToSpend) ||
+                other.availableToSpend == availableToSpend) &&
             (identical(other.monthlyIncome, monthlyIncome) ||
                 other.monthlyIncome == monthlyIncome) &&
             (identical(other.monthlyExpense, monthlyExpense) ||
                 other.monthlyExpense == monthlyExpense) &&
             (identical(other.monthlyInvestment, monthlyInvestment) ||
                 other.monthlyInvestment == monthlyInvestment) &&
+            (identical(other.monthlyGoalAllocation, monthlyGoalAllocation) ||
+                other.monthlyGoalAllocation == monthlyGoalAllocation) &&
             (identical(other.remainingBudget, remainingBudget) ||
                 other.remainingBudget == remainingBudget));
   }
@@ -208,9 +244,11 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
   int get hashCode => Object.hash(
     runtimeType,
     currentBalance,
+    availableToSpend,
     monthlyIncome,
     monthlyExpense,
     monthlyInvestment,
+    monthlyGoalAllocation,
     remainingBudget,
   );
 
@@ -229,20 +267,26 @@ class _$DashboardSummaryImpl implements _DashboardSummary {
 abstract class _DashboardSummary implements DashboardSummary {
   const factory _DashboardSummary({
     required final double currentBalance,
+    required final double availableToSpend,
     required final double monthlyIncome,
     required final double monthlyExpense,
     required final double monthlyInvestment,
+    required final double monthlyGoalAllocation,
     required final double remainingBudget,
   }) = _$DashboardSummaryImpl;
 
   @override
   double get currentBalance;
   @override
+  double get availableToSpend;
+  @override
   double get monthlyIncome;
   @override
   double get monthlyExpense;
   @override
   double get monthlyInvestment;
+  @override
+  double get monthlyGoalAllocation;
   @override
   double get remainingBudget;
 

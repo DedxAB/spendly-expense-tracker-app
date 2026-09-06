@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
+import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/features/home/presentation/widgets/home_surface_card.dart';
 
@@ -8,12 +9,14 @@ class SpendlyBlackCard extends StatelessWidget {
   const SpendlyBlackCard({
     super.key,
     required this.balance,
+    required this.goalAllocation,
     required this.showValues,
     required this.onToggleValues,
     this.onTap,
   });
 
   final double balance;
+  final double goalAllocation;
   final bool showValues;
   final VoidCallback onToggleValues;
   final VoidCallback? onTap;
@@ -85,7 +88,7 @@ class SpendlyBlackCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Available Balance',
+                            'Available to spend',
                             style: TextStyle(
                               color: context.textPrimary,
                               fontSize: AppFontSizes.heading,
@@ -140,6 +143,20 @@ class SpendlyBlackCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    if (goalAllocation > 0) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        showValues
+                            ? '${Formatters.currency(goalAllocation)} allocated to '
+                                  'goals this month'
+                            : '◆ ◆ ◆ allocated to goals this month',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: AppFontSizes.label,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

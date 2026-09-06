@@ -6,9 +6,11 @@ part 'dashboard_summary.freezed.dart';
 class DashboardSummary with _$DashboardSummary {
   const factory DashboardSummary({
     required double currentBalance,
+    required double availableToSpend,
     required double monthlyIncome,
     required double monthlyExpense,
     required double monthlyInvestment,
+    required double monthlyGoalAllocation,
     required double remainingBudget,
   }) = _DashboardSummary;
 }

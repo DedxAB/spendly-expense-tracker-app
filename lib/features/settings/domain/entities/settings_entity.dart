@@ -13,6 +13,7 @@ class SettingsEntity with _$SettingsEntity {
     @Default(false) bool budgetAlertsEnabled,
     @Default(false) bool dailyReminderEnabled,
     @Default(false) bool privacyLockEnabled,
+    @Default(false) bool preventScreenshotsEnabled,
     @Default(true) bool showAmountsEnabled,
     @Default(AppThemeMode.system) AppThemeMode themeMode,
     DateTime? lastBudgetAlertAt,

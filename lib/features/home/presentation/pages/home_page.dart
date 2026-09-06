@@ -66,7 +66,8 @@ class HomePage extends ConsumerWidget {
         children: [
           summary.when(
             data: (data) => SpendlyBlackCard(
-              balance: data.currentBalance,
+              balance: data.availableToSpend,
+              goalAllocation: data.monthlyGoalAllocation,
               showValues: showAmounts,
               onToggleValues: () async {
                 final nextValue = !showAmounts;
