@@ -76,17 +76,17 @@ class GoalContributionItem {
 }
 
 class GoalsState {
-  const GoalsState({required this.emergencyFund, required this.goals});
+  const GoalsState({required this.emergencyFunds, required this.goals});
 
-  final EmergencyFund emergencyFund;
+  final List<EmergencyFund> emergencyFunds;
   final List<GoalItem> goals;
 
   double get totalTarget =>
-      emergencyFund.targetAmount +
+      emergencyFunds.fold(0.0, (sum, fund) => sum + fund.targetAmount) +
       goals.fold(0.0, (sum, goal) => sum + goal.targetAmount);
 
   double get totalSaved =>
-      emergencyFund.currentAmount +
+      emergencyFunds.fold(0.0, (sum, fund) => sum + fund.currentAmount) +
       goals.fold(0.0, (sum, goal) => sum + goal.savedAmount);
 
   double get totalProgress =>
@@ -178,6 +178,11 @@ final goalContributionsProvider =
             (rows) => rows.map((row) => row.toItem()).toList(growable: false),
           );
     });
+
+final monthlyGoalAllocationProvider = StreamProvider<double>((ref) {
+  final month = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  return ref.watch(appDatabaseProvider).watchMonthlyGoalAllocation(month);
+});
 
 class GoalsActions {
   GoalsActions(this._ref);
