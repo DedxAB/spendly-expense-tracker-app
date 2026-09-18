@@ -124,8 +124,10 @@ class TransactionFilterState {
       case TransactionDatePreset.custom:
         final fallbackStart = DateTime(now.year, now.month, 1);
         final fallbackEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-        final start = customFrom ?? fallbackStart;
-        final end = customTo ?? fallbackEnd;
+        final rawStart = customFrom ?? fallbackStart;
+        final rawEnd = customTo ?? fallbackEnd;
+        final start = DateTime(rawStart.year, rawStart.month, rawStart.day);
+        final end = DateTime(rawEnd.year, rawEnd.month, rawEnd.day, 23, 59, 59);
         return DateInterval(start: start, end: end);
     }
   }

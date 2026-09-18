@@ -45,7 +45,6 @@ Future<File> _resolveDatabaseFile() async {
     AppUsageDays,
     GoalFunds,
     GoalContributions,
-    ExpenseContributions,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -57,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 25;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -195,9 +194,6 @@ class AppDatabase extends _$AppDatabase {
           "AND (note LIKE '-> %' OR note LIKE '<- %');",
         );
       }
-      if (from < 23) {
-        await m.createTable(expenseContributions);
-      }
       if (from < 24) {
         final hasPreventScreenshots = await _hasColumn(
           'settings',
@@ -206,6 +202,9 @@ class AppDatabase extends _$AppDatabase {
         if (!hasPreventScreenshots) {
           await m.addColumn(settings, settings.preventScreenshotsEnabled);
         }
+      }
+      if (from < 25) {
+        await customStatement('DROP TABLE IF EXISTS expense_contributions;');
       }
     },
     beforeOpen: (details) async {
@@ -250,10 +249,6 @@ class AppDatabase extends _$AppDatabase {
       await customStatement(
         'CREATE INDEX IF NOT EXISTS idx_lend_people_active '
         'ON lend_people (is_deleted);',
-      );
-      await customStatement(
-        'CREATE INDEX IF NOT EXISTS idx_expense_contributions_expense '
-        'ON expense_contributions (expense_id);',
       );
 
       await seedDefaultCategoriesIfNeeded();
@@ -383,9 +378,6 @@ class AppDatabase extends _$AppDatabase {
         updatedAt: Value(DateTime.now().millisecondsSinceEpoch),
       ),
     );
-    await (delete(expenseContributions)
-          ..where((tbl) => tbl.expenseId.equals(id)))
-        .go();
   }
 
   Future<void> softDeleteTransactionsByRecurringRuleFromDate(
@@ -978,109 +970,6 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Stream<List<ExpenseContribution>> watchExpenseContributions(String expenseId) {
-    return (select(expenseContributions)
-      ..where((tbl) => tbl.expenseId.equals(expenseId))
-      ..orderBy([(tbl) => OrderingTerm.asc(tbl.personName)]))
-        .watch();
-  }
-
-  Future<List<ExpenseContribution>> getExpenseContributionsForExpense(
-    String expenseId,
-  ) {
-    return (select(expenseContributions)
-      ..where((tbl) => tbl.expenseId.equals(expenseId))
-      ..orderBy([(tbl) => OrderingTerm.asc(tbl.personName)]))
-        .get();
-  }
-
-  Future<void> addExpenseContribution({
-    required String expenseId,
-    required String personName,
-    required double amount,
-  }) async {
-    final normalized = Money.normalize(amount);
-    await into(expenseContributions).insert(
-      ExpenseContributionsCompanion.insert(
-        id: const Uuid().v4(),
-        expenseId: expenseId,
-        personName: personName,
-        amount: normalized,
-        amountPaise: Value(Money.toPaise(normalized)),
-      ),
-    );
-  }
-
-  Future<void> addExpenseContributionsBatch(
-    List<({
-      String expenseId,
-      String personName,
-      double amount,
-    })> items,
-  ) async {
-    await batch((b) {
-      for (final item in items) {
-        final normalized = Money.normalize(item.amount);
-        b.insert(
-          expenseContributions,
-          ExpenseContributionsCompanion.insert(
-            id: const Uuid().v4(),
-            expenseId: item.expenseId,
-            personName: item.personName,
-            amount: normalized,
-            amountPaise: Value(Money.toPaise(normalized)),
-          ),
-        );
-      }
-    });
-  }
-
-  Future<void> settleExpenseContribution(String id) async {
-    await (update(expenseContributions)
-          ..where((tbl) => tbl.id.equals(id)))
-        .write(
-      ExpenseContributionsCompanion(
-        isSettled: const Value(true),
-        settledAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ),
-    );
-  }
-
-  Future<void> unsettleExpenseContribution(String id) async {
-    await (update(expenseContributions)
-          ..where((tbl) => tbl.id.equals(id)))
-        .write(
-      ExpenseContributionsCompanion(
-        isSettled: const Value(false),
-        settledAt: const Value(null),
-      ),
-    );
-  }
-
-  Future<List<ExpenseContribution>> getAllExpenseContributions() {
-    return select(expenseContributions).get();
-  }
-
-  Stream<void> watchContributionChanges() {
-    return select(expenseContributions).watch().map((_) {});
-  }
-
-  Future<Map<String, double>> getSettledContributionSums(
-    List<String> expenseIds,
-  ) async {
-    if (expenseIds.isEmpty) return {};
-    final rows = await (select(expenseContributions)
-          ..where((tbl) => tbl.expenseId.isIn(expenseIds))
-          ..where((tbl) => tbl.isSettled.equals(true)))
-        .get();
-    final map = <String, double>{};
-    for (final row in rows) {
-      final amt = row.amountPaise > 0 ? Money.fromPaise(row.amountPaise) : row.amount;
-      map[row.expenseId] = (map[row.expenseId] ?? 0) + amt;
-    }
-    return map;
-  }
-
   String _usageDateKey(DateTime date) {
     return '${date.year.toString().padLeft(4, '0')}-'
         '${date.month.toString().padLeft(2, '0')}-'
@@ -1100,7 +989,6 @@ class AppDatabase extends _$AppDatabase {
     required List<AppUsageDaysCompanion> appUsageDayRows,
     List<GoalFundsCompanion> goalFundRows = const [],
     List<GoalContributionsCompanion> goalContributionRows = const [],
-    List<ExpenseContributionsCompanion> expenseContributionRows = const [],
     required SettingsCompanion settingsRow,
     required UserProfilesCompanion userProfileRow,
   }) async {
@@ -1115,7 +1003,6 @@ class AppDatabase extends _$AppDatabase {
       await delete(categoryBudgets).go();
       await delete(activityEvents).go();
       await delete(appUsageDays).go();
-      await delete(expenseContributions).go();
       await delete(goalContributions).go();
       await delete(goalFunds).go();
       await delete(settings).go();
@@ -1162,11 +1049,6 @@ class AppDatabase extends _$AppDatabase {
           (b) => b.insertAll(goalContributions, goalContributionRows),
         );
       }
-      if (expenseContributionRows.isNotEmpty) {
-        await batch(
-          (b) => b.insertAll(expenseContributions, expenseContributionRows),
-        );
-      }
       await into(settings).insertOnConflictUpdate(settingsRow);
       await into(userProfiles).insertOnConflictUpdate(userProfileRow);
     });
@@ -1184,7 +1066,6 @@ class AppDatabase extends _$AppDatabase {
       await delete(categoryBudgets).go();
       await delete(activityEvents).go();
       await delete(appUsageDays).go();
-      await delete(expenseContributions).go();
       await delete(goalContributions).go();
       await delete(goalFunds).go();
       await delete(settings).go();

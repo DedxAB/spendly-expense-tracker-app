@@ -11,13 +11,13 @@ import 'package:spendly/core/theme/app_typography.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/app_modal_surface.dart';
+import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:spendly/features/contributions/presentation/widgets/contribution_status.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
@@ -85,7 +85,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     }
 
     final grandTotal = entries.fold<double>(
-      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + (t.type == TransactionType.expense ? t.amount - t.recoveredAmount : 0)),
+      0, (sum, e) => sum + e.value.fold<double>(0, (s, t) => s + (t.type == TransactionType.expense ? t.amount : 0)),
     );
     return Column(
       children: [
@@ -131,7 +131,18 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                     );
                   },
                   onDismissed: (_) {
-                    ref.read(transactionActionsProvider).softDelete(tx.id);
+                    final transactionId = tx.id;
+                    ref
+                        .read(transactionActionsProvider)
+                        .softDelete(transactionId);
+                    showAppToast(
+                      context,
+                      'Transaction deleted',
+                      actionLabel: 'Undo',
+                      onAction: () => ref
+                          .read(transactionActionsProvider)
+                          .restore(transactionId),
+                    );
                   },
                   background: Container(
                     alignment: Alignment.centerLeft,
@@ -168,23 +179,11 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                       ],
                     ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (tx.type == TransactionType.expense)
-                        Row(
-                          children: [
-                            const Spacer(),
-                            ContributionStatusChip(expenseId: tx.id),
-                          ],
-                        ),
-                      TransactionRow.fromEntity(
-                        tx: tx,
-                        categoryById: categoryById,
-                        dateLabel: _dateLabel(tx),
-                        isLast: isLast,
-                      ),
-                    ],
+                  child: TransactionRow.fromEntity(
+                    tx: tx,
+                    categoryById: categoryById,
+                    dateLabel: _dateLabel(tx),
+                    isLast: isLast,
                   ),
 
                 );

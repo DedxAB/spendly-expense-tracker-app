@@ -126,11 +126,11 @@ class LendRepositoryImpl implements LendRepository {
     final settledTotal = Money.normalize(
       settlementEvents.fold<double>(0, (sum, event) => sum + event.amount),
     );
-    final effectiveAmount = normalizedAmount < settledTotal
-        ? settledTotal
-        : normalizedAmount;
+    final storedSettled = Money.normalize(
+      settledTotal.clamp(0, normalizedAmount).toDouble(),
+    );
     final normalizedNote = note?.trim().isEmpty == true ? null : note?.trim();
-    final isSettled = settledTotal >= effectiveAmount;
+    final isSettled = settledTotal >= normalizedAmount;
     final resolvedSettledAtEpoch = isSettled
         ? current.settledAt ??
               (settlementEvents.isNotEmpty ? settlementEvents.first.date : null)
@@ -142,13 +142,13 @@ class LendRepositoryImpl implements LendRepository {
       LendEntriesCompanion(
         personId: Value(personId),
         type: Value(type.value),
-        amount: Value(effectiveAmount),
-        amountPaise: Value(Money.toPaise(effectiveAmount)),
+        amount: Value(normalizedAmount),
+        amountPaise: Value(Money.toPaise(normalizedAmount)),
         date: Value(date.millisecondsSinceEpoch),
         note: Value(normalizedNote),
         isSettled: Value(isSettled),
-        settledAmount: Value(settledTotal),
-        settledAmountPaise: Value(Money.toPaise(settledTotal)),
+        settledAmount: Value(storedSettled),
+        settledAmountPaise: Value(Money.toPaise(storedSettled)),
         settledAt: Value(resolvedSettledAtEpoch),
         updatedAt: Value(now.millisecondsSinceEpoch),
       ),
@@ -165,9 +165,16 @@ class LendRepositoryImpl implements LendRepository {
     if (normalizedAmount <= 0) return;
     final current = await _db.getLendEntryById(entryId);
     if (current == null || current.isDeleted) return;
-    final cappedAmount = Money.normalize(
-      normalizedAmount.clamp(0, current.amount).toDouble(),
+    final priorEvents = await _db.getLendSettlementEventsByEntry(entryId);
+    final priorSettled =
+        priorEvents.fold<double>(0, (sum, event) => sum + event.amount);
+    final remaining = Money.normalize(
+      (current.amount - priorSettled).clamp(0, current.amount).toDouble(),
     );
+    final cappedAmount = Money.normalize(
+      normalizedAmount.clamp(0, remaining).toDouble(),
+    );
+    if (cappedAmount <= 0) return;
     final now = DateTime.now();
     await _db.upsertLendSettlementEvent(
       LendSettlementEventsCompanion.insert(

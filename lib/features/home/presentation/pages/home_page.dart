@@ -3,6 +3,7 @@ import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -11,6 +12,7 @@ import 'package:spendly/core/utils/amount_visibility.dart';
 import 'package:spendly/core/utils/formatters.dart';
 import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
+import 'package:spendly/core/widgets/app_modal_surface.dart';
 import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -44,17 +46,20 @@ class HomePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.background,
       appBar: const AppHeader(mode: AppHeaderMode.home),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showAddExpenseSheet(context),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : Colors.black,
-        foregroundColor: Theme.of(context).brightness == Brightness.dark
-            ? Colors.black
-            : Colors.white,
-        elevation: 0,
-        shape: const CircleBorder(),
-        child: const Icon(AppIcons.plus, size: 36),
+      floatingActionButton: GestureDetector(
+        onLongPress: () => _showQuickAddSheet(context),
+        child: FloatingActionButton(
+          onPressed: () => showAddExpenseSheet(context),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+          foregroundColor: Theme.of(context).brightness == Brightness.dark
+              ? Colors.black
+              : Colors.white,
+          elevation: 0,
+          shape: const CircleBorder(),
+          child: const Icon(AppIcons.plus, size: 36),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
@@ -209,6 +214,7 @@ class HomePage extends ConsumerWidget {
                         categoryById: categoryById,
                         dateLabel: _dateLabel(items[i]),
                         isLast: i == items.length - 1,
+                        compact: true,
                       ),
                   ],
                 ),
@@ -1017,6 +1023,135 @@ class _InvestmentCard extends StatelessWidget {
               ),
               minHeight: 4,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _showQuickAddSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: false,
+    backgroundColor: Colors.transparent,
+    builder: (_) => const _QuickAddSheet(),
+  );
+}
+
+class _QuickAddSheet extends StatelessWidget {
+  const _QuickAddSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    final options = [
+      (
+        type: TransactionType.expense,
+        label: 'Expense',
+        icon: AppIcons.receipt,
+        tint: AppColors.expense,
+      ),
+      (
+        type: TransactionType.income,
+        label: 'Income',
+        icon: AppIcons.money,
+        tint: AppColors.income,
+      ),
+      (
+        type: TransactionType.investment,
+        label: 'Investment',
+        icon: AppIcons.trendingUp,
+        tint: AppColors.homeAccentPurple,
+      ),
+    ];
+
+    return AppModalSurface(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 76,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: context.textSecondary,
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Add Transaction',
+              style: AppTypography.sectionTitle(context),
+            ),
+            const SizedBox(height: 14),
+            for (final option in options) ...[
+              _QuickAddOption(
+                type: option.type,
+                label: option.label,
+                icon: option.icon,
+                tint: option.tint,
+              ),
+              const SizedBox(height: 10),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickAddOption extends StatelessWidget {
+  const _QuickAddOption({
+    required this.type,
+    required this.label,
+    required this.icon,
+    required this.tint,
+  });
+
+  final TransactionType type;
+  final String label;
+  final IconData icon;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        Navigator.of(context).pop();
+        showAddExpenseSheet(context, initialType: type);
+      },
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: tint.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: tint, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: context.textPrimary,
+                fontSize: AppFontSizes.bodyLarge,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Icon(
+            AppIcons.chevronRight,
+            size: 18,
+            color: context.textSecondary,
           ),
         ],
       ),
