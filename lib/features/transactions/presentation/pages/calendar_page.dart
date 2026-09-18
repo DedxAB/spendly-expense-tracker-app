@@ -49,7 +49,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           tx.date.month != _displayMonth.month) {
         continue;
       }
-      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + (tx.amount - tx.recoveredAmount);
+      expenseByDay[tx.date.day] = (expenseByDay[tx.date.day] ?? 0) + tx.amount;
     }
 
     final monthlyTotal = expenseByDay.values.fold<double>(
@@ -62,11 +62,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             .where((tx) => tx.type == TransactionType.expense)
             .where((tx) => _isSameDay(tx.date, _selectedDate))
             .toList(growable: false)
-          ..sort((a, b) => (b.amount - b.recoveredAmount).compareTo(a.amount - a.recoveredAmount));
+          ..sort((a, b) => (b.amount).compareTo(a.amount));
 
     final selectedTotal = selectedItems.fold<double>(
       0,
-      (sum, tx) => sum + (tx.amount - tx.recoveredAmount),
+      (sum, tx) => sum + tx.amount,
     );
     final visibleDays = _buildVisibleDays(_displayMonth);
 
@@ -205,7 +205,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final firstOfMonth = DateTime(month.year, month.month, 1);
     final sundayBasedIndex = firstOfMonth.weekday % 7;
     final gridStart = firstOfMonth.subtract(Duration(days: sundayBasedIndex));
-    return List.generate(35, (index) {
+    return List.generate(42, (index) {
       final day = gridStart.add(Duration(days: index));
       return DateTime(day.year, day.month, day.day);
     });
@@ -357,7 +357,7 @@ class _MonthGrid extends StatelessWidget {
                               right: col < 6
                                   ? BorderSide(color: context.border)
                                   : BorderSide.none,
-                              bottom: row < 4
+                              bottom: row < 5
                                   ? BorderSide(color: context.border)
                                   : BorderSide.none,
                             ),

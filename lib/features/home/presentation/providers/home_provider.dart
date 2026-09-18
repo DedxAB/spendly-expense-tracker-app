@@ -48,7 +48,7 @@ final todaySpentProvider = StreamProvider<double>((ref) {
                   item.date.month == now.month &&
                   item.date.day == now.day,
             )
-            .fold<double>(0, (sum, item) => sum + (item.amount - item.recoveredAmount));
+            .fold<double>(0, (sum, item) => sum + item.amount);
       });
 });
 
@@ -66,7 +66,7 @@ final currentMonthDailyIncomeExpenseProvider = StreamProvider<({List<double> inc
       if (item.type == TransactionType.income) {
         income[day] += item.amount;
       } else if (item.type == TransactionType.expense) {
-        expense[day] += item.amount - item.recoveredAmount;
+        expense[day] += item.amount;
       }
     }
     return (income: income, expense: expense);
@@ -89,6 +89,6 @@ final yesterdaySpentProvider = StreamProvider<double>((ref) {
                   item.date.month == yesterday.month &&
                   item.date.day == yesterday.day,
             )
-            .fold<double>(0, (sum, item) => sum + (item.amount - item.recoveredAmount));
+            .fold<double>(0, (sum, item) => sum + item.amount);
       });
 });

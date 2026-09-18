@@ -15,6 +15,7 @@ import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
 import 'package:spendly/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
+import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/recurring/data/repositories/recurring_repository_impl.dart';
 import 'package:spendly/features/recurring/domain/entities/recurring_rule_entity.dart';
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
@@ -271,6 +272,8 @@ class RecurringPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rules = ref.watch(recurringRulesProvider);
+    final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
+    final categoryById = {for (final c in categories) c.id: c};
 
     return Scaffold(
       backgroundColor: context.background,
@@ -325,17 +328,6 @@ class RecurringPage extends ConsumerWidget {
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
-                          final dueToday =
-                              DateTime(
-                                item.nextDueDate.year,
-                                item.nextDueDate.month,
-                                item.nextDueDate.day,
-                              ) ==
-                              DateTime(
-                                DateTime.now().year,
-                                DateTime.now().month,
-                                DateTime.now().day,
-                              );
                           return Padding(
                             padding: const EdgeInsets.only(
                               bottom: AppSpacing.sm,
@@ -416,134 +408,14 @@ class RecurringPage extends ConsumerWidget {
                                   ],
                                 ),
                               ),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: context.surface,
-                                  border: Border.all(
-                                    color: context.border,
-                                  ),
-                                  borderRadius: BorderRadius.circular(AppRadii.lg),
-                                ),
-                                padding: const EdgeInsets.all(AppSpacing.sm),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 44,
-                                          height: 44,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: context.surfaceAlt,
-                                            borderRadius: BorderRadius.circular(
-                                              AppRadii.md,
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            AppIcons.repeat,
-                                            size: 20,
-                                            color: item.isActive
-                                                ? AppIcons.getColorForIcon(
-                                                    AppIcons.repeat,
-                                                  )
-                                                : context.textSecondary,
-                                          ),
-                                        ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                item.title,
-                                                style: TextStyle(
-                                                  color: context.textPrimary,
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: AppFontSizes.title,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  if (dueToday)
-                                                    Container(
-                                                      margin: const EdgeInsets.only(
-                                                          right: 8),
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                      decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                          color: const Color(
-                                                              0xFFFF8A7A),
-                                                        ),
-                                                        borderRadius: BorderRadius.circular(AppRadii.sm),
-                                                      ),
-                                                      child: const Text(
-                                                        'DUE',
-                                                        style: TextStyle(
-                                                          color:
-                                                              Color(0xFFFF8A7A),
-                                                          fontSize: AppFontSizes.caption,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          letterSpacing: 1,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  Flexible(
-                                                    child: Text(
-                                                      '${item.frequency.value} | Next: ${Formatters.date(item.nextDueDate)}',
-                                                      style: TextStyle(
-                                                        color: context.textSecondary,
-                                                        fontSize: AppFontSizes.label,
-                                                      ),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: AppSpacing.sm),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            AmountView(
-                                              item.amount,
-                                              style: TextStyle(
-                                                color: context.textPrimary,
-                                                fontSize: AppFontSizes.heading,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                            Switch(
-                                              value: item.isActive,
-                                              onChanged: (value) async {
-                                                await ref
-                                                    .read(
-                                                      recurringRepositoryProvider,
-                                                    )
-                                                    .setActive(item.id, value);
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              child: _RecurringRuleCard(
+                                rule: item,
+                                category: categoryById[item.categoryId],
+                                onToggleActive: (value) {
+                                  ref
+                                      .read(recurringRepositoryProvider)
+                                      .setActive(item.id, value);
+                                },
                               ),
                             ),
                           );
@@ -649,5 +521,189 @@ class _ModalFieldLabel extends StatelessWidget {
           ),
       ],
     );
+  }
+}
+
+class _RecurringRuleCard extends StatelessWidget {
+  const _RecurringRuleCard({
+    required this.rule,
+    required this.category,
+    required this.onToggleActive,
+  });
+
+  final RecurringRuleEntity rule;
+  final CategoryEntity? category;
+  final ValueChanged<bool> onToggleActive;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    final nextDue = DateTime(
+      rule.nextDueDate.year,
+      rule.nextDueDate.month,
+      rule.nextDueDate.day,
+    );
+    final isOverdue = nextDue.isBefore(today);
+    final isDue = isOverdue || nextDue == today;
+
+    final baseIcon = category != null
+        ? AppIcons.getIconForCategory(category!.name, rule.type)
+        : AppIcons.repeat;
+
+    final Color iconColor;
+    final Color amountColor;
+    if (!rule.isActive) {
+      iconColor = context.textSecondary;
+      amountColor = context.textSecondary;
+    } else {
+      iconColor = AppIcons.getColorForIcon(
+        baseIcon,
+        label: category?.name,
+        type: rule.type,
+        brightness: isDark ? Brightness.dark : Brightness.light,
+      );
+      amountColor = context.textPrimary;
+    }
+
+    final dangerColor = isDark ? const Color(0xFFFF6B6B) : const Color(0xFFD94545);
+    final warnColor = isDark ? const Color(0xFFE8B04C) : const Color(0xFFD49520);
+    final statusColor = !rule.isActive
+        ? context.textSecondary
+        : isOverdue
+            ? dangerColor
+            : isDue
+                ? warnColor
+                : context.textSecondary;
+
+    final statusLabel = !rule.isActive
+        ? 'Paused'
+        : isOverdue
+            ? 'Overdue · ${Formatters.date(rule.nextDueDate)}'
+            : isDue
+                ? 'Due today'
+                : 'Next: ${Formatters.date(rule.nextDueDate)}';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(
+          color: isDue && rule.isActive
+              ? statusColor.withValues(alpha: 0.45)
+              : context.border,
+        ),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: isDue && rule.isActive ? 3 : 0,
+            color: statusColor,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(baseIcon, size: 20, color: iconColor),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        rule.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: amountColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: AppFontSizes.title,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        rule.note?.isNotEmpty == true
+                            ? '${_frequencyLabel(rule.frequency)} · ${rule.paymentMode.label} · ${rule.note!.trim()}'
+                            : '${_frequencyLabel(rule.frequency)} · ${rule.paymentMode.label}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: AppFontSizes.label,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                AmountView(
+                  rule.amount,
+                  style: TextStyle(
+                    color: amountColor,
+                    fontSize: AppFontSizes.heading,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: context.border.withValues(alpha: 0.5)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 2, 6, 2),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    statusLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: AppFontSizes.label,
+                      fontWeight: isDue && rule.isActive
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: rule.isActive,
+                  onChanged: onToggleActive,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _frequencyLabel(RecurringFrequency frequency) {
+  switch (frequency) {
+    case RecurringFrequency.daily:
+      return 'Daily';
+    case RecurringFrequency.weekly:
+      return 'Weekly';
+    case RecurringFrequency.monthly:
+      return 'Monthly';
+    case RecurringFrequency.yearly:
+      return 'Yearly';
   }
 }

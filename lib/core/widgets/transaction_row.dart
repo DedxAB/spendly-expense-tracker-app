@@ -46,10 +46,10 @@ class TransactionRow extends StatelessWidget {
     required this.iconColor,
     this.paymentMode,
     this.cardType,
-    this.recoveredAmount,
+    this.compact = false,
   });
 
-  final double? recoveredAmount;
+  final bool compact;
 
   factory TransactionRow.fromEntity({
     required TransactionEntity tx,
@@ -57,6 +57,7 @@ class TransactionRow extends StatelessWidget {
     required String dateLabel,
     required bool isLast,
     Key? key,
+    bool compact = false,
   }) {
     return TransactionRow(
       key: key,
@@ -70,7 +71,7 @@ class TransactionRow extends StatelessWidget {
       iconColor: _categoryIconColor(categoryById[tx.categoryId], tx.type),
       paymentMode: tx.paymentMode,
       cardType: tx.cardType,
-      recoveredAmount: tx.type == TransactionType.expense ? tx.recoveredAmount : null,
+      compact: compact,
     );
   }
 
@@ -95,18 +96,21 @@ class TransactionRow extends StatelessWidget {
               : BorderSide(color: context.border.withValues(alpha: 0.6)),
         ),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: compact ? 8 : 12,
+      ),
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: compact ? 40 : 44,
+            height: compact ? 40 : 44,
             decoration: BoxDecoration(
               color: context.surface,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: context.border.withValues(alpha: 0.6)),
             ),
-            child: Icon(icon, size: 20, color: iconColor),
+            child: Icon(icon, size: compact ? 18 : 20, color: iconColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -124,38 +128,50 @@ class TransactionRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        subtitle,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: AppFontSizes.label,
-                          fontWeight: FontWeight.w500,
+                const SizedBox(height: 3),
+                if (compact)
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: AppFontSizes.label,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  )
+                else
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          subtitle,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: context.textSecondary,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    _TagChip(
-                      label: typeLabel(type),
-                      tint: categoryTint(type),
-                    ),
-                    if (paymentMode != null) ...[
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       _TagChip(
-                        label: transactionPaymentLabel(
-                          type: type,
-                          paymentMode: paymentMode!,
-                          cardType: cardType,
-                        ),
-                        tint: paymentModeTint(paymentMode!),
+                        label: typeLabel(type),
+                        tint: categoryTint(type),
                       ),
+                      if (paymentMode != null) ...[
+                        const SizedBox(width: 4),
+                        _TagChip(
+                          label: transactionPaymentLabel(
+                            type: type,
+                            paymentMode: paymentMode!,
+                            cardType: cardType,
+                          ),
+                          tint: paymentModeTint(paymentMode!),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
@@ -173,17 +189,6 @@ class TransactionRow extends StatelessWidget {
                     ? AppColors.homeAccentPurple
                     : context.textPrimary,
               ),
-              if (recoveredAmount != null && recoveredAmount! > 0) ...[
-                const SizedBox(height: 2),
-                Text(
-                  '${Formatters.currency(recoveredAmount!)} recovered',
-                  style: TextStyle(
-                    color: AppColors.homeAccentGreen,
-                    fontSize: AppFontSizes.caption,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
               const SizedBox(height: 4),
               Text(
                 dateLabel,

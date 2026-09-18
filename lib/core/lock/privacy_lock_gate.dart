@@ -98,8 +98,11 @@ class _PrivacyLockGateState extends ConsumerState<PrivacyLockGate>
     }
 
     final enabled = value.privacyLockEnabled;
-    final controller = ref.read(privacyLockProvider.notifier);
-    controller.onSettingsChanged(enabled);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(privacyLockProvider.notifier).onSettingsChanged(enabled);
+      }
+    });
 
     if (!enabled) {
       return widget.child;

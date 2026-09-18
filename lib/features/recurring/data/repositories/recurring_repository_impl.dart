@@ -170,10 +170,15 @@ class RecurringRepositoryImpl implements RecurringRepository {
       case RecurringFrequency.weekly:
         return date.add(const Duration(days: 7));
       case RecurringFrequency.monthly:
-        return DateTime(date.year, date.month + 1, date.day);
+        return _sameDayOrLastOfMonth(date.year, date.month + 1, date.day);
       case RecurringFrequency.yearly:
-        return DateTime(date.year + 1, date.month, date.day);
+        return _sameDayOrLastOfMonth(date.year + 1, date.month, date.day);
     }
+  }
+
+  DateTime _sameDayOrLastOfMonth(int year, int month, int day) {
+    final lastDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day.clamp(1, lastDay));
   }
 }
 

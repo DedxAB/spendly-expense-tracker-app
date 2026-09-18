@@ -34,7 +34,6 @@ mixin _$TransactionEntity {
   String? get recurringRuleId => throw _privateConstructorUsedError;
   bool get isRecurringInstance => throw _privateConstructorUsedError;
   bool get isDeleted => throw _privateConstructorUsedError;
-  double get recoveredAmount => throw _privateConstructorUsedError;
 
   /// Serializes this TransactionEntity to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -67,7 +66,6 @@ abstract class $TransactionEntityCopyWith<$Res> {
     String? recurringRuleId,
     bool isRecurringInstance,
     bool isDeleted,
-    double recoveredAmount,
   });
 }
 
@@ -99,7 +97,6 @@ class _$TransactionEntityCopyWithImpl<$Res, $Val extends TransactionEntity>
     Object? recurringRuleId = freezed,
     Object? isRecurringInstance = null,
     Object? isDeleted = null,
-    Object? recoveredAmount = null,
   }) {
     return _then(
       _value.copyWith(
@@ -155,10 +152,6 @@ class _$TransactionEntityCopyWithImpl<$Res, $Val extends TransactionEntity>
                 ? _value.isDeleted
                 : isDeleted // ignore: cast_nullable_to_non_nullable
                       as bool,
-            recoveredAmount: null == recoveredAmount
-                ? _value.recoveredAmount
-                : recoveredAmount // ignore: cast_nullable_to_non_nullable
-                      as double,
           )
           as $Val,
     );
@@ -188,7 +181,6 @@ abstract class _$$TransactionEntityImplCopyWith<$Res>
     String? recurringRuleId,
     bool isRecurringInstance,
     bool isDeleted,
-    double recoveredAmount,
   });
 }
 
@@ -219,7 +211,6 @@ class __$$TransactionEntityImplCopyWithImpl<$Res>
     Object? recurringRuleId = freezed,
     Object? isRecurringInstance = null,
     Object? isDeleted = null,
-    Object? recoveredAmount = null,
   }) {
     return _then(
       _$TransactionEntityImpl(
@@ -275,10 +266,6 @@ class __$$TransactionEntityImplCopyWithImpl<$Res>
             ? _value.isDeleted
             : isDeleted // ignore: cast_nullable_to_non_nullable
                   as bool,
-        recoveredAmount: null == recoveredAmount
-            ? _value.recoveredAmount
-            : recoveredAmount // ignore: cast_nullable_to_non_nullable
-                  as double,
       ),
     );
   }
@@ -301,7 +288,6 @@ class _$TransactionEntityImpl implements _TransactionEntity {
     this.recurringRuleId,
     this.isRecurringInstance = false,
     this.isDeleted = false,
-    this.recoveredAmount = 0,
   });
 
   factory _$TransactionEntityImpl.fromJson(Map<String, dynamic> json) =>
@@ -335,13 +321,10 @@ class _$TransactionEntityImpl implements _TransactionEntity {
   @override
   @JsonKey()
   final bool isDeleted;
-  @override
-  @JsonKey()
-  final double recoveredAmount;
 
   @override
   String toString() {
-    return 'TransactionEntity(id: $id, type: $type, amount: $amount, categoryId: $categoryId, paymentMode: $paymentMode, cardType: $cardType, note: $note, date: $date, createdAt: $createdAt, updatedAt: $updatedAt, recurringRuleId: $recurringRuleId, isRecurringInstance: $isRecurringInstance, isDeleted: $isDeleted, recoveredAmount: $recoveredAmount)';
+    return 'TransactionEntity(id: $id, type: $type, amount: $amount, categoryId: $categoryId, paymentMode: $paymentMode, cardType: $cardType, note: $note, date: $date, createdAt: $createdAt, updatedAt: $updatedAt, recurringRuleId: $recurringRuleId, isRecurringInstance: $isRecurringInstance, isDeleted: $isDeleted)';
   }
 
   @override
@@ -369,9 +352,7 @@ class _$TransactionEntityImpl implements _TransactionEntity {
             (identical(other.isRecurringInstance, isRecurringInstance) ||
                 other.isRecurringInstance == isRecurringInstance) &&
             (identical(other.isDeleted, isDeleted) ||
-                other.isDeleted == isDeleted) &&
-            (identical(other.recoveredAmount, recoveredAmount) ||
-                other.recoveredAmount == recoveredAmount));
+                other.isDeleted == isDeleted));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -391,7 +372,6 @@ class _$TransactionEntityImpl implements _TransactionEntity {
     recurringRuleId,
     isRecurringInstance,
     isDeleted,
-    recoveredAmount,
   );
 
   /// Create a copy of TransactionEntity
@@ -426,7 +406,6 @@ abstract class _TransactionEntity implements TransactionEntity {
     final String? recurringRuleId,
     final bool isRecurringInstance,
     final bool isDeleted,
-    final double recoveredAmount,
   }) = _$TransactionEntityImpl;
 
   factory _TransactionEntity.fromJson(Map<String, dynamic> json) =
@@ -458,8 +437,6 @@ abstract class _TransactionEntity implements TransactionEntity {
   bool get isRecurringInstance;
   @override
   bool get isDeleted;
-  @override
-  double get recoveredAmount;
 
   /// Create a copy of TransactionEntity
   /// with the given fields replaced by the non-null parameter values.
