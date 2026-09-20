@@ -11,6 +11,26 @@ import 'package:spendly/features/categories/domain/entities/category_entity.dart
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:uuid/uuid.dart';
 
+const _kCatRed = Color(0xFFFF5C6C);
+const _kCatRedLight = Color(0xFFE03550);
+const _kCatPurple = Color(0xFF8B5CF6);
+const _kCatPurpleLight = Color(0xFF7157D8);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kCatRed : _kCatRedLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kCatPurple : _kCatPurpleLight;
+
+String _hexColorString(Color color) {
+  final rgb =
+      color.toARGB32() & 0xFFFFFF;
+  return '#${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}';
+}
+
 class CategoriesPage extends ConsumerWidget {
   const CategoriesPage({super.key});
 
@@ -18,63 +38,85 @@ class CategoriesPage extends ConsumerWidget {
     return AppIcons.getIconForCategory(name, type);
   }
 
-  Future<void> _showCategoryDialog(BuildContext context, WidgetRef ref) async {
-    final nameController = TextEditingController();
-    TransactionType type = TransactionType.expense;
+  Future<void> _showCategoryDialog(
+    BuildContext context,
+    WidgetRef ref, {
+    CategoryEntity? existing,
+  }) async {
+    final nameController = TextEditingController(text: existing?.name);
+    TransactionType type = existing?.type ?? TransactionType.expense;
 
     await showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: const Text('Add Category'),
-            content: SizedBox(
-              width: AppModalSizes.dialogContentWidth,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _ModalFieldLabel('Category Name'),
-                  const SizedBox(height: 6),
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. Food, Salary',
-                    ),
+        builder: (context, setState) => AlertDialog(
+          title: Text(existing == null ? 'Add Category' : 'Edit Category'),
+          content: SizedBox(
+            width: AppModalSizes.dialogContentWidth,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _ModalFieldLabel('Category Name'),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: nameController,
+                  autofocus: existing == null,
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. Food, Salary',
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  const _ModalFieldLabel('Category Type'),
-                  const SizedBox(height: 6),
-                  _CategoryTypeSegment(
-                    selected: type,
-                    onChanged: (value) => setState(() => type = value),
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                const _ModalFieldLabel('Category Type'),
+                const SizedBox(height: 6),
+                _CategoryTypeSegment(
+                  selected: type,
+                  onChanged: (value) => setState(() => type = value),
+                ),
+              ],
             ),
-            actions: [
-              DialogActionsRow(
-                cancelText: 'Cancel',
-                confirmText: 'Save',
-                onCancel: () => Navigator.pop(context),
-                onConfirm: () async {
-                  final name = nameController.text.trim();
-                  if (name.isEmpty) return;
-                  final now = DateTime.now();
+          ),
+          actions: [
+            DialogActionsRow(
+              cancelText: 'Cancel',
+              confirmText: existing == null ? 'Save' : 'Update',
+              onCancel: () => Navigator.pop(context),
+              onConfirm: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) return;
+                final now = DateTime.now();
+                final repo = ref.read(categoriesRepositoryProvider);
+                if (existing == null) {
                   final category = CategoryEntity(
                     id: const Uuid().v4(),
                     name: name,
                     icon: 'category',
-                    color: '#00A88F',
+                    color: _hexColorString(
+                      AppIcons.getColorForCategory(
+                        name,
+                        type,
+                        Brightness.dark,
+                      ),
+                    ),
                     type: type,
                     createdAt: now,
                     updatedAt: now,
                   );
-                  await ref.read(categoriesRepositoryProvider).add(category);
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
+                  await repo.add(category);
+                } else {
+                  await repo.update(
+                    existing.copyWith(
+                      name: name,
+                      type: type,
+                      updatedAt: now,
+                    ),
+                  );
+                }
+                if (context.mounted) Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -82,51 +124,36 @@ class CategoriesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(allCategoriesProvider);
-    final bg = context.background;
-    final surface = context.surface;
-    final border = context.border;
-    final primary = context.textPrimary;
-    final secondary = context.textSecondary;
-    const destructive = Color(0xFFE35D5D);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final destructiveBg = isDark
-        ? const Color(0x221B0000)
-        : const Color(0x1AFF0000);
-    final destructiveBorder = isDark
-        ? const Color(0xFF3D2020)
-        : const Color(0x33FF0000);
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: context.background,
       appBar: AppHeader(
         mode: AppHeaderMode.back,
         title: 'Categories',
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
-      floatingActionButton: SizedBox(
-        width: 178,
-        height: 54,
-        child: FloatingActionButton.extended(
-          onPressed: () => _showCategoryDialog(context, ref),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
-          icon: const Icon(AppIcons.plus, size: 18),
-          label: const Text(
-            'Add Category',
-            style: TextStyle(
-              fontSize: AppFontSizes.body,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCategoryDialog(context, ref),
+        backgroundColor: context.textPrimary,
+        foregroundColor: context.background,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
       body: categories.when(
         data: (items) {
           if (items.isEmpty) {
-            return Center(
-              child: Text(
-                'No categories available',
-                style: TextStyle(color: secondary),
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.smPlus,
+                AppSpacing.md,
+                AppSpacing.smPlus,
+                96,
+              ),
+              child: _InlineEmpty(
+                icon: AppIcons.categories,
+                message: 'No categories yet. Create one to organise '
+                    'your transactions.',
               ),
             );
           }
@@ -140,6 +167,21 @@ class CategoriesPage extends ConsumerWidget {
               items.where((e) => e.type == TransactionType.investment).toList()
                 ..sort((a, b) => a.name.compareTo(b.name));
 
+          final sections = <Widget>[
+            if (expenses.isNotEmpty) ...[
+              const _SectionLabel('EXPENSE'),
+              ...expenses.map((c) => _buildRow(context, ref, c)),
+            ],
+            if (incomes.isNotEmpty) ...[
+              const _SectionLabel('INCOME'),
+              ...incomes.map((c) => _buildRow(context, ref, c)),
+            ],
+            if (investments.isNotEmpty) ...[
+              const _SectionLabel('INVESTMENT'),
+              ...investments.map((c) => _buildRow(context, ref, c)),
+            ],
+          ];
+
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.smPlus,
@@ -147,151 +189,147 @@ class CategoriesPage extends ConsumerWidget {
               AppSpacing.smPlus,
               96,
             ),
-            itemCount: expenses.length + incomes.length + investments.length + 3,
-            itemBuilder: (context, index) {
-              final expenseHeaderIndex = 0;
-              final expenseStart = 1;
-              final incomeHeaderIndex = expenseStart + expenses.length;
-              final incomeStart = incomeHeaderIndex + 1;
-              final investmentHeaderIndex = incomeStart + incomes.length;
-              final investmentStart = investmentHeaderIndex + 1;
-
-              if (index == expenseHeaderIndex) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    'EXPENSE',
-                    style: TextStyle(
-                      color: secondary,
-                      fontSize: AppFontSizes.label,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.3,
-                    ),
-                  ),
-                );
-              }
-              if (index == incomeHeaderIndex) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 10),
-                  child: Text(
-                    'INCOME',
-                    style: TextStyle(
-                      color: secondary,
-                      fontSize: AppFontSizes.label,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.3,
-                    ),
-                  ),
-                );
-              }
-              if (index == investmentHeaderIndex) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 12, bottom: 10),
-                  child: Text(
-                    'INVESTMENT',
-                    style: TextStyle(
-                      color: secondary,
-                      fontSize: AppFontSizes.label,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.3,
-                    ),
-                  ),
-                );
-              }
-
-              final category = index < incomeHeaderIndex
-                  ? expenses[index - expenseStart]
-                  : index < investmentHeaderIndex
-                      ? incomes[index - incomeStart]
-                      : investments[index - investmentStart];
-              final icon = _iconForCategory(category.name, category.type);
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: surface,
-                  border: Border.all(color: border),
-                  borderRadius: BorderRadius.circular(AppRadii.lg),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  leading: Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: context.surfaceAlt,
-                      borderRadius: BorderRadius.circular(AppRadii.md),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: AppIcons.getColorForCategory(
-                        category.name,
-                        category.type,
-                      ),
-                      size: 20,
-                    ),
-                  ),
-                  title: Text(
-                    category.name,
-                    style: TextStyle(
-                      color: primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  subtitle: Text(
-                    category.type.name.toUpperCase(),
-                    style: TextStyle(
-                      color: secondary,
-                      fontSize: AppFontSizes.small,
-                      letterSpacing: 0.9,
-                    ),
-                  ),
-                  trailing: InkWell(
-                    onTap: () async {
-                      final shouldDelete = await showAppDeleteConfirmDialog(
-                        context,
-                        title: 'Delete category?',
-                        message: 'Delete "${category.name}" category?',
-                      );
-                      if (shouldDelete) {
-                        await ref
-                            .read(categoriesRepositoryProvider)
-                            .softDelete(category.id);
-                      }
-                    },
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: destructiveBorder),
-                        color: destructiveBg,
-                        borderRadius: BorderRadius.circular(AppRadii.md),
-                      ),
-                      child: const Icon(
-                        AppIcons.trash,
-                        color: destructive,
-                        size: 18,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+            itemCount: sections.length,
+            itemBuilder: (context, index) => sections[index],
           );
         },
-        loading: () =>
-            Center(child: CircularProgressIndicator()),
+        loading: () => Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(
           child: Text(
             'Failed to load: $error',
             style: TextStyle(color: context.textPrimary),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildRow(
+    BuildContext context,
+    WidgetRef ref,
+    CategoryEntity category,
+  ) {
+    final icon = _iconForCategory(category.name, category.type);
+    final iconColor = AppIcons.getColorForCategory(
+      category.name,
+      category.type,
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 2,
+        ),
+        leading: Container(
+          width: 42,
+          height: 42,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: iconColor, size: 20),
+        ),
+        title: Text(
+          category.name,
+          style: TextStyle(
+            color: context.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        onTap: () => _showCategoryDialog(context, ref, existing: category),
+        trailing: IconButton(
+          onPressed: () async {
+            final shouldDelete = await showAppDeleteConfirmDialog(
+              context,
+              title: 'Delete category?',
+              message: 'Delete "${category.name}" category?',
+            );
+            if (shouldDelete) {
+              await ref
+                  .read(categoriesRepositoryProvider)
+                  .softDelete(category.id);
+            }
+          },
+          icon: Icon(AppIcons.trash, color: _red(context), size: 20),
+          tooltip: 'Delete',
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 14, bottom: 10),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: context.textSecondary,
+          fontSize: AppFontSizes.label,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.3,
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineEmpty extends StatelessWidget {
+  const _InlineEmpty({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _purple(context).withValues(alpha: 0.16),
+                  _purple(context).withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: Icon(icon, color: _purple(context), size: 26),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: AppFontSizes.body,
+              height: 1.4,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -323,52 +361,35 @@ class _CategoryTypeSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = const [
-      (TransactionType.income, 'Income'),
-      (TransactionType.expense, 'Expense'),
-      (TransactionType.investment, 'Investment'),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        child: Row(
-          children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = selected == item.$1;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
-                    ),
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  item.$2,
-                  style: TextStyle(
-                    color: isSelected ? context.surface : context.textPrimary,
-                    fontSize: AppFontSizes.body,
-                    letterSpacing: 0.2,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }),
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<TransactionType>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(
+            value: TransactionType.expense,
+            label: Text('Expense'),
+          ),
+          ButtonSegment(
+            value: TransactionType.income,
+            label: Text('Income'),
+          ),
+          ButtonSegment(
+            value: TransactionType.investment,
+            label: Text('Investment'),
+          ),
+        ],
+        selected: {selected},
+        onSelectionChanged: (value) => onChanged(value.first),
+        style: SegmentedButton.styleFrom(
+          foregroundColor: context.textSecondary,
+          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+          backgroundColor: context.surface,
+          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+          side: BorderSide(color: context.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
         ),
       ),
     );

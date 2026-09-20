@@ -13,6 +13,7 @@ import 'package:spendly/core/widgets/app_confirm_dialog.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/core/widgets/swipe_hint_coach.dart';
 import 'package:spendly/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
@@ -20,6 +21,40 @@ import 'package:spendly/features/recurring/data/repositories/recurring_repositor
 import 'package:spendly/features/recurring/domain/entities/recurring_rule_entity.dart';
 import 'package:spendly/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:uuid/uuid.dart';
+
+const _kRecGreen = Color(0xFF38D97A);
+const _kRecRed = Color(0xFFFF5C6C);
+const _kRecAmber = Color(0xFFF5B83D);
+const _kRecPurple = Color(0xFF8B5CF6);
+const _kRecGreenTint = Color(0xFF0F2A1C);
+const _kRecRedTint = Color(0xFF2A1313);
+const _kRecGreenLight = Color(0xFF0E9C58);
+const _kRecRedLight = Color(0xFFE03550);
+const _kRecAmberLight = Color(0xFFA87409);
+const _kRecPurpleLight = Color(0xFF7157D8);
+const _kRecGreenTintLight = Color(0xFFE7F7EE);
+const _kRecRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kRecGreen : _kRecGreenLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kRecRed : _kRecRedLight;
+
+Color _amber(BuildContext context) =>
+    _isDark(context) ? _kRecAmber : _kRecAmberLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kRecPurple : _kRecPurpleLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kRecGreenTint : _kRecGreenTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kRecRedTint : _kRecRedTintLight;
 
 class RecurringPage extends ConsumerWidget {
   const RecurringPage({super.key});
@@ -52,6 +87,7 @@ class RecurringPage extends ConsumerWidget {
       if (match.isNotEmpty) selectedCategory = match.first;
     }
     PaymentMode selectedPaymentMode = existing?.paymentMode ?? PaymentMode.upi;
+    CardType selectedCardType = existing?.cardType ?? CardType.debit;
     RecurringFrequency selectedFrequency =
         existing?.frequency ?? RecurringFrequency.monthly;
     DateTime selectedStartDate = existing?.startDate ?? DateTime.now();
@@ -62,17 +98,13 @@ class RecurringPage extends ConsumerWidget {
       context: context,
       builder: (context) => StatefulBuilder(
           builder: (context, setState) {
-            final dropdownMenuColor =
-                Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF16261E)
-                : Colors.white;
             return AlertDialog(
               insetPadding: const EdgeInsets.symmetric(
                 horizontal: AppModalSizes.horizontalInset,
                 vertical: AppModalSizes.verticalInset,
               ),
               title: Text(
-                existing == null ? 'Add Recurring Expense' : 'Edit Recurring',
+                existing == null ? 'Add Recurring' : 'Edit Recurring',
               ),
               content: SizedBox(
                 width: AppModalSizes.dialogContentWidth,
@@ -95,7 +127,7 @@ class RecurringPage extends ConsumerWidget {
                           child: Text(
                             'Title is required',
                             style: TextStyle(
-                              color: const Color(0xFFF55C5C),
+                              color: _red(context),
                               fontSize: AppFontSizes.small,
                             ),
                           ),
@@ -123,7 +155,7 @@ class RecurringPage extends ConsumerWidget {
                           child: Text(
                             'Amount is required',
                             style: TextStyle(
-                              color: const Color(0xFFF55C5C),
+                              color: _red(context),
                               fontSize: AppFontSizes.small,
                             ),
                           ),
@@ -132,7 +164,7 @@ class RecurringPage extends ConsumerWidget {
                       const _ModalFieldLabel('Category'),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<CategoryEntity>(
-                        dropdownColor: dropdownMenuColor,
+                        dropdownColor: context.surface,
                         initialValue: selectedCategory,
                         decoration: const InputDecoration(),
                         items: categories
@@ -153,7 +185,7 @@ class RecurringPage extends ConsumerWidget {
                       const _ModalFieldLabel('Frequency'),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<RecurringFrequency>(
-                        dropdownColor: dropdownMenuColor,
+                        dropdownColor: context.surface,
                         initialValue: selectedFrequency,
                         decoration: const InputDecoration(),
                         items: const [
@@ -189,6 +221,15 @@ class RecurringPage extends ConsumerWidget {
                           setState(() => selectedPaymentMode = value);
                         },
                       ),
+                      if (selectedPaymentMode == PaymentMode.card) ...[
+                        const SizedBox(height: 8),
+                        _CardTypeSegment(
+                          selected: selectedCardType,
+                          onChanged: (value) {
+                            setState(() => selectedCardType = value);
+                          },
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       const _ModalFieldLabel('Note (optional)'),
                       const SizedBox(height: 6),
@@ -241,6 +282,9 @@ class RecurringPage extends ConsumerWidget {
                       amount: amount,
                       categoryId: selectedCategory.id,
                       paymentMode: selectedPaymentMode,
+                      cardType: selectedPaymentMode == PaymentMode.card
+                          ? selectedCardType
+                          : null,
                       frequency: selectedFrequency,
                       note: noteController.text.trim().isEmpty
                           ? null
@@ -282,10 +326,13 @@ class RecurringPage extends ConsumerWidget {
         title: 'Recurring',
         onLeadingTap: () => Navigator.of(context).maybePop(),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () => _openAddDialog(context, ref),
-        icon: const Icon(AppIcons.repeat),
-        label: const Text('Add Rule'),
+        backgroundColor: context.textPrimary,
+        foregroundColor: context.background,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
       body: rules.when(
         data: (items) {
@@ -294,18 +341,17 @@ class RecurringPage extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.smPlus,
-                  AppSpacing.md,
-                  AppSpacing.smPlus,
                   AppSpacing.sm,
+                  AppSpacing.smPlus,
+                  AppSpacing.xs,
                 ),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        'Recurring Expenses',
-                        style: AppTypography.screenTitle(context),
-                      ),
+                    Text(
+                      'All Rules',
+                      style: AppTypography.sectionTitle(context),
                     ),
+                    const Spacer(),
                     const SwipeActionsInfoButton(
                       tooltip: 'Recurring swipe help',
                       title: 'Recurring actions',
@@ -317,7 +363,14 @@ class RecurringPage extends ConsumerWidget {
               ),
               Expanded(
                 child: items.isEmpty
-                    ? const Center(child: Text('No recurring expenses yet.'))
+                    ? const Padding(
+                        padding: EdgeInsets.only(top: AppSpacing.xs),
+                        child: _InlineEmpty(
+                          icon: AppIcons.repeat,
+                          message:
+                              'No recurring expenses yet. Tap + to add your first rule.',
+                        ),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.smPlus,
@@ -359,22 +412,22 @@ class RecurringPage extends ConsumerWidget {
                               },
                               background: Container(
                                 alignment: Alignment.centerLeft,
-                                color: AppColors.incomeTintBg,
+                                color: _greenTint(context),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
                                       AppIcons.edit,
-                                      color: AppColors.income,
+                                      color: _green(context),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'EDIT',
                                       style: TextStyle(
-                                        color: AppColors.income,
+                                        color: _green(context),
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.1,
                                       ),
@@ -384,38 +437,41 @@ class RecurringPage extends ConsumerWidget {
                               ),
                               secondaryBackground: Container(
                                 alignment: Alignment.centerRight,
-                                color: AppColors.expenseTintBg,
+                                color: _redTint(context),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       'DELETE',
                                       style: TextStyle(
-                                        color: AppColors.expense,
+                                        color: _red(context),
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.1,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Icon(
                                       AppIcons.trash,
-                                      color: AppColors.expense,
+                                      color: _red(context),
                                     ),
                                   ],
                                 ),
                               ),
-                              child: _RecurringRuleCard(
-                                rule: item,
-                                category: categoryById[item.categoryId],
-                                onToggleActive: (value) {
-                                  ref
-                                      .read(recurringRepositoryProvider)
-                                      .setActive(item.id, value);
-                                },
+                              child: SwipeHintCoach(
+                                enabled: index == 0,
+                                child: _RecurringRuleCard(
+                                  rule: item,
+                                  category: categoryById[item.categoryId],
+                                  onToggleActive: (value) {
+                                    ref
+                                        .read(recurringRepositoryProvider)
+                                        .setActive(item.id, value);
+                                  },
+                                ),
                               ),
                             ),
                           );
@@ -440,52 +496,59 @@ class _PaymentModeSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = const [
-      (PaymentMode.upi, 'UPI'),
-      (PaymentMode.card, 'Card'),
-      (PaymentMode.cash, 'Cash'),
-    ];
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: context.border),
-        borderRadius: BorderRadius.circular(AppRadii.md),
+    return SizedBox(
+      width: AppModalSizes.dialogContentWidth,
+      child: SegmentedButton<PaymentMode>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: PaymentMode.upi, label: Text('UPI')),
+          ButtonSegment(value: PaymentMode.card, label: Text('Card')),
+          ButtonSegment(value: PaymentMode.cash, label: Text('Cash')),
+        ],
+        selected: {selected},
+        onSelectionChanged: (value) => onChanged(value.first),
+        style: SegmentedButton.styleFrom(
+          foregroundColor: context.textSecondary,
+          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+          backgroundColor: context.surface,
+          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+          side: BorderSide(color: context.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        child: Row(
-          children: List.generate(items.length, (index) {
-          final item = items[index];
-          final isSelected = selected == item.$1;
-          return Expanded(
-            child: InkWell(
-              onTap: () => onChanged(item.$1),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.textPrimary : context.surface,
-                  border: Border(
-                    right: BorderSide(
-                      color: index == items.length - 1
-                          ? Colors.transparent
-                          : context.border,
-                    ),
-                  ),
-                ),
-                alignment: Alignment.center,
-                  child: Text(
-                    item.$2,
-                    style: TextStyle(
-                      color: isSelected ? context.surface : context.textPrimary,
-                      fontSize: AppFontSizes.body,
-                      letterSpacing: 0.8,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }),
+    );
+  }
+}
+
+class _CardTypeSegment extends StatelessWidget {
+  const _CardTypeSegment({required this.selected, required this.onChanged});
+
+  final CardType selected;
+  final ValueChanged<CardType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: AppModalSizes.dialogContentWidth,
+      child: SegmentedButton<CardType>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: CardType.debit, label: Text('Debit')),
+          ButtonSegment(value: CardType.credit, label: Text('Credit')),
+        ],
+        selected: {selected},
+        onSelectionChanged: (value) => onChanged(value.first),
+        style: SegmentedButton.styleFrom(
+          foregroundColor: context.textSecondary,
+          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+          backgroundColor: context.surface,
+          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+          side: BorderSide(color: context.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
         ),
       ),
     );
@@ -514,7 +577,7 @@ class _ModalFieldLabel extends StatelessWidget {
           Text(
             ' *',
             style: TextStyle(
-              color: const Color(0xFFF55C5C),
+              color: _red(context),
               fontSize: AppFontSizes.bodyLarge,
               fontWeight: FontWeight.w700,
             ),
@@ -570,8 +633,8 @@ class _RecurringRuleCard extends StatelessWidget {
       amountColor = context.textPrimary;
     }
 
-    final dangerColor = isDark ? const Color(0xFFFF6B6B) : const Color(0xFFD94545);
-    final warnColor = isDark ? const Color(0xFFE8B04C) : const Color(0xFFD49520);
+    final dangerColor = _red(context);
+    final warnColor = _amber(context);
     final statusColor = !rule.isActive
         ? context.textSecondary
         : isOverdue
@@ -583,7 +646,7 @@ class _RecurringRuleCard extends StatelessWidget {
     final statusLabel = !rule.isActive
         ? 'Paused'
         : isOverdue
-            ? 'Overdue · ${Formatters.date(rule.nextDueDate)}'
+            ? 'Overdue \u00B7 ${Formatters.date(rule.nextDueDate)}'
             : isDue
                 ? 'Due today'
                 : 'Next: ${Formatters.date(rule.nextDueDate)}';
@@ -616,7 +679,7 @@ class _RecurringRuleCard extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: iconColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(baseIcon, size: 20, color: iconColor),
                 ),
@@ -638,8 +701,8 @@ class _RecurringRuleCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         rule.note?.isNotEmpty == true
-                            ? '${_frequencyLabel(rule.frequency)} · ${rule.paymentMode.label} · ${rule.note!.trim()}'
-                            : '${_frequencyLabel(rule.frequency)} · ${rule.paymentMode.label}',
+                            ? '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)} \u00B7 ${rule.note!.trim()}'
+                            : '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -705,5 +768,52 @@ String _frequencyLabel(RecurringFrequency frequency) {
       return 'Monthly';
     case RecurringFrequency.yearly:
       return 'Yearly';
+  }
+}
+
+class _InlineEmpty extends StatelessWidget {
+  const _InlineEmpty({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _purple(context).withValues(alpha: 0.16),
+                  _purple(context).withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: Icon(icon, color: _purple(context), size: 26),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: AppFontSizes.body,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -9,9 +9,39 @@ import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/core/widgets/swipe_hint_coach.dart';
 import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
+
+const _kLendGreen = Color(0xFF38D97A);
+const _kLendRed = Color(0xFFFF5C6C);
+const _kLendPurple = Color(0xFF8B5CF6);
+const _kLendGreenTint = Color(0xFF0F2A1C);
+const _kLendRedTint = Color(0xFF2A1313);
+const _kLendGreenLight = Color(0xFF0E9C58);
+const _kLendRedLight = Color(0xFFE03550);
+const _kLendPurpleLight = Color(0xFF7157D8);
+const _kLendGreenTintLight = Color(0xFFE7F7EE);
+const _kLendRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kLendGreen : _kLendGreenLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kLendRed : _kLendRedLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kLendPurple : _kLendPurpleLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kLendGreenTint : _kLendGreenTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kLendRedTint : _kLendRedTintLight;
 
 class LendPage extends ConsumerWidget {
   const LendPage({super.key});
@@ -71,36 +101,18 @@ class LendPage extends ConsumerWidget {
               AppSpacing.md,
             ),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Lend & Borrow',
-                      style: AppTypography.screenTitle(context),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const SwipeActionsInfoButton(
-                    tooltip: 'Lend and borrow swipe help',
-                    title: 'Lend & Borrow actions',
-                    message:
-                        'People can be swiped to edit or delete from the list.',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: context.surface,
-                    border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.card),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Overview', style: AppTypography.cardTitle(context)),
-                      const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: context.surface,
+                  border: Border.all(color: context.border),
+                  borderRadius: BorderRadius.circular(AppRadii.card),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Overview', style: AppTypography.cardTitle(context)),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         Expanded(
@@ -124,22 +136,30 @@ class LendPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('People', style: AppTypography.sectionTitle(context)),
+              Row(
+                children: [
+                  Text('People', style: AppTypography.sectionTitle(context)),
+                  const Spacer(),
+                  const SwipeActionsInfoButton(
+                    tooltip: 'Lend and borrow swipe help',
+                    title: 'Lend & Borrow actions',
+                    message:
+                        'People can be swiped to edit or delete from the list.',
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xs),
               if (data.peopleBalances.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: context.surface,
-                    border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.card),
-                  ),
-                  child: const Text(
-                    'No people added yet. Tap + to add your first person.',
+                const Padding(
+                  padding: EdgeInsets.only(top: AppSpacing.xs),
+                  child: _InlineEmpty(
+                    icon: AppIcons.usersRound,
+                    message: 'No people yet. Tap + to add your first person.',
                   ),
                 ),
-              ...data.peopleBalances.map((item) {
-                final isPositive = item.netBalance >= 0;
+              ...data.peopleBalances.indexed.map((entry) {
+                final index = entry.$1;
+                final item = entry.$2;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: Dismissible(
@@ -170,16 +190,16 @@ class LendPage extends ConsumerWidget {
                     background: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: AppColors.incomeTintBg,
-                      child: const Row(
+                      color: _greenTint(context),
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(AppIcons.edit, color: AppColors.income),
-                          SizedBox(width: 8),
+                          Icon(AppIcons.edit, color: _green(context)),
+                          const SizedBox(width: 8),
                           Text(
                             'EDIT',
                             style: TextStyle(
-                              color: AppColors.income,
+                              color: _green(context),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.1,
                             ),
@@ -190,7 +210,7 @@ class LendPage extends ConsumerWidget {
                     secondaryBackground: Container(
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: AppColors.expenseTintBg,
+                      color: _redTint(context),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         mainAxisSize: MainAxisSize.min,
@@ -198,115 +218,84 @@ class LendPage extends ConsumerWidget {
                           Text(
                             'DELETE',
                             style: TextStyle(
-                              color: AppIcons.getColorForIcon(AppIcons.trash),
+                              color: _red(context),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.1,
                             ),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Icon(
                             AppIcons.trash,
-                            color: AppIcons.getColorForIcon(AppIcons.trash),
+                            color: _red(context),
                           ),
                         ],
                       ),
                     ),
-                    child: InkWell(
-                      onTap: () => context.push('/lend/${item.person.id}'),
-                      child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: context.surface,
-                          border: Border.all(color: context.border),
-                          borderRadius: BorderRadius.circular(AppRadii.premiumCard),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: context.surfaceAlt,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.md,
-                                ),
-                              ),
-                              child: Icon(
-                                AppIcons.usersRound,
-                                color: AppIcons.getColorForIcon(
-                                  AppIcons.usersRound,
-                                ),
-                                size: 20,
-                              ),
+                    child: SwipeHintCoach(
+                      enabled: index == 0,
+                      child: InkWell(
+                        onTap: () => context.push('/lend/${item.person.id}'),
+                          borderRadius: BorderRadius.circular(AppRadii.lg),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            decoration: BoxDecoration(
+                              color: context.surface,
+                              border: Border.all(color: context.border),
+                              borderRadius: BorderRadius.circular(AppRadii.lg),
                             ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.person.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: AppFontSizes.title,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${item.activeEntryCount} active entries',
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: AppFontSizes.label,
-                  ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Row(
                               children: [
-                                Text(
-                                  item.netBalance >= 0 ? '+' : '-',
-                                  style: TextStyle(
-                                    color: isPositive
-                                        ? AppColors.income
-                                        : AppColors.expense,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: AppFontSizes.title,
+                                _PersonAvatar(name: item.person.name),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.person.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: AppFontSizes.title,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        item.activeEntryCount == 0
+                                            ? 'No active entries'
+                                            : '${item.activeEntryCount} '
+                                                '${item.activeEntryCount == 1 ? 'active entry' : 'active entries'}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: context.textSecondary,
+                                          fontSize: AppFontSizes.label,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                AmountView(
-                                  item.netBalance.abs(),
-                                  style: TextStyle(
-                                    color: isPositive
-                                        ? AppColors.income
-                                        : AppColors.expense,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: AppFontSizes.title,
+                                const SizedBox(width: AppSpacing.sm),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  child: _PersonBalance(
+                                    netBalance: item.netBalance,
                                   ),
-                                  maskColor: isPositive
-                                      ? AppColors.income
-                                      : AppColors.expense,
-                                  maskWidth: 5,
-                                  maskHeight: 16,
-                                  maskSpacing: 2,
-                                  maskRadius: 0,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Icon(
+                                  AppIcons.chevronRight,
+                                  size: 18,
+                                  color: context.textSecondary.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              AppIcons.chevronRight,
-                              size: 20,
-                              color: context.textSecondary,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
                     ),
                   ),
                 );
@@ -317,16 +306,16 @@ class LendPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Failed to load: $error')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           final repo = ref.read(lendRepositoryProvider);
           _showAddPersonDialog(context, repo);
         },
-        icon: Icon(
-          AppIcons.userRoundPlus,
-          color: AppIcons.getColorForIcon(AppIcons.userRoundPlus),
-        ),
-        label: const Text('Add person'),
+        backgroundColor: context.textPrimary,
+        foregroundColor: context.background,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
     );
   }
@@ -345,26 +334,18 @@ class _SummaryMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tint = isReceive ? AppColors.homeAccentGreen : AppColors.homeAccentRed;
-
-    final bg = isDark
-        ? (isReceive
-            ? const Color(0xFF121C14)
-            : const Color(0xFF1A1314))
-        : tint.withValues(alpha: 0.06);
-    final border = isDark
-        ? (isReceive
-            ? const Color(0xFF1B3420)
-            : const Color(0xFF352224))
-        : tint.withValues(alpha: 0.15);
+    final accent = isReceive ? _green(context) : _red(context);
+    final tint = isReceive ? _greenTint(context) : _redTint(context);
+    final borderColor = accent.withValues(
+      alpha: _isDark(context) ? 0.45 : 0.4,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: bg,
-        border: Border.all(color: border),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        color: tint,
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,15 +362,194 @@ class _SummaryMetric extends StatelessWidget {
           AmountView(
             amountValue,
             style: TextStyle(
-              color: tint,
+              color: accent,
               fontWeight: FontWeight.w800,
               fontSize: AppFontSizes.heading,
             ),
-            maskColor: tint,
-            maskWidth: 6,
-            maskHeight: 18,
-            maskSpacing: 3,
-            maskRadius: 0,
+            maskColor: accent,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PersonAvatar extends StatelessWidget {
+  const _PersonAvatar({required this.name});
+
+  final String name;
+
+  static const List<Color> _palette = [
+    Color(0xFF8B5CF6),
+    Color(0xFF38D97A),
+    Color(0xFFF5B83D),
+    Color(0xFFFF5C6C),
+    Color(0xFFF59E0B),
+  ];
+
+  Color get _accent {
+    var hash = 0;
+    for (final unit in name.codeUnits) {
+      hash = (hash * 31 + unit) & 0x7fffffff;
+    }
+    return _palette[hash % _palette.length];
+  }
+
+  String get _initials {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      final word = parts.first;
+      return word.length >= 2
+          ? word.substring(0, 2).toUpperCase()
+          : word.toUpperCase();
+    }
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _accent;
+    return Container(
+      width: 44,
+      height: 44,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        _initials,
+        style: TextStyle(
+          color: color,
+          fontSize: AppFontSizes.label,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonBalance extends StatelessWidget {
+  const _PersonBalance({required this.netBalance});
+
+  final double netBalance;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = netBalance > 0;
+    final isNegative = netBalance < 0;
+    final color = isPositive
+        ? _green(context)
+        : isNegative
+            ? _red(context)
+            : context.textSecondary;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            if (netBalance != 0)
+              Text(
+                isPositive ? '+' : '-',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: AppFontSizes.title,
+                ),
+              ),
+            AmountView(
+              netBalance.abs(),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w800,
+                fontSize: AppFontSizes.title,
+              ),
+              maskColor: color,
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (netBalance != 0) ...[
+              Icon(
+                isPositive ? AppIcons.download : AppIcons.upload,
+                size: 12,
+                color: color.withValues(alpha: 0.8),
+              ),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              isPositive
+                  ? 'You get'
+                  : isNegative
+                      ? 'You owe'
+                      : 'Settled up',
+              style: TextStyle(
+                color: color.withValues(alpha: 0.8),
+                fontSize: AppFontSizes.caption,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _InlineEmpty extends StatelessWidget {
+  const _InlineEmpty({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _purple(context).withValues(alpha: 0.16),
+                  _purple(context).withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: Icon(icon, color: _purple(context), size: 26),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: AppFontSizes.body,
+              height: 1.4,
+            ),
           ),
         ],
       ),

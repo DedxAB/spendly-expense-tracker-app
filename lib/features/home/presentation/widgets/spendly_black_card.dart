@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
@@ -13,6 +15,7 @@ class SpendlyBlackCard extends StatelessWidget {
     required this.showValues,
     required this.onToggleValues,
     this.onTap,
+    this.dailyExpense = const [],
   });
 
   final double balance;
@@ -20,6 +23,7 @@ class SpendlyBlackCard extends StatelessWidget {
   final bool showValues;
   final VoidCallback onToggleValues;
   final VoidCallback? onTap;
+  final List<double> dailyExpense;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +39,13 @@ class SpendlyBlackCard extends StatelessWidget {
             Positioned(
               right: -10,
               top: 26,
-              bottom: 0,
+              bottom: 16,
               child: IgnorePointer(
                 child: _SpendGraphArea(
                   width: 204,
                   height: 136,
+                  values: dailyExpense,
+                  todayIndex: math.max(DateTime.now().day - 1, 0),
                   lineColor: context.homeAccentGreen,
                   fillColor: context.homeAccentGreen.withValues(alpha: 0.16),
                   dashedColor: context.border.withValues(alpha: 0.6),
@@ -67,6 +73,9 @@ class SpendlyBlackCard extends StatelessWidget {
                         const Spacer(),
                         IconButton(
                           onPressed: onToggleValues,
+                          tooltip: showValues
+                              ? 'Hide amounts'
+                              : 'Show amounts',
                           visualDensity: VisualDensity.compact,
                           constraints: const BoxConstraints.tightFor(
                             width: 28,
@@ -81,57 +90,61 @@ class SpendlyBlackCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 180),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Available to spend',
-                            style: TextStyle(
-                              color: context.textPrimary,
-                              fontSize: AppFontSizes.heading,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: -0.2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: AmountView(
-                                  balance,
-                                  style: TextStyle(
-                                    color: context.textPrimary,
-                                    fontSize: AppFontSizes.largeHeading,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -1.1,
-                                    height: 1,
-                                  ),
-                                  maskColor: context.textPrimary,
-                                  maskWidth: 7,
-                                  maskHeight: 22,
-                                  maskSpacing: 4,
-                                  maskRadius: 0,
-                                ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 180),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Available to spend',
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontSize: AppFontSizes.heading,
+                                fontWeight: FontWeight.w500,
+                                letterSpacing: -0.2,
                               ),
-                            ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: AmountView(
+                                      balance,
+                                      style: TextStyle(
+                                        color: balance < 0
+                                            ? context.homeAccentRed
+                                            : context.textPrimary,
+                                        fontSize: AppFontSizes.largeHeading,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -1.1,
+                                        height: 1,
+                                      ),
+                                      maskColor: balance < 0
+                                          ? context.homeAccentRed
+                                          : context.textPrimary,
+                                    ),
+                                  ),
+                                ),
+],
                           ),
                         ],
                       ),
                     ),
-                    const Spacer(),
+                  ),
                     Row(
                       children: [
-                        Text(
+Text(
                           'Tap for transactions',
                           style: TextStyle(
                             color: context.textPrimary,
-                            fontSize: AppFontSizes.subhead,
+                            fontSize: AppFontSizes.label,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -168,10 +181,12 @@ class SpendlyBlackCard extends StatelessWidget {
   }
 }
 
-class _SpendGraphArea extends StatelessWidget {
+class _SpendGraphArea extends StatefulWidget {
   const _SpendGraphArea({
     required this.width,
     required this.height,
+    required this.values,
+    required this.todayIndex,
     required this.lineColor,
     required this.fillColor,
     required this.dashedColor,
@@ -179,21 +194,52 @@ class _SpendGraphArea extends StatelessWidget {
 
   final double width;
   final double height;
+  final List<double> values;
+  final int todayIndex;
   final Color lineColor;
   final Color fillColor;
   final Color dashedColor;
 
   @override
+  State<_SpendGraphArea> createState() => _SpendGraphAreaState();
+}
+
+class _SpendGraphAreaState extends State<_SpendGraphArea>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: CustomPaint(
-        size: Size(width, height),
-        painter: _SpendGraphPainter(
-          lineColor: lineColor,
-          fillColor: fillColor,
-          dashedColor: dashedColor,
+    return Semantics(
+      image: true,
+      label: 'Daily spending chart this month; higher bars mean more spent',
+      child: RepaintBoundary(
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) => CustomPaint(
+              size: Size(widget.width, widget.height),
+              painter: _SpendGraphPainter(
+                values: widget.values,
+                todayIndex: widget.todayIndex,
+                pulse: _controller.value,
+                lineColor: widget.lineColor,
+                fillColor: widget.fillColor,
+                dashedColor: widget.dashedColor,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -202,11 +248,17 @@ class _SpendGraphArea extends StatelessWidget {
 
 class _SpendGraphPainter extends CustomPainter {
   const _SpendGraphPainter({
+    required this.values,
+    required this.todayIndex,
+    required this.pulse,
     required this.lineColor,
     required this.fillColor,
     required this.dashedColor,
   });
 
+  final List<double> values;
+  final int todayIndex;
+  final double pulse;
   final Color lineColor;
   final Color fillColor;
   final Color dashedColor;
@@ -215,48 +267,101 @@ class _SpendGraphPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final width = size.width;
     final height = size.height;
+    final baseY = height - 4;
+    final n = values.length;
 
-    final linePath = Path()
-      ..moveTo(width * 0.08, height * 0.77)
-      ..cubicTo(
-        width * 0.18,
-        height * 0.62,
-        width * 0.26,
-        height * 0.48,
-        width * 0.38,
-        height * 0.64,
-      )
-      ..cubicTo(
-        width * 0.50,
-        height * 0.82,
-        width * 0.60,
-        height * 0.38,
-        width * 0.72,
-        height * 0.34,
-      )
-      ..cubicTo(
-        width * 0.82,
-        height * 0.30,
-        width * 0.90,
-        height * 0.44,
-        width * 0.96,
-        height * 0.20,
+    if (n == 0) return;
+
+    final seg = width / n;
+    final top = 8.0;
+    final chartH = baseY - top;
+    final glowRadius = 8.0 + pulse * 9;
+    final glowAlpha = 0.16 + pulse * 0.26;
+
+    void drawGlowDot(Offset pos) {
+      canvas.drawCircle(
+        pos,
+        glowRadius,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              lineColor.withValues(alpha: glowAlpha),
+              lineColor.withValues(alpha: 0),
+            ],
+          ).createShader(
+            Rect.fromCircle(center: pos, radius: glowRadius),
+          ),
       );
+      canvas.drawCircle(
+        pos,
+        7 - pulse * 1.5,
+        Paint()
+          ..color = lineColor.withValues(alpha: 0.18)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3,
+      );
+      canvas.drawCircle(
+        pos,
+        4.5,
+        Paint()..color = lineColor,
+      );
+    }
 
-    final fillPath = Path.from(linePath)
-      ..lineTo(width * 0.96, height * 0.98)
-      ..lineTo(width * 0.08, height * 0.98)
-      ..close();
+    if (!values.any((v) => v > 0)) {
+      // No spend yet — anchor a quietly pulsing dot at today's column.
+      final idx = todayIndex.clamp(0, n - 1);
+      drawGlowDot(Offset(idx * seg + seg / 2, baseY));
+      return;
+    }
 
-    final fillPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [fillColor, fillColor.withValues(alpha: 0.02)],
-      ).createShader(Rect.fromLTWH(0, 0, width, height));
+    final maxV = values.reduce(math.max);
 
-    canvas.drawPath(fillPath, fillPaint);
+    final barW = (seg * 0.6).clamp(2.0, 6.0);
+
+    final pts = <Offset>[];
+    for (var i = 0; i < n; i++) {
+      final v = values[i];
+      if (v <= 0) continue;
+      final h = math.max((v / maxV) * chartH, 3.0);
+      final x = i * seg + (seg - barW) / 2;
+      final y = baseY - h;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, barW, h),
+          const Radius.circular(999),
+        ),
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              lineColor.withValues(alpha: 0.40),
+              lineColor.withValues(alpha: 0.06),
+            ],
+          ).createShader(Rect.fromLTWH(x, y, barW, h)),
+      );
+      pts.add(Offset(i * seg + seg / 2, y));
+    }
+
+    final linePath = _smoothPath(pts, minY: top, maxY: baseY);
+    final lastPoint = pts.isEmpty ? null : pts.last;
+
+    // Soft area fill under the trend line.
+    if (lastPoint != null) {
+      final fillPath = Path.from(linePath)
+        ..lineTo(lastPoint.dx, baseY)
+        ..lineTo(linePath.getBounds().left, baseY)
+        ..close();
+      canvas.drawPath(
+        fillPath,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [fillColor, fillColor.withValues(alpha: 0.02)],
+          ).createShader(Rect.fromLTWH(0, 0, width, height)),
+      );
+    }
 
     final glowPaint = Paint()
       ..color = lineColor.withValues(alpha: 0.12)
@@ -272,57 +377,49 @@ class _SpendGraphPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     canvas.drawPath(linePath, linePaint);
 
-    final dashedPaint = Paint()
-      ..color = dashedColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    final dashedSegments = <Offset>[
-      Offset(width * 0.12, height * 0.88),
-      Offset(width * 0.30, height * 0.74),
-      Offset(width * 0.48, height * 0.62),
-      Offset(width * 0.66, height * 0.50),
-      Offset(width * 0.84, height * 0.40),
-      Offset(width * 0.96, height * 0.30),
-    ];
-    for (var i = 0; i < dashedSegments.length - 1; i++) {
-      canvas.drawLine(dashedSegments[i], dashedSegments[i + 1], dashedPaint);
+    if (lastPoint != null) {
+      drawGlowDot(lastPoint);
     }
+  }
 
-    final barsPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          lineColor.withValues(alpha: 0.18),
-          lineColor.withValues(alpha: 0.02),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, width, height));
-
-    const barXs = [106.0, 114.0, 122.0, 130.0, 138.0, 146.0, 154.0, 162.0];
-    final barHeights = [54.0, 62.0, 68.0, 72.0, 68.0, 78.0, 84.0, 92.0];
-    for (var i = 0; i < barXs.length; i++) {
-      final x = barXs[i];
-      final h = barHeights[i];
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(x, height - h - 4, 4, h),
-          const Radius.circular(999),
-        ),
-        barsPaint,
+  static Path _smoothPath(
+    List<Offset> pts, {
+    required double minY,
+    required double maxY,
+  }) {
+    double clampY(double y) => y.clamp(minY, maxY);
+    final path = Path();
+    if (pts.isEmpty) return path;
+    if (pts.length == 1) {
+      path.moveTo(pts.first.dx, pts.first.dy);
+      return path;
+    }
+    path.moveTo(pts.first.dx, pts.first.dy);
+    for (var i = 0; i < pts.length - 1; i++) {
+      final p0 = i - 1 < 0 ? pts[0] : pts[i - 1];
+      final p1 = pts[i];
+      final p2 = pts[i + 1];
+      final p3 = i + 2 < pts.length ? pts[i + 2] : pts[i + 1];
+      final cp1 = p1 + (p2 - p0) * (1 / 6);
+      final cp2 = p2 - (p3 - p1) * (1 / 6);
+      path.cubicTo(
+        cp1.dx,
+        clampY(cp1.dy),
+        cp2.dx,
+        clampY(cp2.dy),
+        p2.dx,
+        p2.dy,
       );
     }
-
-    canvas.drawCircle(
-      Offset(width * 0.96, height * 0.20),
-      4.5,
-      Paint()..color = lineColor,
-    );
+    return path;
   }
 
   @override
   bool shouldRepaint(covariant _SpendGraphPainter oldDelegate) {
-    return oldDelegate.lineColor != lineColor ||
+    return oldDelegate.values != values ||
+        oldDelegate.todayIndex != todayIndex ||
+        oldDelegate.pulse != pulse ||
+        oldDelegate.lineColor != lineColor ||
         oldDelegate.fillColor != fillColor ||
         oldDelegate.dashedColor != dashedColor;
   }

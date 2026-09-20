@@ -8,6 +8,7 @@ class RecurringRuleEntity {
     required this.amount,
     required this.categoryId,
     required this.paymentMode,
+    this.cardType,
     required this.frequency,
     this.note,
     required this.startDate,
@@ -24,6 +25,7 @@ class RecurringRuleEntity {
   final double amount;
   final String categoryId;
   final PaymentMode paymentMode;
+  final CardType? cardType;
   final RecurringFrequency frequency;
   final String? note;
   final DateTime startDate;
@@ -40,6 +42,7 @@ class RecurringRuleEntity {
     double? amount,
     String? categoryId,
     PaymentMode? paymentMode,
+    CardType? cardType,
     RecurringFrequency? frequency,
     String? note,
     DateTime? startDate,
@@ -56,6 +59,7 @@ class RecurringRuleEntity {
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
       paymentMode: paymentMode ?? this.paymentMode,
+      cardType: cardType ?? this.cardType,
       frequency: frequency ?? this.frequency,
       note: note ?? this.note,
       startDate: startDate ?? this.startDate,
@@ -75,6 +79,7 @@ class RecurringRuleEntity {
       'amount': amount,
       'categoryId': categoryId,
       'paymentMode': paymentMode.value,
+      'cardType': cardType?.value,
       'frequency': frequency.value,
       'note': note,
       'startDate': startDate.toIso8601String(),
@@ -96,6 +101,9 @@ class RecurringRuleEntity {
       amount: (json['amount'] as num).toDouble(),
       categoryId: json['categoryId'] as String,
       paymentMode: PaymentModeX.fromValue(json['paymentMode'] as String),
+      cardType: (json['cardType'] as String?) == null
+          ? null
+          : CardTypeX.fromValue(json['cardType'] as String),
       frequency: RecurringFrequencyX.fromValue(json['frequency'] as String),
       note: json['note'] as String?,
       startDate: DateTime.parse(json['startDate'] as String),

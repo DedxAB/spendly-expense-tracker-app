@@ -15,11 +15,37 @@ import 'package:spendly/core/widgets/app_toast.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/empty_transaction_illustration.dart';
 import 'package:spendly/core/widgets/transaction_row.dart';
+import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/core/widgets/swipe_hint_coach.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:spendly/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
+
+const _kTxGreen = Color(0xFF38D97A);
+const _kTxRed = Color(0xFFFF5C6C);
+const _kTxGreenTint = Color(0xFF0F2A1C);
+const _kTxRedTint = Color(0xFF2A1313);
+const _kTxGreenLight = Color(0xFF0E9C58);
+const _kTxRedLight = Color(0xFFE03550);
+const _kTxGreenTintLight = Color(0xFFE7F7EE);
+const _kTxRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kTxGreen : _kTxGreenLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kTxRed : _kTxRedLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kTxGreenTint : _kTxGreenTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kTxRedTint : _kTxRedTintLight;
 
 class TransactionsPage extends ConsumerStatefulWidget {
   const TransactionsPage({super.key});
@@ -109,6 +135,13 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        const SwipeActionsInfoButton(
+                          tooltip: 'Transaction swipe help',
+                          title: 'Transaction actions',
+                          message:
+                              'Transactions can be swiped to edit or delete.',
+                        ),
                       ],
                     )
                   : Text(entry.key, style: AppTypography.sectionTitle(context)),
@@ -117,6 +150,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
               ...entry.value.asMap().entries.map((item) {
                 final tx = item.value;
                 final isLast = item.key == entry.value.length - 1;
+                final isFirstRow =
+                    group.key == 0 && item.key == 0;
                 return Dismissible(
                   key: ValueKey(tx.id),
                   confirmDismiss: (direction) async {
@@ -146,15 +181,15 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   },
                   background: Container(
                     alignment: Alignment.centerLeft,
-                    color: AppColors.incomeTintBg,
+                    color: _greenTint(context),
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(AppIcons.edit, color: AppColors.income),
+                        Icon(AppIcons.edit, color: _green(context)),
                         SizedBox(width: AppSpacing.xs),
                         Text('EDIT', style: TextStyle(
-                          color: AppColors.income,
+                          color: _green(context),
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.1,
                         )),
@@ -163,27 +198,30 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                   ),
                   secondaryBackground: Container(
                     alignment: Alignment.centerRight,
-                    color: AppColors.expenseTintBg,
+                    color: _redTint(context),
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text('DELETE', style: TextStyle(
-                          color: AppColors.expense,
+                          color: _red(context),
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.1,
                         )),
                         SizedBox(width: AppSpacing.xs),
-                        Icon(AppIcons.trash, color: AppColors.expense),
+                        Icon(AppIcons.trash, color: _red(context)),
                       ],
                     ),
                   ),
-                  child: TransactionRow.fromEntity(
-                    tx: tx,
-                    categoryById: categoryById,
-                    dateLabel: _dateLabel(tx),
-                    isLast: isLast,
+                  child: SwipeHintCoach(
+                    enabled: isFirstRow,
+                    child: TransactionRow.fromEntity(
+                      tx: tx,
+                      categoryById: categoryById,
+                      dateLabel: _dateLabel(tx),
+                      isLast: isLast,
+                    ),
                   ),
 
                 );
@@ -230,6 +268,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
     });
 
     return Scaffold(
+      backgroundColor: context.background,
       appBar: AppHeader(
         mode: AppHeaderMode.calendar,
         title: 'Transactions',
@@ -300,8 +339,8 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   ) {
     final categoryById = {for (final c in categories) c.id: c.name};
     return [
-      _buildChip('Filter', Icons.keyboard_arrow_down, true, () => _openFilters(context, filters)),
-      _buildChip('Date', null, true, () => _openFilters(context, filters, _FilterTab.date),
+      _buildChip('Filter', AppIcons.chevronDown, true, () => _openFilters(context, filters)),
+      _buildChip('Date', null, filters.datePreset != TransactionDatePreset.allTime, () => _openFilters(context, filters, _FilterTab.date),
           subtitle: _datePresetLabel(filters.datePreset)),
       _buildChip('Type', null, filters.type != null, () => _openFilters(context, filters, _FilterTab.type),
           subtitle: filters.type != null ? _typeLabel(filters.type!) : 'All'),
@@ -323,43 +362,47 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
   Widget _buildChip(String label, IconData? icon, bool active, VoidCallback onTap, {String? subtitle}) {
     return Padding(
       padding: EdgeInsets.only(right: AppSpacing.sm),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          height: 36,
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.smPlus),
-          decoration: BoxDecoration(
-            color: active ? context.textPrimary : context.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            border: Border.all(color: active ? context.textPrimary : context.border),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: active ? context.surface : context.textPrimary,
-                  fontSize: AppFontSizes.body,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              if (subtitle != null) ...[
-                SizedBox(width: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          child: Ink(
+            height: 36,
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.smPlus),
+            decoration: BoxDecoration(
+              color: active ? context.textPrimary : context.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              border: Border.all(color: active ? context.textPrimary : context.border),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Text(
-                  ': $subtitle',
+                  label,
                   style: TextStyle(
-                    color: active ? context.surface.withValues(alpha: 0.7) : context.textSecondary,
+                    color: active ? context.surface : context.textPrimary,
                     fontSize: AppFontSizes.body,
-                    fontWeight: FontWeight.w400,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  SizedBox(width: 4),
+                  Text(
+                    ': $subtitle',
+                    style: TextStyle(
+                      color: active ? context.surface.withValues(alpha: 0.7) : context.textSecondary,
+                      fontSize: AppFontSizes.body,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
+                if (icon != null) ...[
+                  SizedBox(width: 2),
+                  Icon(icon, size: 16, color: active ? context.surface : context.textPrimary),
+                ],
               ],
-              if (icon != null) ...[
-                SizedBox(width: 2),
-                Icon(icon, size: 16, color: active ? context.surface : context.textPrimary),
-              ],
-            ],
+            ),
           ),
         ),
       ),
@@ -392,9 +435,10 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
           ? ''
           : _formatAmountInput(filters.maxAmount!),
     );
+    var amountRangeError = false;
 
     Future<DateTime?> pickDate(DateTime initialDate) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
+      final isDark = _isDark(context);
       return showDatePicker(
         context: context,
         initialDate: initialDate,
@@ -404,27 +448,22 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
           final base = Theme.of(context);
           return Theme(
             data: base.copyWith(
-              colorScheme: isDark
-                  ? const ColorScheme.dark(
-                      primary: Colors.white,
-                      onPrimary: Colors.black,
-                      surface: Color(0xFF0E0E0E),
-                      onSurface: Colors.white,
-                    )
-                  : const ColorScheme.light(
-                      primary: Color(0xFF111111),
-                      onPrimary: Colors.white,
-                      surface: Color(0xFFFFFFFF),
-                      onSurface: Color(0xFF111111),
-                    ),
               dialogTheme: DialogThemeData(
-                backgroundColor: isDark ? const Color(0xFF0E0E0E) : const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.lg)),
+                backgroundColor: isDark
+                    ? const Color(0xFF0E0E0E)
+                    : const Color(0xFFFFFFFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
+                ),
               ),
-              datePickerTheme: isDark ? AppDatePickerTheme.darkBoxy() : AppDatePickerTheme.lightBoxy(),
+              datePickerTheme: isDark
+                  ? AppDatePickerTheme.darkBoxy()
+                  : AppDatePickerTheme.lightBoxy(),
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
-                  foregroundColor: isDark ? Colors.white : const Color(0xFF111111),
+                  foregroundColor: isDark
+                      ? Colors.white
+                      : const Color(0xFF111111),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
@@ -482,6 +521,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
               void resetFilters() {
                 activeTab = _FilterTab.date;
                 setState(() {
+                  amountRangeError = false;
                   selectedDatePreset = TransactionDatePreset.allTime;
                   selectedType = null;
                   selectedPaymentMode = null;
@@ -542,23 +582,41 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                                   final isSelected = sidebarTabs[index] == activeTab;
                                   return Padding(
                                     padding: EdgeInsets.only(bottom: AppSpacing.xxs),
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () => setState(() => activeTab = sidebarTabs[index]),
-                                      child: Container(
-                                        height: 42,
-                                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? context.textPrimary : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(AppRadii.md),
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(
+                                          AppRadii.md,
                                         ),
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          sidebarLabels[index],
-                                          style: TextStyle(
-                                            color: isSelected ? context.surface : context.textPrimary,
-                                            fontSize: AppFontSizes.body,
-                                            fontWeight: FontWeight.w700,
+                                        onTap: () => setState(
+                                          () =>
+                                              activeTab = sidebarTabs[index],
+                                        ),
+                                        child: Ink(
+                                          height: 42,
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.sm,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? context.textPrimary
+                                                : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              AppRadii.md,
+                                            ),
+                                          ),
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              sidebarLabels[index],
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? context.surface
+                                                    : context.textPrimary,
+                                                fontSize: AppFontSizes.body,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -587,6 +645,7 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                                   availableCategories: availableCategories,
                                   minAmountController: minAmountController,
                                   maxAmountController: maxAmountController,
+                                  amountRangeError: amountRangeError,
                                   onChooseFrom: chooseFrom,
                                   onChooseTo: chooseTo,
                                   onSetDatePreset: (p) {
@@ -634,6 +693,15 @@ class _TransactionsPageState extends ConsumerState<TransactionsPage> {
                               child: FilledButton(
                                 onPressed: () {
                                   syncAmountState();
+                                  final hasRangeError =
+                                      selectedMinAmount != null &&
+                                      selectedMaxAmount != null &&
+                                      selectedMinAmount! > selectedMaxAmount!;
+                                  if (hasRangeError) {
+                                    setState(() => amountRangeError = true);
+                                    return;
+                                  }
+                                  setState(() => amountRangeError = false);
                                   ref
                                       .read(transactionFilterProvider.notifier)
                                       .setType(selectedType);
@@ -759,7 +827,7 @@ class _DateRangeButton extends StatelessWidget {
               ),
             ),
             if (selected)
-              Icon(Icons.check, size: 16, color: context.surface),
+              Icon(AppIcons.check, size: 16, color: context.surface),
           ],
         ),
       ),
@@ -796,6 +864,7 @@ Widget _buildFilterPanel({
   required List<CategoryEntity> availableCategories,
   required TextEditingController minAmountController,
   required TextEditingController maxAmountController,
+  required bool amountRangeError,
   required VoidCallback onChooseFrom,
   required VoidCallback onChooseTo,
   required ValueChanged<TransactionDatePreset> onSetDatePreset,
@@ -892,6 +961,7 @@ Widget _buildFilterPanel({
     case _FilterTab.amount:
       return Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -940,6 +1010,16 @@ Widget _buildFilterPanel({
               ),
             ],
           ),
+          if (amountRangeError) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Min amount cannot be greater than max.',
+              style: TextStyle(
+                color: _red(context),
+                fontSize: AppFontSizes.small,
+              ),
+            ),
+          ],
         ],
       );
     case _FilterTab.sort:
@@ -973,26 +1053,30 @@ class _FilterSelectionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.smPlus,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: selected ? context.textPrimary : context.surface,
-          border: Border.all(
-            color: selected ? context.textPrimary : context.border,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        child: Ink(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.smPlus,
+            vertical: AppSpacing.xs,
           ),
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-        ),
-        child: Text(
-          label[0].toUpperCase() + label.substring(1),
-          style: TextStyle(
-            color: selected ? context.surface : context.textPrimary,
-            fontSize: AppFontSizes.label,
-            fontWeight: FontWeight.w700,
+          decoration: BoxDecoration(
+            color: selected ? context.textPrimary : context.surface,
+            border: Border.all(
+              color: selected ? context.textPrimary : context.border,
+            ),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
+          ),
+          child: Text(
+            label[0].toUpperCase() + label.substring(1),
+            style: TextStyle(
+              color: selected ? context.surface : context.textPrimary,
+              fontSize: AppFontSizes.label,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

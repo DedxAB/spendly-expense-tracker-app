@@ -1396,6 +1396,17 @@ class $RecurringRulesTable extends RecurringRules
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _cardTypeMeta = const VerificationMeta(
+    'cardType',
+  );
+  @override
+  late final GeneratedColumn<String> cardType = GeneratedColumn<String>(
+    'card_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _frequencyMeta = const VerificationMeta(
     'frequency',
   );
@@ -1499,6 +1510,7 @@ class $RecurringRulesTable extends RecurringRules
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     frequency,
     note,
     startDate,
@@ -1574,6 +1586,12 @@ class $RecurringRulesTable extends RecurringRules
       );
     } else if (isInserting) {
       context.missing(_paymentModeMeta);
+    }
+    if (data.containsKey('card_type')) {
+      context.handle(
+        _cardTypeMeta,
+        cardType.isAcceptableOrUnknown(data['card_type']!, _cardTypeMeta),
+      );
     }
     if (data.containsKey('frequency')) {
       context.handle(
@@ -1673,6 +1691,10 @@ class $RecurringRulesTable extends RecurringRules
         DriftSqlType.string,
         data['${effectivePrefix}payment_mode'],
       )!,
+      cardType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_type'],
+      ),
       frequency: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}frequency'],
@@ -1722,6 +1744,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
   final int amountPaise;
   final String categoryId;
   final String paymentMode;
+  final String? cardType;
   final String frequency;
   final String? note;
   final int startDate;
@@ -1738,6 +1761,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     required this.amountPaise,
     required this.categoryId,
     required this.paymentMode,
+    this.cardType,
     required this.frequency,
     this.note,
     required this.startDate,
@@ -1757,6 +1781,9 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     map['amount_paise'] = Variable<int>(amountPaise);
     map['category_id'] = Variable<String>(categoryId);
     map['payment_mode'] = Variable<String>(paymentMode);
+    if (!nullToAbsent || cardType != null) {
+      map['card_type'] = Variable<String>(cardType);
+    }
     map['frequency'] = Variable<String>(frequency);
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
@@ -1779,6 +1806,9 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       amountPaise: Value(amountPaise),
       categoryId: Value(categoryId),
       paymentMode: Value(paymentMode),
+      cardType: cardType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardType),
       frequency: Value(frequency),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       startDate: Value(startDate),
@@ -1803,6 +1833,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       amountPaise: serializer.fromJson<int>(json['amountPaise']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
       paymentMode: serializer.fromJson<String>(json['paymentMode']),
+      cardType: serializer.fromJson<String?>(json['cardType']),
       frequency: serializer.fromJson<String>(json['frequency']),
       note: serializer.fromJson<String?>(json['note']),
       startDate: serializer.fromJson<int>(json['startDate']),
@@ -1824,6 +1855,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       'amountPaise': serializer.toJson<int>(amountPaise),
       'categoryId': serializer.toJson<String>(categoryId),
       'paymentMode': serializer.toJson<String>(paymentMode),
+      'cardType': serializer.toJson<String?>(cardType),
       'frequency': serializer.toJson<String>(frequency),
       'note': serializer.toJson<String?>(note),
       'startDate': serializer.toJson<int>(startDate),
@@ -1843,6 +1875,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     int? amountPaise,
     String? categoryId,
     String? paymentMode,
+    Value<String?> cardType = const Value.absent(),
     String? frequency,
     Value<String?> note = const Value.absent(),
     int? startDate,
@@ -1859,6 +1892,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     amountPaise: amountPaise ?? this.amountPaise,
     categoryId: categoryId ?? this.categoryId,
     paymentMode: paymentMode ?? this.paymentMode,
+    cardType: cardType.present ? cardType.value : this.cardType,
     frequency: frequency ?? this.frequency,
     note: note.present ? note.value : this.note,
     startDate: startDate ?? this.startDate,
@@ -1883,6 +1917,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       paymentMode: data.paymentMode.present
           ? data.paymentMode.value
           : this.paymentMode,
+      cardType: data.cardType.present ? data.cardType.value : this.cardType,
       frequency: data.frequency.present ? data.frequency.value : this.frequency,
       note: data.note.present ? data.note.value : this.note,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
@@ -1906,6 +1941,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('frequency: $frequency, ')
           ..write('note: $note, ')
           ..write('startDate: $startDate, ')
@@ -1927,6 +1963,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     frequency,
     note,
     startDate,
@@ -1947,6 +1984,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
           other.amountPaise == this.amountPaise &&
           other.categoryId == this.categoryId &&
           other.paymentMode == this.paymentMode &&
+          other.cardType == this.cardType &&
           other.frequency == this.frequency &&
           other.note == this.note &&
           other.startDate == this.startDate &&
@@ -1965,6 +2003,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
   final Value<int> amountPaise;
   final Value<String> categoryId;
   final Value<String> paymentMode;
+  final Value<String?> cardType;
   final Value<String> frequency;
   final Value<String?> note;
   final Value<int> startDate;
@@ -1982,6 +2021,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     this.amountPaise = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.paymentMode = const Value.absent(),
+    this.cardType = const Value.absent(),
     this.frequency = const Value.absent(),
     this.note = const Value.absent(),
     this.startDate = const Value.absent(),
@@ -2000,6 +2040,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     this.amountPaise = const Value.absent(),
     required String categoryId,
     required String paymentMode,
+    this.cardType = const Value.absent(),
     required String frequency,
     this.note = const Value.absent(),
     required int startDate,
@@ -2027,6 +2068,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     Expression<int>? amountPaise,
     Expression<String>? categoryId,
     Expression<String>? paymentMode,
+    Expression<String>? cardType,
     Expression<String>? frequency,
     Expression<String>? note,
     Expression<int>? startDate,
@@ -2045,6 +2087,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
       if (amountPaise != null) 'amount_paise': amountPaise,
       if (categoryId != null) 'category_id': categoryId,
       if (paymentMode != null) 'payment_mode': paymentMode,
+      if (cardType != null) 'card_type': cardType,
       if (frequency != null) 'frequency': frequency,
       if (note != null) 'note': note,
       if (startDate != null) 'start_date': startDate,
@@ -2065,6 +2108,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     Value<int>? amountPaise,
     Value<String>? categoryId,
     Value<String>? paymentMode,
+    Value<String?>? cardType,
     Value<String>? frequency,
     Value<String?>? note,
     Value<int>? startDate,
@@ -2083,6 +2127,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
       amountPaise: amountPaise ?? this.amountPaise,
       categoryId: categoryId ?? this.categoryId,
       paymentMode: paymentMode ?? this.paymentMode,
+      cardType: cardType ?? this.cardType,
       frequency: frequency ?? this.frequency,
       note: note ?? this.note,
       startDate: startDate ?? this.startDate,
@@ -2118,6 +2163,9 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     }
     if (paymentMode.present) {
       map['payment_mode'] = Variable<String>(paymentMode.value);
+    }
+    if (cardType.present) {
+      map['card_type'] = Variable<String>(cardType.value);
     }
     if (frequency.present) {
       map['frequency'] = Variable<String>(frequency.value);
@@ -2159,6 +2207,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('frequency: $frequency, ')
           ..write('note: $note, ')
           ..write('startDate: $startDate, ')
@@ -7885,6 +7934,220 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
   }
 }
 
+class $AppFlagsTable extends AppFlags with TableInfo<$AppFlagsTable, AppFlag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppFlagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_flags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppFlag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  AppFlag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppFlag(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      ),
+    );
+  }
+
+  @override
+  $AppFlagsTable createAlias(String alias) {
+    return $AppFlagsTable(attachedDatabase, alias);
+  }
+}
+
+class AppFlag extends DataClass implements Insertable<AppFlag> {
+  final String key;
+  final String? value;
+  const AppFlag({required this.key, this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
+    return map;
+  }
+
+  AppFlagsCompanion toCompanion(bool nullToAbsent) {
+    return AppFlagsCompanion(
+      key: Value(key),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+    );
+  }
+
+  factory AppFlag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppFlag(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String?>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String?>(value),
+    };
+  }
+
+  AppFlag copyWith({
+    String? key,
+    Value<String?> value = const Value.absent(),
+  }) => AppFlag(
+    key: key ?? this.key,
+    value: value.present ? value.value : this.value,
+  );
+  AppFlag copyWithCompanion(AppFlagsCompanion data) {
+    return AppFlag(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlag(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppFlag && other.key == this.key && other.value == this.value);
+}
+
+class AppFlagsCompanion extends UpdateCompanion<AppFlag> {
+  final Value<String> key;
+  final Value<String?> value;
+  final Value<int> rowid;
+  const AppFlagsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppFlagsCompanion.insert({
+    required String key,
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : key = Value(key);
+  static Insertable<AppFlag> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppFlagsCompanion copyWith({
+    Value<String>? key,
+    Value<String?>? value,
+    Value<int>? rowid,
+  }) {
+    return AppFlagsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlagsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7907,6 +8170,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalFundsTable goalFunds = $GoalFundsTable(this);
   late final $GoalContributionsTable goalContributions =
       $GoalContributionsTable(this);
+  late final $AppFlagsTable appFlags = $AppFlagsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7926,6 +8190,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appUsageDays,
     goalFunds,
     goalContributions,
+    appFlags,
   ];
 }
 
@@ -8570,6 +8835,7 @@ typedef $$RecurringRulesTableCreateCompanionBuilder =
       Value<int> amountPaise,
       required String categoryId,
       required String paymentMode,
+      Value<String?> cardType,
       required String frequency,
       Value<String?> note,
       required int startDate,
@@ -8589,6 +8855,7 @@ typedef $$RecurringRulesTableUpdateCompanionBuilder =
       Value<int> amountPaise,
       Value<String> categoryId,
       Value<String> paymentMode,
+      Value<String?> cardType,
       Value<String> frequency,
       Value<String?> note,
       Value<int> startDate,
@@ -8641,6 +8908,11 @@ class $$RecurringRulesTableFilterComposer
 
   ColumnFilters<String> get paymentMode => $composableBuilder(
     column: $table.paymentMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardType => $composableBuilder(
+    column: $table.cardType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8729,6 +9001,11 @@ class $$RecurringRulesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cardType => $composableBuilder(
+    column: $table.cardType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get frequency => $composableBuilder(
     column: $table.frequency,
     builder: (column) => ColumnOrderings(column),
@@ -8806,6 +9083,9 @@ class $$RecurringRulesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get cardType =>
+      $composableBuilder(column: $table.cardType, builder: (column) => column);
+
   GeneratedColumn<String> get frequency =>
       $composableBuilder(column: $table.frequency, builder: (column) => column);
 
@@ -8873,6 +9153,7 @@ class $$RecurringRulesTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<String> paymentMode = const Value.absent(),
+                Value<String?> cardType = const Value.absent(),
                 Value<String> frequency = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> startDate = const Value.absent(),
@@ -8890,6 +9171,7 @@ class $$RecurringRulesTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 frequency: frequency,
                 note: note,
                 startDate: startDate,
@@ -8909,6 +9191,7 @@ class $$RecurringRulesTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 required String categoryId,
                 required String paymentMode,
+                Value<String?> cardType = const Value.absent(),
                 required String frequency,
                 Value<String?> note = const Value.absent(),
                 required int startDate,
@@ -8926,6 +9209,7 @@ class $$RecurringRulesTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 frequency: frequency,
                 note: note,
                 startDate: startDate,
@@ -11875,6 +12159,139 @@ typedef $$GoalContributionsTableProcessedTableManager =
       GoalContribution,
       PrefetchHooks Function()
     >;
+typedef $$AppFlagsTableCreateCompanionBuilder =
+    AppFlagsCompanion Function({
+      required String key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+typedef $$AppFlagsTableUpdateCompanionBuilder =
+    AppFlagsCompanion Function({
+      Value<String> key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+
+class $$AppFlagsTableFilterComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AppFlagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AppFlagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$AppFlagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppFlagsTable,
+          AppFlag,
+          $$AppFlagsTableFilterComposer,
+          $$AppFlagsTableOrderingComposer,
+          $$AppFlagsTableAnnotationComposer,
+          $$AppFlagsTableCreateCompanionBuilder,
+          $$AppFlagsTableUpdateCompanionBuilder,
+          (AppFlag, BaseReferences<_$AppDatabase, $AppFlagsTable, AppFlag>),
+          AppFlag,
+          PrefetchHooks Function()
+        > {
+  $$AppFlagsTableTableManager(_$AppDatabase db, $AppFlagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppFlagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppFlagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppFlagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> key = const Value.absent(),
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String key,
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion.insert(
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AppFlagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppFlagsTable,
+      AppFlag,
+      $$AppFlagsTableFilterComposer,
+      $$AppFlagsTableOrderingComposer,
+      $$AppFlagsTableAnnotationComposer,
+      $$AppFlagsTableCreateCompanionBuilder,
+      $$AppFlagsTableUpdateCompanionBuilder,
+      (AppFlag, BaseReferences<_$AppDatabase, $AppFlagsTable, AppFlag>),
+      AppFlag,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11907,4 +12324,6 @@ class $AppDatabaseManager {
       $$GoalFundsTableTableManager(_db, _db.goalFunds);
   $$GoalContributionsTableTableManager get goalContributions =>
       $$GoalContributionsTableTableManager(_db, _db.goalContributions);
+  $$AppFlagsTableTableManager get appFlags =>
+      $$AppFlagsTableTableManager(_db, _db.appFlags);
 }

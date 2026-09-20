@@ -174,7 +174,7 @@ List<String> _generateInsights({
     if (primary.value > 0) {
       insights.add(
         '${_paymentModeLabel(primary.key)} was your most used payment method '
-        'at ${primary.value.toStringAsFixed(0)}% of transactions.',
+        'at ${primary.value.toStringAsFixed(0)}% of spending.',
       );
     }
   }

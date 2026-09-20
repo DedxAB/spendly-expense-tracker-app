@@ -45,6 +45,7 @@ Future<File> _resolveDatabaseFile() async {
     AppUsageDays,
     GoalFunds,
     GoalContributions,
+    AppFlags,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -55,8 +56,21 @@ class AppDatabase extends _$AppDatabase {
     return rows.any((row) => row.read<String>('name') == columnName);
   }
 
+  Future<String?> getAppFlag(String key) async {
+    final row = await (select(appFlags)
+          ..where((tbl) => tbl.key.equals(key)))
+        .getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> setAppFlag(String key, String? value) async {
+    await into(appFlags).insertOnConflictUpdate(
+      AppFlagsCompanion.insert(key: key, value: Value(value)),
+    );
+  }
+
   @override
-  int get schemaVersion => 25;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -205,6 +219,22 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 25) {
         await customStatement('DROP TABLE IF EXISTS expense_contributions;');
+      }
+      if (from < 26) {
+        await m.createTable(appFlags);
+      }
+      if (from < 27) {
+        await m.addColumn(recurringRules, recurringRules.cardType);
+      }
+      if (from < 28) {
+        await customStatement(
+          'UPDATE transactions SET amount_paise = CAST(ROUND(amount * 100.0) AS INTEGER) '
+          'WHERE amount > 0 AND amount_paise <= amount;',
+        );
+        await customStatement(
+          'UPDATE recurring_rules SET amount_paise = CAST(ROUND(amount * 100.0) AS INTEGER) '
+          'WHERE amount > 0 AND amount_paise <= amount;',
+        );
       }
     },
     beforeOpen: (details) async {

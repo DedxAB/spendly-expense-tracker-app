@@ -1,6 +1,7 @@
 import 'dart:math' show pi;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spendly/core/constants/app_enums.dart';
@@ -35,6 +36,8 @@ class HomePage extends ConsumerWidget {
     final todaySpent = ref.watch(todaySpentProvider).valueOrNull ?? 0;
     final yesterdaySpent = ref.watch(yesterdaySpentProvider).valueOrNull ?? 0;
     final todayComparison = _todayComparison(todaySpent, yesterdaySpent);
+    final daily = ref.watch(currentMonthDailyIncomeExpenseProvider);
+    final dailyExpense = daily.valueOrNull?.expense ?? const <double>[];
     final recent = ref.watch(recentTransactionsProvider);
     final lendOverview = ref.watch(lendOverviewProvider);
     final recurringRules = ref.watch(recurringRulesProvider);
@@ -47,9 +50,16 @@ class HomePage extends ConsumerWidget {
       backgroundColor: context.background,
       appBar: const AppHeader(mode: AppHeaderMode.home),
       floatingActionButton: GestureDetector(
-        onLongPress: () => _showQuickAddSheet(context),
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          _showQuickAddSheet(context);
+        },
         child: FloatingActionButton(
-          onPressed: () => showAddExpenseSheet(context),
+          onPressed: () {
+            HapticFeedback.selectionClick();
+            showAddExpenseSheet(context);
+          },
+          tooltip: 'Add expense · long-press for type',
           backgroundColor: Theme.of(context).brightness == Brightness.dark
               ? Colors.white
               : Colors.black,
@@ -73,8 +83,10 @@ class HomePage extends ConsumerWidget {
             data: (data) => SpendlyBlackCard(
               balance: data.availableToSpend,
               goalAllocation: data.monthlyGoalAllocation,
+              dailyExpense: dailyExpense,
               showValues: showAmounts,
               onToggleValues: () async {
+                HapticFeedback.selectionClick();
                 final nextValue = !showAmounts;
                 AmountVisibilityController.setVisible(nextValue);
                 await ref
@@ -109,6 +121,8 @@ class HomePage extends ConsumerWidget {
                   amount: todaySpent,
                   note: todayComparison.label,
                   noteColor: todayComparison.color,
+                  noteIcon: todayComparison.icon,
+                  onTap: () => context.push('/transactions'),
                 ),
               ),
               const SizedBox(width: 14),
@@ -117,20 +131,10 @@ class HomePage extends ConsumerWidget {
                   title: 'REMAINING',
                   accent: context.homeAccentPurple,
                   amount: summary.valueOrNull?.remainingBudget ?? 0,
-                  note: () {
-                    final data = summary.valueOrNull;
-                    if (data == null) return '';
-                    return 'of ${Formatters.currency(data.remainingBudget + data.monthlyExpense)} limit';
-                  }(),
-                  percent: () {
-                    final data = summary.valueOrNull;
-                    if (data == null) return 0;
-                    final budget = data.remainingBudget + data.monthlyExpense;
-                    if (budget <= 0) return 0;
-                    return (data.remainingBudget / budget * 100)
-                        .clamp(0, 100)
-                        .round();
-                  }(),
+                  limit: (summary.valueOrNull?.remainingBudget ?? 0) +
+                      (summary.valueOrNull?.monthlyExpense ?? 0),
+                  showValues: showAmounts,
+                  onTap: () => context.push('/budget'),
                 ),
               ),
             ],
@@ -144,6 +148,7 @@ class HomePage extends ConsumerWidget {
                 child: _InvestmentCard(
                   amount: data.monthlyInvestment,
                   income: data.monthlyIncome,
+                  onTap: () => context.push('/goals'),
                 ),
               );
             },
@@ -239,18 +244,21 @@ class HomePage extends ConsumerWidget {
       return const _SpendComparison(
         label: 'No spend today',
         color: Color(0xFFA3A3A3),
+        icon: Icons.remove,
       );
     }
     if (today <= 0) {
       return const _SpendComparison(
         label: 'No spend today',
         color: Color(0xFF3DD07B),
+        icon: Icons.remove,
       );
     }
     if (yesterday <= 0) {
       return const _SpendComparison(
         label: 'No spend yesterday',
         color: Color(0xFFF55C5C),
+        icon: Icons.arrow_upward,
       );
     }
 
@@ -259,6 +267,7 @@ class HomePage extends ConsumerWidget {
       return const _SpendComparison(
         label: 'Same as yesterday',
         color: Color(0xFFA3A3A3),
+        icon: Icons.remove,
       );
     }
 
@@ -267,15 +276,21 @@ class HomePage extends ConsumerWidget {
       label:
           '${isHigher ? '+' : '-'}${change.abs().toStringAsFixed(0)}% vs yesterday',
       color: isHigher ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+      icon: isHigher ? Icons.arrow_upward : Icons.arrow_downward,
     );
   }
 }
 
 class _SpendComparison {
-  const _SpendComparison({required this.label, required this.color});
+  const _SpendComparison({
+    required this.label,
+    required this.color,
+    required this.icon,
+  });
 
   final String label;
   final Color color;
+  final IconData icon;
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -327,6 +342,8 @@ class _MetricCard extends StatelessWidget {
     required this.amount,
     required this.note,
     required this.noteColor,
+    required this.noteIcon,
+    this.onTap,
   });
 
   final String title;
@@ -335,12 +352,15 @@ class _MetricCard extends StatelessWidget {
   final double amount;
   final String note;
   final Color noteColor;
+  final IconData noteIcon;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return HomeSurfaceCard(
       borderRadius: AppRadii.card,
       topAccent: accent,
+      onTap: onTap,
       child: SizedBox(
         height: 170,
         child: Stack(
@@ -349,12 +369,15 @@ class _MetricCard extends StatelessWidget {
               right: -15,
               bottom: -20,
               child: IgnorePointer(
-                child: Icon(
-                  Icons.wallet_outlined,
-                  size: 100,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFF2C2C2E)
-                      : const Color(0xFFE0E0E3),
+                child: Opacity(
+                  opacity: 0.5,
+                  child: Icon(
+                    Icons.wallet_outlined,
+                    size: 100,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF2C2C2E)
+                        : const Color(0xFFE0E0E3),
+                  ),
                 ),
               ),
             ),
@@ -373,19 +396,28 @@ class _MetricCard extends StatelessWidget {
                       color: context.textPrimary,
                     ).copyWith(letterSpacing: -0.5),
                     maskColor: context.textPrimary,
-                    maskWidth: 7,
-                    maskHeight: 20,
-                    maskSpacing: 3,
-                    maskRadius: 0,
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    note,
-                    style: TextStyle(
-                      color: noteColor,
-                      fontSize: AppFontSizes.body,
-                      height: 1.2,
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        noteIcon,
+                        size: 14,
+                        color: noteColor,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          note,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: noteColor,
+                            fontSize: AppFontSizes.body,
+                            height: 1.2,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -402,39 +434,89 @@ class _RemainingCard extends StatelessWidget {
     required this.title,
     required this.accent,
     required this.amount,
-    required this.note,
-    required this.percent,
+    required this.limit,
+    required this.showValues,
+    this.onTap,
   });
 
   final String title;
   final Color accent;
   final double amount;
-  final String note;
-  final int percent;
+  final double limit;
+  final bool showValues;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final hasBudget = limit > 0;
+    final isOver = hasBudget && amount < 0;
+    final percent = hasBudget
+        ? (amount / limit * 100).clamp(0, 100).round()
+        : 0;
+    final accentColor =
+        isOver ? context.homeAccentRed : accent;
+    final noteText = Text.rich(
+      TextSpan(
+        style: TextStyle(
+          color: isOver
+              ? context.homeAccentRed
+              : hasBudget
+                  ? context.homeAccentGreen
+                  : context.textSecondary,
+          fontSize: AppFontSizes.body,
+          height: 1.2,
+        ),
+        children: !hasBudget
+            ? const [
+                TextSpan(text: 'Tap to set monthly budget'),
+              ]
+            : isOver
+                ? [
+                    const TextSpan(text: 'over by '),
+                    TextSpan(
+                      text: showValues
+                          ? Formatters.currency(amount.abs())
+                          : '◆ ◆ ◆',
+                    ),
+                  ]
+                : [
+                    const TextSpan(text: 'of '),
+                    TextSpan(
+                      text: showValues
+                          ? Formatters.currency(limit)
+                          : '◆ ◆ ◆',
+                    ),
+                    const TextSpan(text: ' limit'),
+                  ],
+      ),
+    );
+
     return HomeSurfaceCard(
       borderRadius: AppRadii.card,
       topAccent: accent,
+      onTap: onTap,
       child: SizedBox(
         height: 170,
         child: Stack(
           children: [
-            Positioned(
-              right: -15,
-              bottom: -20,
-              child: IgnorePointer(
-                child: Opacity(
-                  opacity: 0.35,
-                  child: SizedBox(
-                    width: 90,
-                    height: 90,
-                    child: _RingIndicator(value: percent, accent: accent),
+            if (hasBudget)
+              Positioned(
+                right: -15,
+                bottom: -20,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: 0.35,
+                    child: SizedBox(
+                      width: 90,
+                      height: 90,
+                      child: _RingIndicator(
+                        value: percent,
+                        accent: accentColor,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
@@ -446,28 +528,31 @@ class _RemainingCard extends StatelessWidget {
                     tint: AppColors.homeAccentPurple,
                   ),
                   const Spacer(),
-                  AmountView(
-                    amount,
-                    style: AppTypography.amount(
-                      context,
-                      fontSize: AppFontSizes.largeHeading,
-                      color: context.textPrimary,
-                    ).copyWith(letterSpacing: -0.5),
-                    maskColor: context.textPrimary,
-                    maskWidth: 7,
-                    maskHeight: 20,
-                    maskSpacing: 3,
-                    maskRadius: 0,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    note,
-                    style: TextStyle(
-                      color: context.homeAccentGreen,
-                      fontSize: AppFontSizes.body,
-                      height: 1.2,
+                  if (hasBudget)
+                    AmountView(
+                      amount,
+                      style: AppTypography.amount(
+                        context,
+                        fontSize: AppFontSizes.largeHeading,
+                        color: isOver
+                            ? context.homeAccentRed
+                            : context.textPrimary,
+                      ).copyWith(letterSpacing: -0.5),
+                      maskColor: isOver
+                          ? context.homeAccentRed
+                          : context.textPrimary,
+                    )
+                  else
+                    Text(
+                      '\u2014',
+                      style: AppTypography.amount(
+                        context,
+                        fontSize: AppFontSizes.largeHeading,
+                        color: context.textSecondary,
+                      ).copyWith(letterSpacing: -0.5),
                     ),
-                  ),
+                  const SizedBox(height: 6),
+                  noteText,
                 ],
               ),
             ),
@@ -847,10 +932,6 @@ class _MiniMetricCard extends StatelessWidget {
                     letterSpacing: -0.3,
                   ),
                   maskColor: tint,
-                  maskWidth: 6,
-                  maskHeight: 16,
-                  maskSpacing: 3,
-                  maskRadius: 0,
                 ),
               ],
             ),
@@ -920,6 +1001,30 @@ class _RecurringBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AmountView(
+                total,
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: AppFontSizes.bodyLarge,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+                maskColor: context.textPrimary,
+              ),
+              Text(
+                '/ month',
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: AppFontSizes.small,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
           Icon(
             AppIcons.chevronRight,
             size: 16,
@@ -935,17 +1040,21 @@ class _InvestmentCard extends StatelessWidget {
   const _InvestmentCard({
     required this.amount,
     required this.income,
+    this.onTap,
   });
 
   final double amount;
   final double income;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final pct = income > 0 ? (amount / income * 100) : 0.0;
     final pctDisplay = '${pct.round()}% of income';
+    final overIncome = pct > 100;
 
     return HomeSurfaceCard(
+      onTap: onTap,
       borderRadius: AppRadii.lg,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
@@ -987,7 +1096,7 @@ class _InvestmentCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  pctDisplay,
+                  overIncome ? '>100% of income' : pctDisplay,
                   style: const TextStyle(
                     color: Color(0xFF8B5CF6),
                     fontSize: AppFontSizes.small,
@@ -1007,10 +1116,6 @@ class _InvestmentCard extends StatelessWidget {
               letterSpacing: -0.5,
             ),
             maskColor: context.textPrimary,
-            maskWidth: 8,
-            maskHeight: 22,
-            maskSpacing: 4,
-            maskRadius: 0,
           ),
           const SizedBox(height: 6),
           ClipRRect(
