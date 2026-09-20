@@ -260,3 +260,11 @@ class GoalContributions extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+class AppFlags extends Table {
+  TextColumn get key => text()();
+  TextColumn get value => text().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {key};
+}

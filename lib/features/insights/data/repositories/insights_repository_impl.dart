@@ -249,23 +249,45 @@ class InsightsRepositoryImpl implements InsightsRepository {
     return _watchActiveTransactions().map((
       rows,
     ) {
-      final current = rows
-          .where((row) {
-            if (row.type != TransactionType.expense.value) return false;
-            final date = DateTime.fromMillisecondsSinceEpoch(row.date);
-            return _inPeriod(date, period, yearly: yearly);
-          })
-          .fold<double>(0, (sum, row) => sum + row.amount);
-      final previous = rows
-          .where((row) {
-            if (row.type != TransactionType.expense.value) return false;
-            final date = DateTime.fromMillisecondsSinceEpoch(row.date);
-            return _inPeriod(date, previousPeriod, yearly: yearly);
-          })
-          .fold<double>(0, (sum, row) => sum + row.amount);
-      if (previous <= 0) return null;
-      return ((current - previous) / previous) * 100;
+      final now = DateTime.now();
+      final currentDays = _elapsedDays(period, yearly: yearly, now: now);
+      final prevDays = _elapsedDays(previousPeriod, yearly: yearly, now: now);
+      if (currentDays <= 0 || prevDays <= 0) return null;
+
+      double totalExpense(DateTime ref) {
+        var total = 0.0;
+        for (final row in rows) {
+          if (row.type != TransactionType.expense.value) continue;
+          final date = DateTime.fromMillisecondsSinceEpoch(row.date);
+          if (_inPeriod(date, ref, yearly: yearly)) total += row.amount;
+        }
+        return total;
+      }
+
+      final currentDaily = totalExpense(period) / currentDays;
+      final prevDaily = totalExpense(previousPeriod) / prevDays;
+      if (prevDaily <= 0) return null;
+      return ((currentDaily - prevDaily) / prevDaily) * 100;
     });
+  }
+
+  int _elapsedDays(
+    DateTime period, {
+    required bool yearly,
+    required DateTime now,
+  }) {
+    if (yearly) {
+      final start = _startOfYear(period);
+      final end = _endOfYearExclusive(period);
+      if (now.isBefore(start)) return 0;
+      if (!now.isBefore(end)) return end.difference(start).inDays;
+      return now.difference(start).inDays + 1;
+    }
+    final start = _startOfMonth(period);
+    final end = _endOfMonthExclusive(period);
+    if (now.isBefore(start)) return 0;
+    if (!now.isBefore(end)) return end.difference(start).inDays;
+    return now.day;
   }
 
   @override

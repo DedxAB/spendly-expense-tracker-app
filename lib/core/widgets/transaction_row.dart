@@ -290,10 +290,6 @@ class _AmountWithSign extends StatelessWidget {
             color: textColor,
           ),
           maskColor: textColor,
-          maskWidth: 5,
-          maskHeight: 15,
-          maskSpacing: 2,
-          maskRadius: 0,
         ),
       ],
     );

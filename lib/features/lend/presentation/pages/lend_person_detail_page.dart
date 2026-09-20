@@ -14,12 +14,42 @@ import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/dialog_actions_row.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/core/widgets/swipe_hint_coach.dart';
 import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/domain/entities/lend_entry_entity.dart';
 import 'package:spendly/features/lend/domain/entities/lend_settlement_event_entity.dart';
 import 'package:spendly/features/lend/presentation/services/lend_export_service.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
+
+const _kLendGreen = Color(0xFF38D97A);
+const _kLendRed = Color(0xFFFF5C6C);
+const _kLendPurple = Color(0xFF8B5CF6);
+const _kLendGreenTint = Color(0xFF0F2A1C);
+const _kLendRedTint = Color(0xFF2A1313);
+const _kLendGreenLight = Color(0xFF0E9C58);
+const _kLendRedLight = Color(0xFFE03550);
+const _kLendPurpleLight = Color(0xFF7157D8);
+const _kLendGreenTintLight = Color(0xFFE7F7EE);
+const _kLendRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kLendGreen : _kLendGreenLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kLendRed : _kLendRedLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kLendPurple : _kLendPurpleLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kLendGreenTint : _kLendGreenTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kLendRedTint : _kLendRedTintLight;
 
 class LendPersonDetailPage extends ConsumerWidget {
   const LendPersonDetailPage({super.key, required this.personId});
@@ -128,11 +158,29 @@ class LendPersonDetailPage extends ConsumerWidget {
                     ),
                   ),
                   if (formAttempted && amountController.text.trim().isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         'Amount is required',
-                        style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
+                        style: TextStyle(
+                          color: _red(context),
+                          fontSize: AppFontSizes.label,
+                        ),
+                      ),
+                    ),
+                  if (formAttempted &&
+                      (Money.tryParse(amountController.text.trim()) ??
+                              0) >
+                          remainingAmount)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Amount cannot exceed the remaining '
+                        '${Formatters.currency(remainingAmount)}',
+                        style: TextStyle(
+                          color: _red(context),
+                          fontSize: AppFontSizes.label,
+                        ),
                       ),
                     ),
                   const SizedBox(height: AppSpacing.sm),
@@ -141,7 +189,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(Formatters.date(selectedDate)),
-                    trailing: const Icon(Icons.calendar_month),
+                    trailing: const Icon(AppIcons.calendar),
                     onTap: () async {
                       final picked = await _pickSettlementDate(
                         context,
@@ -162,7 +210,9 @@ class LendPersonDetailPage extends ConsumerWidget {
                 onCancel: () => Navigator.pop(context),
                 onConfirm: () {
                   final amount = Money.tryParse(amountController.text.trim());
-                  if (amount == null || amount <= 0) {
+                  if (amount == null ||
+                      amount <= 0 ||
+                      amount > remainingAmount) {
                     formAttempted = true;
                     setState(() {});
                     return;
@@ -225,30 +275,35 @@ class LendPersonDetailPage extends ConsumerWidget {
                     children: [
                       const _ModalFieldLabel('Entry Type'),
                       const SizedBox(height: 6),
-                      SegmentedButton<LendEntryType>(
-                        showSelectedIcon: false,
-                        segments: const [
-                          ButtonSegment(
-                            value: LendEntryType.lent,
-                            label: Text('Lent'),
-                          ),
-                          ButtonSegment(
-                            value: LendEntryType.borrowed,
-                            label: Text('Borrowed'),
-                          ),
-                        ],
-                        selected: {selectedType},
-                        onSelectionChanged: (value) {
-                          setState(() => selectedType = value.first);
-                        },
-                        style: SegmentedButton.styleFrom(
-                          foregroundColor: context.textSecondary,
-                          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
-                          backgroundColor: context.surface,
-                          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
-                          side: BorderSide(color: context.border),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadii.md),
+                      SizedBox(
+                        width: AppModalSizes.dialogContentWidth,
+                        child: SegmentedButton<LendEntryType>(
+                          showSelectedIcon: false,
+                          segments: const [
+                            ButtonSegment(
+                              value: LendEntryType.lent,
+                              label: Text('Lent'),
+                            ),
+                            ButtonSegment(
+                              value: LendEntryType.borrowed,
+                              label: Text('Borrowed'),
+                            ),
+                          ],
+                          selected: {selectedType},
+                          onSelectionChanged: (value) {
+                            setState(() => selectedType = value.first);
+                          },
+                          style: SegmentedButton.styleFrom(
+                            foregroundColor: context.textSecondary,
+                            selectedForegroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
+                            backgroundColor: context.surface,
+                            selectedBackgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            side: BorderSide(color: context.border),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(AppRadii.md),
+                            ),
                           ),
                         ),
                       ),
@@ -266,11 +321,14 @@ class LendPersonDetailPage extends ConsumerWidget {
                         ),
                       ),
                       if (formAttempted && amountController.text.trim().isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             'Amount is required',
-                            style: TextStyle(color: Colors.red, fontSize: AppFontSizes.label),
+                            style: TextStyle(
+                              color: _red(context),
+                              fontSize: AppFontSizes.label,
+                            ),
                           ),
                         ),
                       const SizedBox(height: AppSpacing.sm),
@@ -286,7 +344,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                       ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(Formatters.date(selectedDate)),
-                        trailing: const Icon(Icons.calendar_month),
+                        trailing: const Icon(AppIcons.calendar),
                         onTap: () async {
                           final picked = await showDatePicker(
                             context: context,
@@ -376,6 +434,23 @@ class LendPersonDetailPage extends ConsumerWidget {
     return true;
   }
 
+  Future<bool> _unsettleEntry(
+    BuildContext context,
+    LendRepository repository, {
+    required String entryId,
+  }) async {
+    final shouldUnsettle = await showAppDeleteConfirmDialog(
+      context,
+      title: 'Unsettle entry?',
+      message:
+          'Mark this entry as active again and remove its settlement?',
+      confirmText: 'Unsettle',
+    );
+    if (!shouldUnsettle) return false;
+    await repository.clearSettlement(entryId);
+    return true;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(lendPeopleProvider).valueOrNull ?? const [];
@@ -443,10 +518,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                       personName: person.name,
                     );
                   },
-                  icon: Icon(
-                    AppIcons.trash,
-                    color: AppIcons.getColorForIcon(AppIcons.trash),
-                  ),
+                  icon: Icon(AppIcons.trash, color: _red(context)),
                 ),
               ],
             ],
@@ -477,23 +549,9 @@ class LendPersonDetailPage extends ConsumerWidget {
           entriesAsync.when(
             data: (entries) {
               if (entries.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: context.surface.withValues(alpha: 0.5),
-                    border: Border.all(color: context.border.withValues(alpha: 0.3)),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'No entries yet',
-                      style: TextStyle(
-                        color: context.textSecondary.withValues(alpha: 0.5),
-                        fontSize: AppFontSizes.subhead,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                return const _InlineEmpty(
+                  icon: AppIcons.history,
+                  message: 'No entries yet. Tap + to add a lend or borrow entry.',
                 );
               }
               final active = entries
@@ -513,37 +571,40 @@ class LendPersonDetailPage extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.homeAccentGreen.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        color: _greenTint(context),
+                        borderRadius: BorderRadius.circular(AppRadii.sm),
                       ),
-                      child: Text(
-                        'ACTIVE  ·  ${active.length} pending',
-                        style: TextStyle(
-                          fontSize: AppFontSizes.caption,
-                          letterSpacing: 0.8,
-                          color: AppColors.homeAccentGreen,
-                          fontWeight: FontWeight.w700,
+child: Text(
+                          'ACTIVE  \u00B7  ${active.length} pending',
+                          style: TextStyle(
+                            fontSize: AppFontSizes.caption,
+                            letterSpacing: 0.8,
+                            color: _green(context),
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
                     ),
                     const SizedBox(height: 10),
                   ],
-                  ...active.map((entry) {
-                    final isLent = entry.type == LendEntryType.lent;
-                    final color = isLent ? AppColors.income : AppColors.expense;
-                    final remaining = (entry.amount - entry.settledAmount)
-                        .clamp(0, entry.amount)
+                  ...active.indexed.map((entry) {
+                    final index = entry.$1;
+                    final entryData = entry.$2;
+                    final isLent = entryData.type == LendEntryType.lent;
+                    final color = isLent ? _green(context) : _red(context);
+                    final remaining = (entryData.amount - entryData.settledAmount)
+                        .clamp(0, entryData.amount)
                         .toDouble();
                     final entryEvents = settlementEvents
                         .where(
                           (event) =>
-                              event.entryId == entry.id && !event.isDeleted,
+                              event.entryId == entryData.id &&
+                              !event.isDeleted,
                         )
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: Dismissible(
-                        key: ValueKey('lend-entry-${entry.id}'),
+                        key: ValueKey('lend-entry-${entryData.id}'),
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.startToEnd) {
@@ -551,7 +612,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                             await _showEntryDialog(
                               context,
                               repo,
-                              existing: entry,
+                              existing: entryData,
                             );
                             return false;
                           }
@@ -559,23 +620,23 @@ class LendPersonDetailPage extends ConsumerWidget {
                           return _deleteEntry(
                             context,
                             repo,
-                            entryId: entry.id,
+                            entryId: entryData.id,
                             title: isLent ? 'lent' : 'borrowed',
                           );
                         },
                         background: Container(
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: AppColors.incomeTintBg,
-                          child: const Row(
+                          color: _greenTint(context),
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(AppIcons.edit, color: AppColors.income),
+                              Icon(AppIcons.edit, color: _green(context)),
                               SizedBox(width: 8),
                               Text(
                                 'EDIT',
                                 style: TextStyle(
-                                  color: AppColors.income,
+                                  color: _green(context),
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 1.1,
                                 ),
@@ -586,30 +647,32 @@ class LendPersonDetailPage extends ConsumerWidget {
                         secondaryBackground: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: AppColors.expenseTintBg,
-                          child: const Row(
+                          color: _redTint(context),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'DELETE',
                                 style: TextStyle(
-                                  color: AppColors.expense,
+                                  color: _red(context),
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 1.1,
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(AppIcons.trash, color: AppColors.expense),
+                              Icon(AppIcons.trash, color: _red(context)),
                             ],
                           ),
                         ),
-                        child: _EntryCard(
+                        child: SwipeHintCoach(
+                          enabled: index == 0,
+                          child: _EntryCard(
                           title: isLent ? 'Lent' : 'Borrowed',
-                          amount: entry.amount,
+                          amount: entryData.amount,
                           amountColor: color,
-                          dateLabel: Formatters.date(entry.date),
-                          note: entry.note,
+                          dateLabel: Formatters.date(entryData.date),
+                          note: entryData.note,
                           eventChips: _buildEventChips(context, entryEvents),
                           leadingIcon: isLent
                               ? AppIcons.download
@@ -623,7 +686,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                               _showSettleDialog(
                                 context,
                                 repo,
-                                entryId: entry.id,
+                                entryId: entryData.id,
                                 remainingAmount: remaining,
                               );
                             },
@@ -636,7 +699,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.add, size: 13, color: color),
+                                  Icon(AppIcons.plus, size: 13, color: color),
                                   const SizedBox(width: 3),
                                   Text(
                                     'Settle',
@@ -651,13 +714,14 @@ class LendPersonDetailPage extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        ),
                       ),
                     );
                   }),
                   if (settled.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Text(
-                      'SETTLED  ·  ${settled.length} entries',
+                      'SETTLED  \u00B7  ${settled.length} entries',
                       style: TextStyle(
                         fontSize: AppFontSizes.caption,
                         letterSpacing: 0.8,
@@ -669,7 +733,7 @@ class LendPersonDetailPage extends ConsumerWidget {
                   ],
                   ...settled.map((entry) {
                     final isLent = entry.type == LendEntryType.lent;
-                    final color = isLent ? AppColors.income : AppColors.expense;
+                    final color = isLent ? _green(context) : _red(context);
                     final entryEvents = settlementEvents
                         .where(
                           (event) =>
@@ -702,16 +766,16 @@ class LendPersonDetailPage extends ConsumerWidget {
                         background: Container(
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: AppColors.incomeTintBg,
-                          child: const Row(
+                          color: _greenTint(context),
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(AppIcons.edit, color: AppColors.income),
+                              Icon(AppIcons.edit, color: _green(context)),
                               SizedBox(width: 8),
                               Text(
                                 'EDIT',
                                 style: TextStyle(
-                                  color: AppColors.income,
+                                  color: _green(context),
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 1.1,
                                 ),
@@ -722,21 +786,21 @@ class LendPersonDetailPage extends ConsumerWidget {
                         secondaryBackground: Container(
                           alignment: Alignment.centerRight,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          color: AppColors.expenseTintBg,
-                          child: const Row(
+                          color: _redTint(context),
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 'DELETE',
                                 style: TextStyle(
-                                  color: AppColors.expense,
+                                  color: _red(context),
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 1.1,
                                 ),
                               ),
                               SizedBox(width: 8),
-                              Icon(AppIcons.trash, color: AppColors.expense),
+                              Icon(AppIcons.trash, color: _red(context)),
                             ],
                           ),
                         ),
@@ -764,10 +828,14 @@ class LendPersonDetailPage extends ConsumerWidget {
                               minimumSize: const Size(32, 32),
                               padding: EdgeInsets.zero,
                             ),
-                            icon: Icon(Icons.undo, size: 15, color: context.textSecondary),
+                            icon: Icon(AppIcons.undo, size: 15, color: context.textSecondary),
                             onPressed: () {
                               final repo = ref.read(lendRepositoryProvider);
-                              repo.clearSettlement(entry.id);
+                              _unsettleEntry(
+                                context,
+                                repo,
+                                entryId: entry.id,
+                              );
                             },
                           ),
                         ),
@@ -782,15 +850,18 @@ class LendPersonDetailPage extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: person == null
             ? null
             : () {
                 final repo = ref.read(lendRepositoryProvider);
                 _showEntryDialog(context, repo);
               },
-        icon: const Icon(Icons.add),
-        label: const Text('Add entry'),
+        backgroundColor: context.textPrimary,
+        foregroundColor: context.background,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
     );
   }
@@ -813,10 +884,10 @@ class _ModalFieldLabel extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
         children: required_
-            ? const [
+            ? [
                 TextSpan(
                   text: ' *',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: _red(context)),
                 ),
               ]
             : null,
@@ -900,19 +971,11 @@ class _EntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF0F1215), const Color(0xFF0A0C0E)]
-              : [Colors.white, const Color(0xFFF8F8F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: context.border.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(18),
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
         children: [
@@ -947,10 +1010,6 @@ class _EntryCard extends StatelessWidget {
                                 fontSize: AppFontSizes.heading,
                               ),
                               maskColor: amountColor,
-                              maskWidth: 5,
-                              maskHeight: 18,
-                              maskSpacing: 3,
-                              maskRadius: 0,
                             ),
                           ),
                         ],
@@ -958,7 +1017,7 @@ class _EntryCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Icons.calendar_today, size: 11, color: context.textSecondary.withValues(alpha: 0.6)),
+                          Icon(AppIcons.calendar, size: 11, color: context.textSecondary.withValues(alpha: 0.6)),
                           const SizedBox(width: 4),
                           Text(
                             dateLabel,
@@ -1036,10 +1095,6 @@ class _EntryCard extends StatelessWidget {
                       fontSize: AppFontSizes.subhead,
                     ),
                     maskColor: amountColor,
-                    maskWidth: 4,
-                    maskHeight: 15,
-                    maskSpacing: 2,
-                    maskRadius: 0,
                   ),
                   const Spacer(),
                 ],
@@ -1053,7 +1108,7 @@ class _EntryCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.check_circle, size: 12, color: context.textSecondary),
+                        Icon(AppIcons.checkCircle, size: 12, color: context.textSecondary),
                         const SizedBox(width: 4),
                         Text(
                           settledLabel!,
@@ -1094,23 +1149,16 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final green = AppColors.homeAccentGreen;
-    final red = AppColors.homeAccentRed;
+    final green = _green(context);
+    final red = _red(context);
     final netColor = net >= 0 ? green : red;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF0F1215), const Color(0xFF0A0C0E)]
-              : [Colors.white, const Color(0xFFF8F8F8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        border: Border.all(color: context.border.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(20),
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
       ),
       child: Column(
         children: [
@@ -1187,7 +1235,7 @@ class _SummaryCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Icon(
-                net >= 0 ? AppIcons.trendingUp : Icons.arrow_downward,
+                net >= 0 ? AppIcons.trendingUp : AppIcons.trendingDown,
                 size: 16,
                 color: netColor,
               ),
@@ -1227,6 +1275,53 @@ class _MiniBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(icon, size: 18, color: color),
+    );
+  }
+}
+
+class _InlineEmpty extends StatelessWidget {
+  const _InlineEmpty({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _purple(context).withValues(alpha: 0.16),
+                  _purple(context).withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: Icon(icon, color: _purple(context), size: 26),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: AppFontSizes.body,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

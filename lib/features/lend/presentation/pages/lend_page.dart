@@ -9,9 +9,39 @@ import 'package:spendly/core/widgets/amount_mask.dart';
 import 'package:spendly/core/widgets/app_header.dart';
 import 'package:spendly/core/widgets/app_input_dialog.dart';
 import 'package:spendly/core/widgets/swipe_actions_info_button.dart';
+import 'package:spendly/core/widgets/swipe_hint_coach.dart';
 import 'package:spendly/features/lend/domain/repositories/lend_repository.dart';
 import 'package:spendly/features/lend/data/repositories/lend_repository_impl.dart';
 import 'package:spendly/features/lend/presentation/providers/lend_provider.dart';
+
+const _kLendGreen = Color(0xFF38D97A);
+const _kLendRed = Color(0xFFFF5C6C);
+const _kLendPurple = Color(0xFF8B5CF6);
+const _kLendGreenTint = Color(0xFF0F2A1C);
+const _kLendRedTint = Color(0xFF2A1313);
+const _kLendGreenLight = Color(0xFF0E9C58);
+const _kLendRedLight = Color(0xFFE03550);
+const _kLendPurpleLight = Color(0xFF7157D8);
+const _kLendGreenTintLight = Color(0xFFE7F7EE);
+const _kLendRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kLendGreen : _kLendGreenLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kLendRed : _kLendRedLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kLendPurple : _kLendPurpleLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kLendGreenTint : _kLendGreenTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kLendRedTint : _kLendRedTintLight;
 
 class LendPage extends ConsumerWidget {
   const LendPage({super.key});
@@ -71,36 +101,18 @@ class LendPage extends ConsumerWidget {
               AppSpacing.md,
             ),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Lend & Borrow',
-                      style: AppTypography.screenTitle(context),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const SwipeActionsInfoButton(
-                    tooltip: 'Lend and borrow swipe help',
-                    title: 'Lend & Borrow actions',
-                    message:
-                        'People can be swiped to edit or delete from the list.',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: context.surface,
-                    border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.card),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Overview', style: AppTypography.cardTitle(context)),
-                      const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: context.surface,
+                  border: Border.all(color: context.border),
+                  borderRadius: BorderRadius.circular(AppRadii.card),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Overview', style: AppTypography.cardTitle(context)),
+                    const SizedBox(height: AppSpacing.sm),
                     Row(
                       children: [
                         Expanded(
@@ -124,21 +136,30 @@ class LendPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text('People', style: AppTypography.sectionTitle(context)),
+              Row(
+                children: [
+                  Text('People', style: AppTypography.sectionTitle(context)),
+                  const Spacer(),
+                  const SwipeActionsInfoButton(
+                    tooltip: 'Lend and borrow swipe help',
+                    title: 'Lend & Borrow actions',
+                    message:
+                        'People can be swiped to edit or delete from the list.',
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xs),
               if (data.peopleBalances.isEmpty)
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: context.surface,
-                    border: Border.all(color: context.border),
-                    borderRadius: BorderRadius.circular(AppRadii.card),
-                  ),
-                  child: const Text(
-                    'No people added yet. Tap + to add your first person.',
+                const Padding(
+                  padding: EdgeInsets.only(top: AppSpacing.xs),
+                  child: _InlineEmpty(
+                    icon: AppIcons.usersRound,
+                    message: 'No people yet. Tap + to add your first person.',
                   ),
                 ),
-              ...data.peopleBalances.map((item) {
+              ...data.peopleBalances.indexed.map((entry) {
+                final index = entry.$1;
+                final item = entry.$2;
                 final isPositive = item.netBalance >= 0;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -170,16 +191,16 @@ class LendPage extends ConsumerWidget {
                     background: Container(
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: AppColors.incomeTintBg,
-                      child: const Row(
+                      color: _greenTint(context),
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(AppIcons.edit, color: AppColors.income),
-                          SizedBox(width: 8),
+                          Icon(AppIcons.edit, color: _green(context)),
+                          const SizedBox(width: 8),
                           Text(
                             'EDIT',
                             style: TextStyle(
-                              color: AppColors.income,
+                              color: _green(context),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.1,
                             ),
@@ -190,7 +211,7 @@ class LendPage extends ConsumerWidget {
                     secondaryBackground: Container(
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      color: AppColors.expenseTintBg,
+                      color: _redTint(context),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         mainAxisSize: MainAxisSize.min,
@@ -198,27 +219,29 @@ class LendPage extends ConsumerWidget {
                           Text(
                             'DELETE',
                             style: TextStyle(
-                              color: AppIcons.getColorForIcon(AppIcons.trash),
+                              color: _red(context),
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.1,
                             ),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Icon(
                             AppIcons.trash,
-                            color: AppIcons.getColorForIcon(AppIcons.trash),
+                            color: _red(context),
                           ),
                         ],
                       ),
                     ),
-                    child: InkWell(
-                      onTap: () => context.push('/lend/${item.person.id}'),
-                      child: Container(
+                    child: SwipeHintCoach(
+                      enabled: index == 0,
+                      child: InkWell(
+                        onTap: () => context.push('/lend/${item.person.id}'),
+                        child: Container(
                         padding: const EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
                           color: context.surface,
                           border: Border.all(color: context.border),
-                          borderRadius: BorderRadius.circular(AppRadii.premiumCard),
+                          borderRadius: BorderRadius.circular(AppRadii.lg),
                         ),
                         child: Row(
                           children: [
@@ -227,16 +250,14 @@ class LendPage extends ConsumerWidget {
                               height: 44,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: context.surfaceAlt,
-                                borderRadius: BorderRadius.circular(
-                                  AppRadii.md,
+                                color: _purple(context).withValues(
+                                  alpha: 0.14,
                                 ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 AppIcons.usersRound,
-                                color: AppIcons.getColorForIcon(
-                                  AppIcons.usersRound,
-                                ),
+                                color: _purple(context),
                                 size: 20,
                               ),
                             ),
@@ -273,8 +294,8 @@ class LendPage extends ConsumerWidget {
                                   item.netBalance >= 0 ? '+' : '-',
                                   style: TextStyle(
                                     color: isPositive
-                                        ? AppColors.income
-                                        : AppColors.expense,
+                                        ? _green(context)
+                                        : _red(context),
                                     fontWeight: FontWeight.w800,
                                     fontSize: AppFontSizes.title,
                                   ),
@@ -283,18 +304,14 @@ class LendPage extends ConsumerWidget {
                                   item.netBalance.abs(),
                                   style: TextStyle(
                                     color: isPositive
-                                        ? AppColors.income
-                                        : AppColors.expense,
+                                        ? _green(context)
+                                        : _red(context),
                                     fontWeight: FontWeight.w800,
                                     fontSize: AppFontSizes.title,
                                   ),
                                   maskColor: isPositive
-                                      ? AppColors.income
-                                      : AppColors.expense,
-                                  maskWidth: 5,
-                                  maskHeight: 16,
-                                  maskSpacing: 2,
-                                  maskRadius: 0,
+                                      ? _green(context)
+                                      : _red(context),
                                 ),
                               ],
                             ),
@@ -308,6 +325,7 @@ class LendPage extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    ),
                   ),
                 );
               }),
@@ -317,16 +335,16 @@ class LendPage extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => Center(child: Text('Failed to load: $error')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           final repo = ref.read(lendRepositoryProvider);
           _showAddPersonDialog(context, repo);
         },
-        icon: Icon(
-          AppIcons.userRoundPlus,
-          color: AppIcons.getColorForIcon(AppIcons.userRoundPlus),
-        ),
-        label: const Text('Add person'),
+        backgroundColor: context.textPrimary,
+        foregroundColor: context.background,
+        elevation: 0,
+        shape: const CircleBorder(),
+        child: const Icon(AppIcons.plus, size: 36),
       ),
     );
   }
@@ -345,26 +363,18 @@ class _SummaryMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final tint = isReceive ? AppColors.homeAccentGreen : AppColors.homeAccentRed;
-
-    final bg = isDark
-        ? (isReceive
-            ? const Color(0xFF121C14)
-            : const Color(0xFF1A1314))
-        : tint.withValues(alpha: 0.06);
-    final border = isDark
-        ? (isReceive
-            ? const Color(0xFF1B3420)
-            : const Color(0xFF352224))
-        : tint.withValues(alpha: 0.15);
+    final accent = isReceive ? _green(context) : _red(context);
+    final tint = isReceive ? _greenTint(context) : _redTint(context);
+    final borderColor = accent.withValues(
+      alpha: _isDark(context) ? 0.45 : 0.4,
+    );
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: bg,
-        border: Border.all(color: border),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        color: tint,
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,15 +391,58 @@ class _SummaryMetric extends StatelessWidget {
           AmountView(
             amountValue,
             style: TextStyle(
-              color: tint,
+              color: accent,
               fontWeight: FontWeight.w800,
               fontSize: AppFontSizes.heading,
             ),
-            maskColor: tint,
-            maskWidth: 6,
-            maskHeight: 18,
-            maskSpacing: 3,
-            maskRadius: 0,
+            maskColor: accent,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineEmpty extends StatelessWidget {
+  const _InlineEmpty({required this.icon, required this.message});
+
+  final IconData icon;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+      decoration: BoxDecoration(
+        color: context.surface,
+        border: Border.all(color: context.border),
+        borderRadius: BorderRadius.circular(AppRadii.card),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  _purple(context).withValues(alpha: 0.16),
+                  _purple(context).withValues(alpha: 0),
+                ],
+              ),
+            ),
+            child: Icon(icon, color: _purple(context), size: 26),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: context.textSecondary,
+              fontSize: AppFontSizes.body,
+              height: 1.4,
+            ),
           ),
         ],
       ),

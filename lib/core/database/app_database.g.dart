@@ -7885,6 +7885,220 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
   }
 }
 
+class $AppFlagsTable extends AppFlags with TableInfo<$AppFlagsTable, AppFlag> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AppFlagsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _keyMeta = const VerificationMeta('key');
+  @override
+  late final GeneratedColumn<String> key = GeneratedColumn<String>(
+    'key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _valueMeta = const VerificationMeta('value');
+  @override
+  late final GeneratedColumn<String> value = GeneratedColumn<String>(
+    'value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [key, value];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'app_flags';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AppFlag> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('key')) {
+      context.handle(
+        _keyMeta,
+        key.isAcceptableOrUnknown(data['key']!, _keyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyMeta);
+    }
+    if (data.containsKey('value')) {
+      context.handle(
+        _valueMeta,
+        value.isAcceptableOrUnknown(data['value']!, _valueMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {key};
+  @override
+  AppFlag map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AppFlag(
+      key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key'],
+      )!,
+      value: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}value'],
+      ),
+    );
+  }
+
+  @override
+  $AppFlagsTable createAlias(String alias) {
+    return $AppFlagsTable(attachedDatabase, alias);
+  }
+}
+
+class AppFlag extends DataClass implements Insertable<AppFlag> {
+  final String key;
+  final String? value;
+  const AppFlag({required this.key, this.value});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['key'] = Variable<String>(key);
+    if (!nullToAbsent || value != null) {
+      map['value'] = Variable<String>(value);
+    }
+    return map;
+  }
+
+  AppFlagsCompanion toCompanion(bool nullToAbsent) {
+    return AppFlagsCompanion(
+      key: Value(key),
+      value: value == null && nullToAbsent
+          ? const Value.absent()
+          : Value(value),
+    );
+  }
+
+  factory AppFlag.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AppFlag(
+      key: serializer.fromJson<String>(json['key']),
+      value: serializer.fromJson<String?>(json['value']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'key': serializer.toJson<String>(key),
+      'value': serializer.toJson<String?>(value),
+    };
+  }
+
+  AppFlag copyWith({
+    String? key,
+    Value<String?> value = const Value.absent(),
+  }) => AppFlag(
+    key: key ?? this.key,
+    value: value.present ? value.value : this.value,
+  );
+  AppFlag copyWithCompanion(AppFlagsCompanion data) {
+    return AppFlag(
+      key: data.key.present ? data.key.value : this.key,
+      value: data.value.present ? data.value.value : this.value,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlag(')
+          ..write('key: $key, ')
+          ..write('value: $value')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(key, value);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AppFlag && other.key == this.key && other.value == this.value);
+}
+
+class AppFlagsCompanion extends UpdateCompanion<AppFlag> {
+  final Value<String> key;
+  final Value<String?> value;
+  final Value<int> rowid;
+  const AppFlagsCompanion({
+    this.key = const Value.absent(),
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AppFlagsCompanion.insert({
+    required String key,
+    this.value = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : key = Value(key);
+  static Insertable<AppFlag> custom({
+    Expression<String>? key,
+    Expression<String>? value,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (key != null) 'key': key,
+      if (value != null) 'value': value,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AppFlagsCompanion copyWith({
+    Value<String>? key,
+    Value<String?>? value,
+    Value<int>? rowid,
+  }) {
+    return AppFlagsCompanion(
+      key: key ?? this.key,
+      value: value ?? this.value,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (key.present) {
+      map['key'] = Variable<String>(key.value);
+    }
+    if (value.present) {
+      map['value'] = Variable<String>(value.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AppFlagsCompanion(')
+          ..write('key: $key, ')
+          ..write('value: $value, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -7907,6 +8121,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GoalFundsTable goalFunds = $GoalFundsTable(this);
   late final $GoalContributionsTable goalContributions =
       $GoalContributionsTable(this);
+  late final $AppFlagsTable appFlags = $AppFlagsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7926,6 +8141,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     appUsageDays,
     goalFunds,
     goalContributions,
+    appFlags,
   ];
 }
 
@@ -11875,6 +12091,139 @@ typedef $$GoalContributionsTableProcessedTableManager =
       GoalContribution,
       PrefetchHooks Function()
     >;
+typedef $$AppFlagsTableCreateCompanionBuilder =
+    AppFlagsCompanion Function({
+      required String key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+typedef $$AppFlagsTableUpdateCompanionBuilder =
+    AppFlagsCompanion Function({
+      Value<String> key,
+      Value<String?> value,
+      Value<int> rowid,
+    });
+
+class $$AppFlagsTableFilterComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$AppFlagsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get key => $composableBuilder(
+    column: $table.key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get value => $composableBuilder(
+    column: $table.value,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$AppFlagsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AppFlagsTable> {
+  $$AppFlagsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get key =>
+      $composableBuilder(column: $table.key, builder: (column) => column);
+
+  GeneratedColumn<String> get value =>
+      $composableBuilder(column: $table.value, builder: (column) => column);
+}
+
+class $$AppFlagsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AppFlagsTable,
+          AppFlag,
+          $$AppFlagsTableFilterComposer,
+          $$AppFlagsTableOrderingComposer,
+          $$AppFlagsTableAnnotationComposer,
+          $$AppFlagsTableCreateCompanionBuilder,
+          $$AppFlagsTableUpdateCompanionBuilder,
+          (AppFlag, BaseReferences<_$AppDatabase, $AppFlagsTable, AppFlag>),
+          AppFlag,
+          PrefetchHooks Function()
+        > {
+  $$AppFlagsTableTableManager(_$AppDatabase db, $AppFlagsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AppFlagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AppFlagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AppFlagsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> key = const Value.absent(),
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion(key: key, value: value, rowid: rowid),
+          createCompanionCallback:
+              ({
+                required String key,
+                Value<String?> value = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AppFlagsCompanion.insert(
+                key: key,
+                value: value,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$AppFlagsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AppFlagsTable,
+      AppFlag,
+      $$AppFlagsTableFilterComposer,
+      $$AppFlagsTableOrderingComposer,
+      $$AppFlagsTableAnnotationComposer,
+      $$AppFlagsTableCreateCompanionBuilder,
+      $$AppFlagsTableUpdateCompanionBuilder,
+      (AppFlag, BaseReferences<_$AppDatabase, $AppFlagsTable, AppFlag>),
+      AppFlag,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -11907,4 +12256,6 @@ class $AppDatabaseManager {
       $$GoalFundsTableTableManager(_db, _db.goalFunds);
   $$GoalContributionsTableTableManager get goalContributions =>
       $$GoalContributionsTableTableManager(_db, _db.goalContributions);
+  $$AppFlagsTableTableManager get appFlags =>
+      $$AppFlagsTableTableManager(_db, _db.appFlags);
 }

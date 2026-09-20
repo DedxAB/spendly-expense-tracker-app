@@ -25,6 +25,53 @@ import 'package:spendly/features/insights/presentation/providers/insights_provid
 import 'package:spendly/features/insights/presentation/services/insights_export_service.dart';
 import 'package:spendly/features/user/presentation/providers/user_profile_provider.dart';
 
+const _kInsightGreen = Color(0xFF38D97A);
+const _kInsightAmber = Color(0xFFF5B83D);
+const _kInsightRed = Color(0xFFFF5C6C);
+const _kInsightPurple = Color(0xFF8B5CF6);
+const _kInsightSoftRed = Color(0xFFFF8A7A);
+const _kInsightGreenTint = Color(0xFF0F2A1C);
+const _kInsightAmberTint = Color(0xFF2A200D);
+const _kInsightRedTint = Color(0xFF2A1313);
+const _kInsightGreenLight = Color(0xFF0E9C58);
+const _kInsightAmberLight = Color(0xFFA87409);
+const _kInsightRedLight = Color(0xFFE03550);
+const _kInsightPurpleLight = Color(0xFF7157D8);
+const _kInsightSoftRedLight = Color(0xFFEF6459);
+const _kInsightGreenTintLight = Color(0xFFE7F7EE);
+const _kInsightAmberTintLight = Color(0xFFFBF3E1);
+const _kInsightRedTintLight = Color(0xFFFDE7EA);
+
+bool _isDark(BuildContext context) =>
+    Theme.of(context).brightness == Brightness.dark;
+
+Color _trackColor(BuildContext context) =>
+    _isDark(context) ? const Color(0xFF1C1E20) : const Color(0xFFEDEDEF);
+
+Color _green(BuildContext context) =>
+    _isDark(context) ? _kInsightGreen : _kInsightGreenLight;
+
+Color _amber(BuildContext context) =>
+    _isDark(context) ? _kInsightAmber : _kInsightAmberLight;
+
+Color _red(BuildContext context) =>
+    _isDark(context) ? _kInsightRed : _kInsightRedLight;
+
+Color _purple(BuildContext context) =>
+    _isDark(context) ? _kInsightPurple : _kInsightPurpleLight;
+
+Color _softRed(BuildContext context) =>
+    _isDark(context) ? _kInsightSoftRed : _kInsightSoftRedLight;
+
+Color _greenTint(BuildContext context) =>
+    _isDark(context) ? _kInsightGreenTint : _kInsightGreenTintLight;
+
+Color _amberTint(BuildContext context) =>
+    _isDark(context) ? _kInsightAmberTint : _kInsightAmberTintLight;
+
+Color _redTint(BuildContext context) =>
+    _isDark(context) ? _kInsightRedTint : _kInsightRedTintLight;
+
 class InsightsPage extends ConsumerWidget {
   const InsightsPage({super.key});
 
@@ -68,18 +115,14 @@ class InsightsPage extends ConsumerWidget {
         children: [
           _PeriodNavigator(month: month, isYearly: isYearly),
           const SizedBox(height: AppSpacing.smPlus),
-          _BurnRateCard(
-            expense: expense,
-            projected: projected,
-            budget: monthlyBudget,
-            month: month,
-            isYearly: isYearly,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _SummaryStrip(
+          _OverviewCard(
             income: income,
             expense: expense,
-            prevExpense: prevExpense,
+            budget: monthlyBudget,
+            projected: projected,
+            change: change,
+            month: month,
+            isYearly: isYearly,
           ),
           const SizedBox(height: AppSpacing.md),
           distributionAsync.when(
@@ -379,10 +422,10 @@ class _ViewModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: isSelected ? context.textPrimary : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadii.md),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Text(
         label,
@@ -453,119 +496,366 @@ class _YearPickerDialog extends StatelessWidget {
   }
 }
 
-// ── Daily Burn Rate ───────────────────────────────────────────
+// ── Overview Card ─────────────────────────────────────────────
 
-class _BurnRateCard extends StatelessWidget {
-  const _BurnRateCard({
+class _OverviewCard extends StatelessWidget {
+  const _OverviewCard({
+    required this.income,
     required this.expense,
-    required this.projected,
     required this.budget,
+    required this.projected,
+    required this.change,
     required this.month,
     required this.isYearly,
   });
 
+  final double income;
   final double expense;
-  final double projected;
   final double budget;
+  final double projected;
+  final double change;
   final DateTime month;
   final bool isYearly;
 
   @override
   Widget build(BuildContext context) {
+    final isDark = _isDark(context);
+    final gradientColors = isDark
+        ? const [Color(0xFF12131A), Color(0xFF0E0F16), Color(0xFF131022)]
+        : const [Color(0xFFFBFAFF), Color(0xFFF5F1FF), Color(0xFFFDF5F4)];
     final now = DateTime.now();
+    final isCurrentMonth = month.year == now.year && month.month == now.month;
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+    final daysElapsed = isCurrentMonth ? now.day : daysInMonth;
+    final monthsElapsed =
+        isYearly ? (month.year == now.year ? now.month : 12) : 1;
 
-    final isCurrentYear = month.year == now.year;
-    final isCurrentMonth = isCurrentYear && month.month == now.month;
+    final rateValue = isYearly
+        ? (monthsElapsed <= 0 ? 0.0 : expense / monthsElapsed)
+        : (daysElapsed <= 0 ? 0.0 : expense / daysElapsed);
+    final rateLabel = isYearly ? '/ month' : '/ day';
 
-    String rateLabel;
-    double rateValue;
-    double displayProjected;
+    final hasIncome = income > 0;
+    final savings = income - expense;
+    final ratio = hasIncome ? (savings / income) * 100 : 0.0;
+    final isOverspent = hasIncome && savings < 0;
+    final savedColor = !hasIncome
+        ? context.textSecondary
+        : isOverspent
+            ? _red(context)
+            : ratio >= 20
+                ? _green(context)
+                : _amber(context);
+    final savedTint = !hasIncome
+        ? context.surfaceAlt
+        : isOverspent
+            ? _redTint(context)
+            : ratio >= 20
+                ? _greenTint(context)
+                : _amberTint(context);
+    final savedLabel = !hasIncome
+        ? 'SAVED \u2014'
+        : isOverspent
+            ? 'OVERSPENT \u00B7 ${Formatters.currency(savings.abs())}'
+            : 'SAVED ${Formatters.currency(savings)} \u00B7 '
+                  '${ratio.toStringAsFixed(0)}%';
 
-    if (isYearly) {
-      final monthsElapsed = isCurrentYear ? now.month : 12;
-      rateValue = monthsElapsed <= 0 ? 0.0 : expense / monthsElapsed;
-      rateLabel = '/ month';
-      displayProjected = monthsElapsed <= 0
-          ? 0.0
-          : (expense / monthsElapsed) * 12;
-    } else {
-      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-      final daysElapsed = isCurrentMonth ? now.day : daysInMonth;
-      rateValue = daysElapsed <= 0 ? 0.0 : expense / daysElapsed;
-      rateLabel = '/ day';
-      displayProjected = projected;
-    }
+    final hasBudget = budget > 0;
+    final comparedExpense =
+        isYearly && monthsElapsed > 0 ? expense / monthsElapsed : expense;
+    final usage = hasBudget ? (comparedExpense / budget).clamp(0.0, 1.0) : 0.0;
+    final remaining = budget - comparedExpense;
+    final isOverBudget = comparedExpense > budget;
+
+    final projectedTotal = isYearly
+        ? (monthsElapsed <= 0 ? 0.0 : (expense / monthsElapsed) * 12)
+        : projected;
+    final projectionBudget = isYearly ? budget * 12 : budget;
+    final willExceed =
+        hasBudget && projectedTotal > projectionBudget;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors,
+        ),
         border: Border.all(color: context.border),
-        color: context.surface,
         borderRadius: BorderRadius.circular(AppRadii.card),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              const Icon(Icons.speed, color: Color(0xFFE8B830), size: 18),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  isYearly ? 'Monthly Burn Rate' : 'Daily Burn Rate',
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.sectionTitle(context),
+          Positioned(
+            right: -46,
+            top: -46,
+            child: Container(
+              width: 170,
+              height: 170,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    _purple(context).withValues(alpha: isDark ? 0.20 : 0.12),
+                    _purple(context).withValues(alpha: 0),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${AppConstants.currencySymbol}${_formatCompact(rateValue)}',
-                style: TextStyle(
-                  color: context.textPrimary,
-                  fontSize: AppFontSizes.largeDisplay,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  rateLabel,
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: AppFontSizes.bodyLarge,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              if (displayProjected > 0)
-                Flexible(
-                  child: Text(
-                    isYearly
-                        ? 'Projected EoY ${Formatters.currency(displayProjected)}'
-                        : 'Projected ${Formatters.currency(displayProjected)}',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: context.textSecondary,
-                      fontSize: AppFontSizes.label,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          if (budget > 0) ...[
-            const SizedBox(height: 14),
-            _BudgetBar(
-              expense: expense,
-              budget: budget,
-              projected: displayProjected,
             ),
-          ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        isYearly
+                            ? 'OVERVIEW \u00B7 ${month.year}'
+                            : 'OVERVIEW \u00B7 ${DateFormat('MMMM').format(month).toUpperCase()}',
+                        style: TextStyle(
+                          letterSpacing: 1.8,
+                          fontSize: AppFontSizes.small,
+                          fontWeight: FontWeight.w700,
+                          color: context.textSecondary,
+                        ),
+                      ),
+                    ),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: savedTint,
+                            borderRadius: BorderRadius.circular(AppRadii.pill),
+                          ),
+                          child: Text(
+                            savedLabel,
+                            style: TextStyle(
+                              color: savedColor,
+                              fontSize: AppFontSizes.small,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: AmountView(
+                          expense,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: AppFontSizes.largeDisplay,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.8,
+                            height: 1,
+                          ),
+                          maskColor: context.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'spent',
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: AppFontSizes.heading,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MiniStatChip(
+                        label: 'Income',
+                        child: AmountView(
+                          income,
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: AppFontSizes.bodyLarge,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maskColor: context.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _MiniStatChip(
+                        label: 'Burn rate',
+                        child: Text(
+                          '${AppConstants.currencySymbol}'
+                          '${_formatCompact(rateValue)} $rateLabel',
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: AppFontSizes.bodyLarge,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (change != 0) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        change > 0
+                            ? AppIcons.trendingUp
+                            : AppIcons.trendingDown,
+                        size: 12,
+                        color: change > 0 ? _red(context) : _green(context),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${change > 0 ? '+' : ''}'
+                        '${change.toStringAsFixed(1)}% '
+                        'vs last ${isYearly ? 'year' : 'month'}',
+                        style: TextStyle(
+                          color: change > 0 ? _red(context) : _green(context),
+                          fontSize: AppFontSizes.small,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (hasBudget) ...[
+                  const SizedBox(height: 14),
+                  Divider(color: context.border),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        isYearly ? 'Budget (avg / mo)' : 'Budget',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: AppFontSizes.label,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        isOverBudget
+                            ? '${Formatters.currency(remaining.abs())} over'
+                            : '${Formatters.currency(remaining)} left',
+                        style: TextStyle(
+                          color: isOverBudget
+                              ? _red(context)
+                              : _green(context),
+                          fontSize: AppFontSizes.label,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _GradientBar(
+                    value: usage,
+                    colors: isOverBudget
+                        ? [_softRed(context), _red(context)]
+                        : usage >= 0.8
+                            ? [_amber(context), _red(context)]
+                            : [_purple(context), _green(context)],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${(usage * 100).toStringAsFixed(0)}% used',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: AppFontSizes.small,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (projectedTotal > 0)
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              isYearly
+                                  ? 'Projected EoY '
+                                        '${Formatters.currency(projectedTotal)}'
+                                  : 'Projected '
+                                        '${Formatters.currency(projectedTotal)}',
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: AppFontSizes.small,
+                              ),
+                            ),
+                            if (willExceed)
+                              Text(
+                                'exceed by '
+                                '${Formatters.currency(projectedTotal - projectionBudget)}',
+                                style: TextStyle(
+                                  color: _red(context),
+                                  fontSize: AppFontSizes.small,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ],
+                if (projectedTotal > 0 && !hasBudget) ...[
+                  const SizedBox(height: 14),
+                  Divider(color: context.border),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Text(
+                        isYearly
+                            ? 'Projected EoY '
+                                  '${Formatters.currency(projectedTotal)}'
+                            : 'Projected '
+                                  '${Formatters.currency(projectedTotal)}',
+                        style: TextStyle(
+                          color: context.textSecondary,
+                          fontSize: AppFontSizes.small,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (willExceed)
+                        Text(
+                          'exceed by '
+                          '${Formatters.currency(projectedTotal - projectionBudget)}',
+                          style: TextStyle(
+                            color: _red(context),
+                            fontSize: AppFontSizes.small,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -577,206 +867,81 @@ class _BurnRateCard extends StatelessWidget {
   }
 }
 
-class _BudgetBar extends StatelessWidget {
-  const _BudgetBar({
-    required this.expense,
-    required this.budget,
-    required this.projected,
-  });
+class _MiniStatChip extends StatelessWidget {
+  const _MiniStatChip({required this.label, required this.child});
 
-  final double expense;
-  final double budget;
-  final double projected;
+  final String label;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final pct = budget <= 0 ? 0.0 : (expense / budget).clamp(0.0, 1.0);
-    final remaining = budget - expense;
-    final isOver = expense > budget;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        LinearProgressIndicator(
-          value: pct,
-          minHeight: 8,
-          color: isOver ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
-          backgroundColor: context.surfaceAlt,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: _isDark(context) ? const Color(0xFF17181B) : context.surfaceAlt,
+        border: Border.all(
+          color: _isDark(context) ? const Color(0xFF1B1D20) : context.border,
         ),
-        const SizedBox(height: 6),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${(pct * 100).toStringAsFixed(0)}% of budget',
-              style: TextStyle(
-                color: context.textSecondary,
-                fontSize: AppFontSizes.label,
-              ),
-            ),
-            Text(
-              isOver
-                  ? '${Formatters.currency(remaining.abs())} over'
-                  : '${Formatters.currency(remaining)} left',
-              style: TextStyle(
-                color: isOver
-                    ? const Color(0xFFF55C5C)
-                    : const Color(0xFF3DD07B),
-                fontSize: AppFontSizes.label,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        if (projected > budget && projected > 0) ...[
-          const SizedBox(height: 4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            'Projected to exceed by ${Formatters.currency(projected - budget)}',
-            style: const TextStyle(
-              color: Color(0xFFF55C5C),
-              fontSize: AppFontSizes.small,
+            label.toUpperCase(),
+            style: TextStyle(
+              color: context.textSecondary.withValues(alpha: 0.6),
+              fontSize: AppFontSizes.caption,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w700,
             ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: child,
           ),
         ],
-      ],
-    );
-  }
-}
-
-// ── Summary Strip ─────────────────────────────────────────────
-
-class _SummaryStrip extends StatelessWidget {
-  const _SummaryStrip({
-    required this.income,
-    required this.expense,
-    required this.prevExpense,
-  });
-
-  static const _incomeColor = Color(0xFF3DD07B);
-  static const _expenseColor = Color(0xFFF55C5C);
-  static const _warningColor = Color(0xFFE8B830);
-
-  final double income;
-  final double expense;
-  final double prevExpense;
-
-  @override
-  Widget build(BuildContext context) {
-    final savingsRate = income <= 0
-        ? 0.0
-        : ((income - expense) / income * 100).clamp(0, 100);
-    final changeText = prevExpense > 0
-        ? '${expense > prevExpense ? '+' : ''}${((expense - prevExpense) / prevExpense * 100).toStringAsFixed(1)}% vs last'
-        : null;
-
-    final savedColor = savingsRate >= 20
-        ? _incomeColor
-        : savingsRate > 0
-        ? _warningColor
-        : _expenseColor;
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: context.border),
-        color: context.surface,
-        borderRadius: BorderRadius.circular(AppRadii.card),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-        child: Column(
-          children: [
-            _SummaryRow(
-              icon: Icons.trending_up,
-              label: 'Income',
-              value: Formatters.currency(income),
-              valueColor: _incomeColor,
-              accentColor: _incomeColor,
-            ),
-            const SizedBox(height: 14),
-            _SummaryRow(
-              icon: Icons.trending_down,
-              label: 'Expense',
-              value: Formatters.currency(expense),
-              valueColor: _expenseColor,
-              accentColor: _expenseColor,
-              subtitle: changeText,
-            ),
-            const SizedBox(height: 14),
-            _SummaryRow(
-              icon: Icons.savings,
-              label: 'Saved',
-              value: '${savingsRate.toStringAsFixed(0)}%',
-              valueColor: savedColor,
-              accentColor: savedColor,
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.valueColor,
-    required this.accentColor,
-    this.subtitle,
-  });
+class _GradientBar extends StatelessWidget {
+  const _GradientBar({required this.value, required this.colors});
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color valueColor;
-  final Color accentColor;
-  final String? subtitle;
+  final double value;
+  final List<Color> colors;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 13, color: accentColor),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: context.textSecondary,
-            fontSize: AppFontSizes.bodyLarge,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+    final progress = value.clamp(0.0, 1.0).toDouble();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: SizedBox(
+        height: 8,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: Text(
-                value,
-                style: TextStyle(
-                  color: valueColor,
-                  fontSize: AppFontSizes.heading,
-                  fontWeight: FontWeight.w700,
-                  height: 1.1,
+            Container(color: _trackColor(context)),
+            if (progress > 0)
+              FractionallySizedBox(
+                widthFactor: progress,
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: colors,
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                subtitle!,
-                style: TextStyle(
-                  color: context.textSecondary,
-                  fontSize: AppFontSizes.caption,
-                ),
-              ),
-            ],
           ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -834,7 +999,19 @@ class _CategoryWatch extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: Row(
                 children: [
-                  Container(width: 10, height: 10, color: sliceColor),
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: sliceColor.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      AppIcons.getIconForCategory(slice.category),
+                      color: sliceColor,
+                      size: 17,
+                    ),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -848,23 +1025,21 @@ class _CategoryWatch extends StatelessWidget {
                   if (delta != null && delta.abs() > 1)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+                        horizontal: 8,
+                        vertical: 3,
                       ),
                       decoration: BoxDecoration(
                         color: delta > 0
-                            ? const Color(0xFFF55C5C).withValues(alpha: 0.15)
-                            : const Color(0xFF3DD07B).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(AppRadii.sm),
+                            ? _red(context).withValues(alpha: 0.15)
+                            : _green(context).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
                       child: Text(
                         '${delta > 0 ? '+' : ''}${delta.toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: AppFontSizes.small,
                           fontWeight: FontWeight.w700,
-                          color: delta > 0
-                              ? const Color(0xFFF55C5C)
-                              : const Color(0xFF3DD07B),
+                          color: delta > 0 ? _red(context) : _green(context),
                         ),
                       ),
                     ),
@@ -934,7 +1109,7 @@ class _ExportButton extends StatelessWidget {
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: const Icon(Icons.download, size: 18, color: Color(0xFFE8B830)),
+        icon: Icon(AppIcons.download, size: 18, color: _purple(context)),
         label: Text(
           'Download PDF Report',
           style: TextStyle(
@@ -977,24 +1152,8 @@ class _WhatsChanged extends StatelessWidget {
     if (change != 0) {
       final dir = change > 0 ? 'up' : 'down';
       insights.add(
-        'Spending is $dir ${change.abs().toStringAsFixed(1)}% vs last ${change != 0 ? 'month' : 'period'}.',
+        'Spending is $dir ${change.abs().toStringAsFixed(1)}% vs last month.',
       );
-    }
-
-    if (budget > 0 && expense > 0) {
-      final pct = (expense / budget * 100).toStringAsFixed(0);
-      final remaining = budget - expense;
-      if (remaining > 0) {
-        insights.add(
-          'You have used $pct% of your budget '
-          '(${Formatters.currency(remaining)} remaining).',
-        );
-      } else {
-        insights.add(
-          'You have exceeded your budget by '
-          '${Formatters.currency(remaining.abs())} ($pct% used).',
-        );
-      }
     }
 
     if (projected > 0 && budget > 0 && projected > budget) {
@@ -1026,9 +1185,9 @@ class _WhatsChanged extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.change_circle_outlined,
-                color: Color(0xFF8EA0FF),
+              Icon(
+                AppIcons.history,
+                color: _purple(context),
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -1126,14 +1285,14 @@ class _TrendChart extends StatelessWidget {
             if (budgetPerPeriod > 0)
               HorizontalLine(
                 y: budgetPerPeriod,
-                color: const Color(0xFFE8B830),
+                color: _amber(context),
                 strokeWidth: 1.5,
                 dashArray: [6, 4],
                 label: HorizontalLineLabel(
                   show: true,
                   alignment: Alignment.topRight,
-                  style: const TextStyle(
-                    color: Color(0xFFE8B830),
+                  style: TextStyle(
+                    color: _amber(context),
                     fontSize: AppFontSizes.caption,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1318,7 +1477,7 @@ class _TrendChart extends StatelessWidget {
     if (previous <= 0) {
       return _TrendComparison(
         text: '\u25B2 from no spend in $previousLabel',
-        color: const Color(0xFFF55C5C),
+        color: _red(context),
       );
     }
 
@@ -1332,7 +1491,7 @@ class _TrendChart extends StatelessWidget {
     final direction = chg > 0 ? '\u25B2' : '\u25BC';
     return _TrendComparison(
       text: '$direction ${chg.abs().toStringAsFixed(0)}% vs $previousLabel',
-      color: chg > 0 ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+      color: chg > 0 ? _red(context) : _green(context),
     );
   }
 
@@ -1370,9 +1529,9 @@ class _TrendArrow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
-          isUp ? Icons.trending_up : Icons.trending_down,
+          isUp ? AppIcons.trendingUp : AppIcons.trendingDown,
           size: 16,
-          color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+          color: isUp ? _red(context) : _green(context),
         ),
         const SizedBox(width: 4),
         Text(
@@ -1380,7 +1539,7 @@ class _TrendArrow extends StatelessWidget {
           style: TextStyle(
             fontSize: AppFontSizes.label,
             fontWeight: FontWeight.w600,
-            color: isUp ? const Color(0xFFF55C5C) : const Color(0xFF3DD07B),
+            color: isUp ? _red(context) : _green(context),
           ),
         ),
       ],

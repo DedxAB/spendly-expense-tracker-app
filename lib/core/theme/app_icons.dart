@@ -57,6 +57,13 @@ class AppIcons {
   static const eyeOff = LucideIcons.eyeOff;
   static const arrowBack = LucideIcons.arrowLeft;
   static const trendingUp = LucideIcons.trendingUp;
+  static const trendingDown = LucideIcons.trendingDown;
+  static const undo = LucideIcons.undo;
+  static const checkCircle = LucideIcons.checkCircle;
+  static const arrowDownLeft = LucideIcons.arrowDownLeft;
+  static const arrowUpRight = LucideIcons.arrowUpRight;
+  static const check = LucideIcons.check;
+  static const chevronDown = LucideIcons.chevronDown;
 
   static IconData getIconForCategory(
     String categoryName, [
