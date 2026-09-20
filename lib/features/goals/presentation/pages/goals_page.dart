@@ -1595,7 +1595,7 @@ class _SummaryHeader extends StatelessWidget {
                 _ProgressRing(
                   value: progress,
                   size: 94,
-                  strokeWidth: 9,
+                  strokeWidth: 7,
                   colors: [_purple(context), _green(context)],
                   label: 'OF TARGET',
                 ),
