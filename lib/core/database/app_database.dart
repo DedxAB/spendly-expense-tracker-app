@@ -70,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 26;
+  int get schemaVersion => 28;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -222,6 +222,19 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 26) {
         await m.createTable(appFlags);
+      }
+      if (from < 27) {
+        await m.addColumn(recurringRules, recurringRules.cardType);
+      }
+      if (from < 28) {
+        await customStatement(
+          'UPDATE transactions SET amount_paise = CAST(ROUND(amount * 100.0) AS INTEGER) '
+          'WHERE amount > 0 AND amount_paise <= amount;',
+        );
+        await customStatement(
+          'UPDATE recurring_rules SET amount_paise = CAST(ROUND(amount * 100.0) AS INTEGER) '
+          'WHERE amount > 0 AND amount_paise <= amount;',
+        );
       }
     },
     beforeOpen: (details) async {

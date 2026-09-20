@@ -731,19 +731,21 @@ child: Text(
                     ),
                     const SizedBox(height: 10),
                   ],
-                  ...settled.map((entry) {
-                    final isLent = entry.type == LendEntryType.lent;
+                  ...settled.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final entryData = entry.value;
+                    final isLent = entryData.type == LendEntryType.lent;
                     final color = isLent ? _green(context) : _red(context);
                     final entryEvents = settlementEvents
                         .where(
                           (event) =>
-                              event.entryId == entry.id && !event.isDeleted,
+                              event.entryId == entryData.id && !event.isDeleted,
                         )
                         .toList(growable: false);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: Dismissible(
-                        key: ValueKey('lend-entry-${entry.id}'),
+                        key: ValueKey('lend-entry-${entryData.id}'),
                         direction: DismissDirection.horizontal,
                         confirmDismiss: (direction) async {
                           if (direction == DismissDirection.startToEnd) {
@@ -751,7 +753,7 @@ child: Text(
                             await _showEntryDialog(
                               context,
                               repo,
-                              existing: entry,
+                              existing: entryData,
                             );
                             return false;
                           }
@@ -759,7 +761,7 @@ child: Text(
                           return _deleteEntry(
                             context,
                             repo,
-                            entryId: entry.id,
+                            entryId: entryData.id,
                             title: isLent ? 'lent' : 'borrowed',
                           );
                         },
@@ -804,39 +806,42 @@ child: Text(
                             ],
                           ),
                         ),
-                        child: _EntryCard(
-                          title: isLent ? 'Lent' : 'Borrowed',
-                          amount: entry.amount,
-                          amountColor: color,
-                          dateLabel: Formatters.date(entry.date),
-                          note: entry.note,
-                          eventChips: _buildEventChips(context, entryEvents),
-                          leadingIcon: isLent
-                              ? AppIcons.download
-                              : AppIcons.upload,
-                          leadingIconColor: color,
-                          isSettled: true,
-                          settledLabel: entry.settledAt == null
-                              ? 'Settled'
-                              : 'Settled ${_settledDateFmt.format(entry.settledAt!)}',
-                          trailing: IconButton(
-                            style: IconButton.styleFrom(
-                              backgroundColor: context.textPrimary.withValues(alpha: 0.06),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                        child: SwipeHintCoach(
+                          enabled: index == 0 && active.isEmpty,
+                          child: _EntryCard(
+                            title: isLent ? 'Lent' : 'Borrowed',
+                            amount: entryData.amount,
+                            amountColor: color,
+                            dateLabel: Formatters.date(entryData.date),
+                            note: entryData.note,
+                            eventChips: _buildEventChips(context, entryEvents),
+                            leadingIcon: isLent
+                                ? AppIcons.download
+                                : AppIcons.upload,
+                            leadingIconColor: color,
+                            isSettled: true,
+                            settledLabel: entryData.settledAt == null
+                                ? 'Settled'
+                                : 'Settled ${_settledDateFmt.format(entryData.settledAt!)}',
+                            trailing: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: context.textPrimary.withValues(alpha: 0.06),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                minimumSize: const Size(32, 32),
+                                padding: EdgeInsets.zero,
                               ),
-                              minimumSize: const Size(32, 32),
-                              padding: EdgeInsets.zero,
+                              icon: Icon(AppIcons.undo, size: 15, color: context.textSecondary),
+                              onPressed: () {
+                                final repo = ref.read(lendRepositoryProvider);
+                                _unsettleEntry(
+                                  context,
+                                  repo,
+                                  entryId: entryData.id,
+                                );
+                              },
                             ),
-                            icon: Icon(AppIcons.undo, size: 15, color: context.textSecondary),
-                            onPressed: () {
-                              final repo = ref.read(lendRepositoryProvider);
-                              _unsettleEntry(
-                                context,
-                                repo,
-                                entryId: entry.id,
-                              );
-                            },
                           ),
                         ),
                       ),

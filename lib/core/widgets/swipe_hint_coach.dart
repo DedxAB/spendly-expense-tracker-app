@@ -131,7 +131,7 @@ class _SwipeHintCoachState extends ConsumerState<SwipeHintCoach>
   }
 
   void _onAnimationStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed && _hintSeen == false) {
+    if (status == AnimationStatus.completed) {
       setState(() => _shown = true);
       ref.read(swipeHintSeenActionsProvider)();
     }

@@ -72,6 +72,7 @@ extension SettingMapper on Setting {
 
 extension RecurringRuleMapper on RecurringRule {
   RecurringRuleEntity toEntity() {
+    final rawCardType = cardType;
     return RecurringRuleEntity(
       id: id,
       title: title,
@@ -79,6 +80,7 @@ extension RecurringRuleMapper on RecurringRule {
       amount: amountPaise > 0 ? Money.fromPaise(amountPaise) : amount,
       categoryId: categoryId,
       paymentMode: PaymentModeX.fromValue(paymentMode),
+      cardType: rawCardType == null ? null : CardTypeX.fromValue(rawCardType),
       frequency: RecurringFrequencyX.fromValue(frequency),
       note: note,
       startDate: DateTime.fromMillisecondsSinceEpoch(startDate),
@@ -223,6 +225,7 @@ RecurringRulesCompanion recurringRuleToCompanion(RecurringRuleEntity entity) {
     amountPaise: Value(Money.toPaise(entity.amount)),
     categoryId: entity.categoryId,
     paymentMode: entity.paymentMode.value,
+    cardType: Value(entity.cardType?.value),
     frequency: entity.frequency.value,
     note: Value(entity.note),
     startDate: entity.startDate.millisecondsSinceEpoch,

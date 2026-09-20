@@ -1396,6 +1396,17 @@ class $RecurringRulesTable extends RecurringRules
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _cardTypeMeta = const VerificationMeta(
+    'cardType',
+  );
+  @override
+  late final GeneratedColumn<String> cardType = GeneratedColumn<String>(
+    'card_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _frequencyMeta = const VerificationMeta(
     'frequency',
   );
@@ -1499,6 +1510,7 @@ class $RecurringRulesTable extends RecurringRules
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     frequency,
     note,
     startDate,
@@ -1574,6 +1586,12 @@ class $RecurringRulesTable extends RecurringRules
       );
     } else if (isInserting) {
       context.missing(_paymentModeMeta);
+    }
+    if (data.containsKey('card_type')) {
+      context.handle(
+        _cardTypeMeta,
+        cardType.isAcceptableOrUnknown(data['card_type']!, _cardTypeMeta),
+      );
     }
     if (data.containsKey('frequency')) {
       context.handle(
@@ -1673,6 +1691,10 @@ class $RecurringRulesTable extends RecurringRules
         DriftSqlType.string,
         data['${effectivePrefix}payment_mode'],
       )!,
+      cardType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}card_type'],
+      ),
       frequency: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}frequency'],
@@ -1722,6 +1744,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
   final int amountPaise;
   final String categoryId;
   final String paymentMode;
+  final String? cardType;
   final String frequency;
   final String? note;
   final int startDate;
@@ -1738,6 +1761,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     required this.amountPaise,
     required this.categoryId,
     required this.paymentMode,
+    this.cardType,
     required this.frequency,
     this.note,
     required this.startDate,
@@ -1757,6 +1781,9 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     map['amount_paise'] = Variable<int>(amountPaise);
     map['category_id'] = Variable<String>(categoryId);
     map['payment_mode'] = Variable<String>(paymentMode);
+    if (!nullToAbsent || cardType != null) {
+      map['card_type'] = Variable<String>(cardType);
+    }
     map['frequency'] = Variable<String>(frequency);
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
@@ -1779,6 +1806,9 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       amountPaise: Value(amountPaise),
       categoryId: Value(categoryId),
       paymentMode: Value(paymentMode),
+      cardType: cardType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cardType),
       frequency: Value(frequency),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       startDate: Value(startDate),
@@ -1803,6 +1833,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       amountPaise: serializer.fromJson<int>(json['amountPaise']),
       categoryId: serializer.fromJson<String>(json['categoryId']),
       paymentMode: serializer.fromJson<String>(json['paymentMode']),
+      cardType: serializer.fromJson<String?>(json['cardType']),
       frequency: serializer.fromJson<String>(json['frequency']),
       note: serializer.fromJson<String?>(json['note']),
       startDate: serializer.fromJson<int>(json['startDate']),
@@ -1824,6 +1855,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       'amountPaise': serializer.toJson<int>(amountPaise),
       'categoryId': serializer.toJson<String>(categoryId),
       'paymentMode': serializer.toJson<String>(paymentMode),
+      'cardType': serializer.toJson<String?>(cardType),
       'frequency': serializer.toJson<String>(frequency),
       'note': serializer.toJson<String?>(note),
       'startDate': serializer.toJson<int>(startDate),
@@ -1843,6 +1875,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     int? amountPaise,
     String? categoryId,
     String? paymentMode,
+    Value<String?> cardType = const Value.absent(),
     String? frequency,
     Value<String?> note = const Value.absent(),
     int? startDate,
@@ -1859,6 +1892,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     amountPaise: amountPaise ?? this.amountPaise,
     categoryId: categoryId ?? this.categoryId,
     paymentMode: paymentMode ?? this.paymentMode,
+    cardType: cardType.present ? cardType.value : this.cardType,
     frequency: frequency ?? this.frequency,
     note: note.present ? note.value : this.note,
     startDate: startDate ?? this.startDate,
@@ -1883,6 +1917,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
       paymentMode: data.paymentMode.present
           ? data.paymentMode.value
           : this.paymentMode,
+      cardType: data.cardType.present ? data.cardType.value : this.cardType,
       frequency: data.frequency.present ? data.frequency.value : this.frequency,
       note: data.note.present ? data.note.value : this.note,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
@@ -1906,6 +1941,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('frequency: $frequency, ')
           ..write('note: $note, ')
           ..write('startDate: $startDate, ')
@@ -1927,6 +1963,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
     amountPaise,
     categoryId,
     paymentMode,
+    cardType,
     frequency,
     note,
     startDate,
@@ -1947,6 +1984,7 @@ class RecurringRule extends DataClass implements Insertable<RecurringRule> {
           other.amountPaise == this.amountPaise &&
           other.categoryId == this.categoryId &&
           other.paymentMode == this.paymentMode &&
+          other.cardType == this.cardType &&
           other.frequency == this.frequency &&
           other.note == this.note &&
           other.startDate == this.startDate &&
@@ -1965,6 +2003,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
   final Value<int> amountPaise;
   final Value<String> categoryId;
   final Value<String> paymentMode;
+  final Value<String?> cardType;
   final Value<String> frequency;
   final Value<String?> note;
   final Value<int> startDate;
@@ -1982,6 +2021,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     this.amountPaise = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.paymentMode = const Value.absent(),
+    this.cardType = const Value.absent(),
     this.frequency = const Value.absent(),
     this.note = const Value.absent(),
     this.startDate = const Value.absent(),
@@ -2000,6 +2040,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     this.amountPaise = const Value.absent(),
     required String categoryId,
     required String paymentMode,
+    this.cardType = const Value.absent(),
     required String frequency,
     this.note = const Value.absent(),
     required int startDate,
@@ -2027,6 +2068,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     Expression<int>? amountPaise,
     Expression<String>? categoryId,
     Expression<String>? paymentMode,
+    Expression<String>? cardType,
     Expression<String>? frequency,
     Expression<String>? note,
     Expression<int>? startDate,
@@ -2045,6 +2087,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
       if (amountPaise != null) 'amount_paise': amountPaise,
       if (categoryId != null) 'category_id': categoryId,
       if (paymentMode != null) 'payment_mode': paymentMode,
+      if (cardType != null) 'card_type': cardType,
       if (frequency != null) 'frequency': frequency,
       if (note != null) 'note': note,
       if (startDate != null) 'start_date': startDate,
@@ -2065,6 +2108,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     Value<int>? amountPaise,
     Value<String>? categoryId,
     Value<String>? paymentMode,
+    Value<String?>? cardType,
     Value<String>? frequency,
     Value<String?>? note,
     Value<int>? startDate,
@@ -2083,6 +2127,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
       amountPaise: amountPaise ?? this.amountPaise,
       categoryId: categoryId ?? this.categoryId,
       paymentMode: paymentMode ?? this.paymentMode,
+      cardType: cardType ?? this.cardType,
       frequency: frequency ?? this.frequency,
       note: note ?? this.note,
       startDate: startDate ?? this.startDate,
@@ -2118,6 +2163,9 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
     }
     if (paymentMode.present) {
       map['payment_mode'] = Variable<String>(paymentMode.value);
+    }
+    if (cardType.present) {
+      map['card_type'] = Variable<String>(cardType.value);
     }
     if (frequency.present) {
       map['frequency'] = Variable<String>(frequency.value);
@@ -2159,6 +2207,7 @@ class RecurringRulesCompanion extends UpdateCompanion<RecurringRule> {
           ..write('amountPaise: $amountPaise, ')
           ..write('categoryId: $categoryId, ')
           ..write('paymentMode: $paymentMode, ')
+          ..write('cardType: $cardType, ')
           ..write('frequency: $frequency, ')
           ..write('note: $note, ')
           ..write('startDate: $startDate, ')
@@ -8786,6 +8835,7 @@ typedef $$RecurringRulesTableCreateCompanionBuilder =
       Value<int> amountPaise,
       required String categoryId,
       required String paymentMode,
+      Value<String?> cardType,
       required String frequency,
       Value<String?> note,
       required int startDate,
@@ -8805,6 +8855,7 @@ typedef $$RecurringRulesTableUpdateCompanionBuilder =
       Value<int> amountPaise,
       Value<String> categoryId,
       Value<String> paymentMode,
+      Value<String?> cardType,
       Value<String> frequency,
       Value<String?> note,
       Value<int> startDate,
@@ -8857,6 +8908,11 @@ class $$RecurringRulesTableFilterComposer
 
   ColumnFilters<String> get paymentMode => $composableBuilder(
     column: $table.paymentMode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cardType => $composableBuilder(
+    column: $table.cardType,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8945,6 +9001,11 @@ class $$RecurringRulesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cardType => $composableBuilder(
+    column: $table.cardType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get frequency => $composableBuilder(
     column: $table.frequency,
     builder: (column) => ColumnOrderings(column),
@@ -9022,6 +9083,9 @@ class $$RecurringRulesTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get cardType =>
+      $composableBuilder(column: $table.cardType, builder: (column) => column);
+
   GeneratedColumn<String> get frequency =>
       $composableBuilder(column: $table.frequency, builder: (column) => column);
 
@@ -9089,6 +9153,7 @@ class $$RecurringRulesTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 Value<String> categoryId = const Value.absent(),
                 Value<String> paymentMode = const Value.absent(),
+                Value<String?> cardType = const Value.absent(),
                 Value<String> frequency = const Value.absent(),
                 Value<String?> note = const Value.absent(),
                 Value<int> startDate = const Value.absent(),
@@ -9106,6 +9171,7 @@ class $$RecurringRulesTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 frequency: frequency,
                 note: note,
                 startDate: startDate,
@@ -9125,6 +9191,7 @@ class $$RecurringRulesTableTableManager
                 Value<int> amountPaise = const Value.absent(),
                 required String categoryId,
                 required String paymentMode,
+                Value<String?> cardType = const Value.absent(),
                 required String frequency,
                 Value<String?> note = const Value.absent(),
                 required int startDate,
@@ -9142,6 +9209,7 @@ class $$RecurringRulesTableTableManager
                 amountPaise: amountPaise,
                 categoryId: categoryId,
                 paymentMode: paymentMode,
+                cardType: cardType,
                 frequency: frequency,
                 note: note,
                 startDate: startDate,

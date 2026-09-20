@@ -19,7 +19,6 @@ import 'package:spendly/features/settings/data/repositories/settings_repository_
 import 'package:spendly/features/categories/presentation/providers/categories_provider.dart';
 import 'package:spendly/features/categories/domain/entities/category_entity.dart';
 import 'package:spendly/features/settings/presentation/providers/settings_provider.dart';
-import 'package:spendly/features/transactions/presentation/providers/transactions_provider.dart';
 
 const _kBudgetGreen = Color(0xFF38D97A);
 const _kBudgetAmber = Color(0xFFF5B83D);
@@ -35,6 +34,10 @@ const _kBudgetPurpleLight = Color(0xFF7157D8);
 const _kBudgetSoftRedLight = Color(0xFFEF6459);
 const _kBudgetGreenTintLight = Color(0xFFE7F7EE);
 const _kBudgetRedTintLight = Color(0xFFFDE7EA);
+
+final _activeTransactionsProvider = StreamProvider<List<Transaction>>((ref) {
+  return ref.watch(appDatabaseProvider).watchAllActiveTransactions();
+});
 
 bool _isDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
@@ -70,31 +73,30 @@ class BudgetPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsStreamProvider).valueOrNull;
     final budget = (settings?.monthlyBudget ?? 0).toDouble();
-    final transactions =
-        ref.watch(allTransactionsProvider).valueOrNull ?? const [];
+    final rows = ref.watch(_activeTransactionsProvider).valueOrNull ?? const [];
     final categories = ref.watch(allCategoriesProvider).valueOrNull ?? const [];
 
     final now = DateTime.now();
-    final monthlyItems = transactions
+    final monthlyItems = rows
         .where(
-          (t) =>
-              t.type == TransactionType.expense &&
-              t.date.year == now.year &&
-              t.date.month == now.month,
+          (row) =>
+              row.type == TransactionType.expense.value &&
+              DateTime.fromMillisecondsSinceEpoch(row.date).year == now.year &&
+              DateTime.fromMillisecondsSinceEpoch(row.date).month == now.month,
         )
         .toList(growable: false);
 
     final monthlySpend = monthlyItems.fold<double>(
       0,
-      (sum, t) => sum + t.amount,
+      (sum, row) => sum + row.amount,
     );
     final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
     final leftDays = (daysInMonth - now.day + 1).clamp(1, 31);
 
     final byCategory = <String, double>{};
-    for (final tx in monthlyItems) {
-      byCategory[tx.categoryId] =
-          (byCategory[tx.categoryId] ?? 0.0) + tx.amount;
+    for (final row in monthlyItems) {
+      byCategory[row.categoryId] =
+          (byCategory[row.categoryId] ?? 0.0) + row.amount;
     }
 
     final categoryCards = byCategory.entries.toList(growable: false)
@@ -586,21 +588,23 @@ class _BudgetSummaryCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '${percent.toStringAsFixed(0)}% Used',
+                      '${(percent * 100).toStringAsFixed(0)}% Used',
                       style: TextStyle(
                         color: context.textSecondary,
                         fontSize: AppFontSizes.label,
                       ),
                     ),
-                    const Spacer(),
-                    Flexible(
-                      child: Text(
-                        '${Formatters.currency(remaining.abs())} ${onTrack ? 'Remaining' : 'Over'}',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontSize: AppFontSizes.label,
-                          fontWeight: FontWeight.w700,
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          '${Formatters.currency(remaining.abs())} ${onTrack ? 'Remaining' : 'Over'}',
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),

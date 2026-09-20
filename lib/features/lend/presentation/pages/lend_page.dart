@@ -160,7 +160,6 @@ class LendPage extends ConsumerWidget {
               ...data.peopleBalances.indexed.map((entry) {
                 final index = entry.$1;
                 final item = entry.$2;
-                final isPositive = item.netBalance >= 0;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: Dismissible(
@@ -236,95 +235,67 @@ class LendPage extends ConsumerWidget {
                       enabled: index == 0,
                       child: InkWell(
                         onTap: () => context.push('/lend/${item.person.id}'),
-                        child: Container(
-                        padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: context.surface,
-                          border: Border.all(color: context.border),
                           borderRadius: BorderRadius.circular(AppRadii.lg),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: _purple(context).withValues(
-                                  alpha: 0.14,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                AppIcons.usersRound,
-                                color: _purple(context),
-                                size: 20,
-                              ),
+                          child: Container(
+                            padding: const EdgeInsets.all(AppSpacing.sm),
+                            decoration: BoxDecoration(
+                              color: context.surface,
+                              border: Border.all(color: context.border),
+                              borderRadius: BorderRadius.circular(AppRadii.lg),
                             ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.person.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: AppFontSizes.title,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${item.activeEntryCount} active entries',
-                  style: TextStyle(
-                    color: context.textSecondary,
-                    fontSize: AppFontSizes.label,
-                  ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Row(
                               children: [
-                                Text(
-                                  item.netBalance >= 0 ? '+' : '-',
-                                  style: TextStyle(
-                                    color: isPositive
-                                        ? _green(context)
-                                        : _red(context),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: AppFontSizes.title,
+                                _PersonAvatar(name: item.person.name),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.person.name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: AppFontSizes.title,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        item.activeEntryCount == 0
+                                            ? 'No active entries'
+                                            : '${item.activeEntryCount} '
+                                                '${item.activeEntryCount == 1 ? 'active entry' : 'active entries'}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: context.textSecondary,
+                                          fontSize: AppFontSizes.label,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                AmountView(
-                                  item.netBalance.abs(),
-                                  style: TextStyle(
-                                    color: isPositive
-                                        ? _green(context)
-                                        : _red(context),
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: AppFontSizes.title,
+                                const SizedBox(width: AppSpacing.sm),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  child: _PersonBalance(
+                                    netBalance: item.netBalance,
                                   ),
-                                  maskColor: isPositive
-                                      ? _green(context)
-                                      : _red(context),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Icon(
+                                  AppIcons.chevronRight,
+                                  size: 18,
+                                  color: context.textSecondary.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              AppIcons.chevronRight,
-                              size: 20,
-                              color: context.textSecondary,
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
                     ),
                   ),
                 );
@@ -399,6 +370,142 @@ class _SummaryMetric extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PersonAvatar extends StatelessWidget {
+  const _PersonAvatar({required this.name});
+
+  final String name;
+
+  static const List<Color> _palette = [
+    Color(0xFF8B5CF6),
+    Color(0xFF38D97A),
+    Color(0xFFF5B83D),
+    Color(0xFFFF5C6C),
+    Color(0xFFF59E0B),
+  ];
+
+  Color get _accent {
+    var hash = 0;
+    for (final unit in name.codeUnits) {
+      hash = (hash * 31 + unit) & 0x7fffffff;
+    }
+    return _palette[hash % _palette.length];
+  }
+
+  String get _initials {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) {
+      final word = parts.first;
+      return word.length >= 2
+          ? word.substring(0, 2).toUpperCase()
+          : word.toUpperCase();
+    }
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _accent;
+    return Container(
+      width: 44,
+      height: 44,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        _initials,
+        style: TextStyle(
+          color: color,
+          fontSize: AppFontSizes.label,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonBalance extends StatelessWidget {
+  const _PersonBalance({required this.netBalance});
+
+  final double netBalance;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = netBalance > 0;
+    final isNegative = netBalance < 0;
+    final color = isPositive
+        ? _green(context)
+        : isNegative
+            ? _red(context)
+            : context.textSecondary;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            if (netBalance != 0)
+              Text(
+                isPositive ? '+' : '-',
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: AppFontSizes.title,
+                ),
+              ),
+            AmountView(
+              netBalance.abs(),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w800,
+                fontSize: AppFontSizes.title,
+              ),
+              maskColor: color,
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (netBalance != 0) ...[
+              Icon(
+                isPositive ? AppIcons.download : AppIcons.upload,
+                size: 12,
+                color: color.withValues(alpha: 0.8),
+              ),
+              const SizedBox(width: 3),
+            ],
+            Text(
+              isPositive
+                  ? 'You get'
+                  : isNegative
+                      ? 'You owe'
+                      : 'Settled up',
+              style: TextStyle(
+                color: color.withValues(alpha: 0.8),
+                fontSize: AppFontSizes.caption,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

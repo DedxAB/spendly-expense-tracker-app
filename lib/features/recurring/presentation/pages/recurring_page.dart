@@ -87,6 +87,7 @@ class RecurringPage extends ConsumerWidget {
       if (match.isNotEmpty) selectedCategory = match.first;
     }
     PaymentMode selectedPaymentMode = existing?.paymentMode ?? PaymentMode.upi;
+    CardType selectedCardType = existing?.cardType ?? CardType.debit;
     RecurringFrequency selectedFrequency =
         existing?.frequency ?? RecurringFrequency.monthly;
     DateTime selectedStartDate = existing?.startDate ?? DateTime.now();
@@ -220,6 +221,15 @@ class RecurringPage extends ConsumerWidget {
                           setState(() => selectedPaymentMode = value);
                         },
                       ),
+                      if (selectedPaymentMode == PaymentMode.card) ...[
+                        const SizedBox(height: 8),
+                        _CardTypeSegment(
+                          selected: selectedCardType,
+                          onChanged: (value) {
+                            setState(() => selectedCardType = value);
+                          },
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.sm),
                       const _ModalFieldLabel('Note (optional)'),
                       const SizedBox(height: 6),
@@ -272,6 +282,9 @@ class RecurringPage extends ConsumerWidget {
                       amount: amount,
                       categoryId: selectedCategory.id,
                       paymentMode: selectedPaymentMode,
+                      cardType: selectedPaymentMode == PaymentMode.card
+                          ? selectedCardType
+                          : null,
                       frequency: selectedFrequency,
                       note: noteController.text.trim().isEmpty
                           ? null
@@ -509,6 +522,39 @@ class _PaymentModeSegment extends StatelessWidget {
   }
 }
 
+class _CardTypeSegment extends StatelessWidget {
+  const _CardTypeSegment({required this.selected, required this.onChanged});
+
+  final CardType selected;
+  final ValueChanged<CardType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: AppModalSizes.dialogContentWidth,
+      child: SegmentedButton<CardType>(
+        showSelectedIcon: false,
+        segments: const [
+          ButtonSegment(value: CardType.debit, label: Text('Debit')),
+          ButtonSegment(value: CardType.credit, label: Text('Credit')),
+        ],
+        selected: {selected},
+        onSelectionChanged: (value) => onChanged(value.first),
+        style: SegmentedButton.styleFrom(
+          foregroundColor: context.textSecondary,
+          selectedForegroundColor: Theme.of(context).colorScheme.onPrimary,
+          backgroundColor: context.surface,
+          selectedBackgroundColor: Theme.of(context).colorScheme.primary,
+          side: BorderSide(color: context.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ModalFieldLabel extends StatelessWidget {
   const _ModalFieldLabel(this.label, {this.required = false});
 
@@ -655,8 +701,8 @@ class _RecurringRuleCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         rule.note?.isNotEmpty == true
-                            ? '${_frequencyLabel(rule.frequency)} \u00B7 ${rule.paymentMode.label} \u00B7 ${rule.note!.trim()}'
-                            : '${_frequencyLabel(rule.frequency)} \u00B7 ${rule.paymentMode.label}',
+                            ? '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)} \u00B7 ${rule.note!.trim()}'
+                            : '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

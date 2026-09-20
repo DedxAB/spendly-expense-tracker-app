@@ -132,6 +132,7 @@ class RecurringRepositoryImpl implements RecurringRepository {
               amountPaise: Value(Money.toPaise(row.amount)),
               categoryId: row.categoryId,
               paymentMode: PaymentModeX.fromValue(row.paymentMode).value,
+              cardType: Value(row.cardType),
               note: Value(
                 row.note == null || row.note!.trim().isEmpty
                     ? 'Recurring: ${row.title}'

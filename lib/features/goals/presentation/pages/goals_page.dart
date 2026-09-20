@@ -184,9 +184,15 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
       );
     }
     final state = GoalsState(emergencyFunds: emergencyFunds, goals: goals);
-    final onTrackCount = goals
-        .where((goal) => _statusOf(goal) == _GoalStatus.onTrack)
-        .length;
+    final onTrackCount =
+        goals
+                .where((goal) => _statusOf(goal) == _GoalStatus.onTrack)
+                .length +
+            emergencyFunds
+                .where(
+                  (fund) => fund.currentAmount >= fund.targetAmount,
+                )
+                .length;
     final urgentGoal = goals.isEmpty
         ? null
         : goals.reduce((a, b) => a.targetDate.isBefore(b.targetDate) ? a : b);
@@ -206,7 +212,7 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
             )
           : null,
       body: !hasAnyGoalData
-          ? _EmptyState(onCreate: () => _openCreateGoalSheet(context, actions))
+          ? _EmptyState(onCreate: () => _openCreateSheet(context, actions))
           : Column(
               children: [
                 Padding(
@@ -243,7 +249,6 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                           fundCount: emergencyFunds.length + goals.length,
                           monthlyCommitment: state.monthlyGoalCommitment,
                           onTrackCount: onTrackCount,
-                          goalCount: goals.length,
                         ),
                       ),
                       if (_tabIndex == 0) ...[
@@ -264,8 +269,8 @@ class _GoalsPageState extends ConsumerState<GoalsPage> {
                         if (goals.isEmpty)
                           const _InlineEmpty(
                             icon: AppIcons.goals,
-                            message: 'No goals yet. Tap "New Goal" to start '
-                                'saving for something you love.',
+                            message: 'No goals yet. Tap + to start saving for '
+                                'something you love.',
                           )
                         else
                           ...goals.asMap().entries.map(
@@ -1538,7 +1543,6 @@ class _SummaryHeader extends StatelessWidget {
     required this.fundCount,
     required this.monthlyCommitment,
     required this.onTrackCount,
-    required this.goalCount,
   });
 
   final double totalSaved;
@@ -1547,7 +1551,6 @@ class _SummaryHeader extends StatelessWidget {
   final int fundCount;
   final double monthlyCommitment;
   final int onTrackCount;
-  final int goalCount;
 
   @override
   Widget build(BuildContext context) {
@@ -1636,7 +1639,7 @@ class _SummaryHeader extends StatelessWidget {
                         children: [
                           _SummaryMetric(
                             label: 'On track',
-                            value: '$onTrackCount / $goalCount',
+                            value: '$onTrackCount / $fundCount',
                           ),
                           const SizedBox(width: 8),
                           _SummaryMetric(
@@ -1986,7 +1989,7 @@ class _EmptyState extends StatelessWidget {
             SizedBox(
               width: 220,
               child: _GoalButton(
-                label: 'Create your first goal',
+                label: 'Create your first fund',
                 icon: AppIcons.plus,
                 onTap: onCreate,
                 primary: true,

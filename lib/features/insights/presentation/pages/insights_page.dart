@@ -624,7 +624,7 @@ class _OverviewCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Flexible(
+                    Expanded(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerRight,
