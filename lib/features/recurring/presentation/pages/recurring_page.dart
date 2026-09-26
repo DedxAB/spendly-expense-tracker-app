@@ -701,8 +701,8 @@ class _RecurringRuleCard extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         rule.note?.isNotEmpty == true
-                            ? '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)} \u00B7 ${rule.note!.trim()}'
-                            : '${_frequencyLabel(rule.frequency)} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)}',
+                            ? '${rule.frequency.label} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)} \u00B7 ${rule.note!.trim()}'
+                            : '${rule.frequency.label} \u00B7 ${transactionPaymentLabel(type: rule.type, paymentMode: rule.paymentMode, cardType: rule.cardType)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -755,19 +755,6 @@ class _RecurringRuleCard extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-String _frequencyLabel(RecurringFrequency frequency) {
-  switch (frequency) {
-    case RecurringFrequency.daily:
-      return 'Daily';
-    case RecurringFrequency.weekly:
-      return 'Weekly';
-    case RecurringFrequency.monthly:
-      return 'Monthly';
-    case RecurringFrequency.yearly:
-      return 'Yearly';
   }
 }
 

@@ -144,6 +144,9 @@ extension AppThemeModeX on AppThemeMode {
 }
 
 extension RecurringFrequencyX on RecurringFrequency {
+  static const double _daysPerMonth = 365.0 / 12;
+  static const double _weeksPerMonth = 52.1775 / 12;
+
   String get value {
     switch (this) {
       case RecurringFrequency.daily:
@@ -155,6 +158,36 @@ extension RecurringFrequencyX on RecurringFrequency {
       case RecurringFrequency.yearly:
         return 'yearly';
     }
+  }
+
+  String get label {
+    switch (this) {
+      case RecurringFrequency.daily:
+        return 'Daily';
+      case RecurringFrequency.weekly:
+        return 'Weekly';
+      case RecurringFrequency.monthly:
+        return 'Monthly';
+      case RecurringFrequency.yearly:
+        return 'Yearly';
+    }
+  }
+
+  double get monthlyMultiplier {
+    switch (this) {
+      case RecurringFrequency.daily:
+        return _daysPerMonth;
+      case RecurringFrequency.weekly:
+        return _weeksPerMonth;
+      case RecurringFrequency.monthly:
+        return 1;
+      case RecurringFrequency.yearly:
+        return 1 / 12;
+    }
+  }
+
+  double monthlyEquivalent(num perOccurrenceAmount) {
+    return perOccurrenceAmount.toDouble() * monthlyMultiplier;
   }
 
   static RecurringFrequency fromValue(String value) {

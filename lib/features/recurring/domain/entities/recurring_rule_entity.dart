@@ -35,6 +35,8 @@ class RecurringRuleEntity {
   final bool isActive;
   final bool isDeleted;
 
+  double get monthlyAmount => frequency.monthlyEquivalent(amount);
+
   RecurringRuleEntity copyWith({
     String? id,
     String? title,

@@ -179,7 +179,7 @@ class HomePage extends ConsumerWidget {
               final active = rules.where((r) => r.isActive).toList();
               if (active.isEmpty) return const SizedBox.shrink();
               final total = active.fold<double>(
-                0, (sum, r) => sum + r.amount);
+                0, (sum, r) => sum + r.monthlyAmount);
               final nextRule = active.reduce(
                 (a, b) => a.nextDueDate.isBefore(b.nextDueDate) ? a : b);
               return Padding(
