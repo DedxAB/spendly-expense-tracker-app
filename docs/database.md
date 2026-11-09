@@ -17,7 +17,7 @@ Spendly uses Drift ORM on top of SQLite. Every read and write goes through Drift
 
 ## Schema
 
-The database has 14 tables (schema version 22). All monetary amounts are stored in paise (1 ₹ = 100 paise) to avoid floating-point precision errors. All mutable entities support soft deletes via an `isDeleted` flag. Timestamps are stored as Unix epoch milliseconds (integers).
+The database has 15 tables (schema version 28). All monetary amounts are stored in paise (1 ₹ = 100 paise) to avoid floating-point precision errors. All mutable entities support soft deletes via an `isDeleted` flag. Timestamps are stored as Unix epoch milliseconds (integers).
 
 ---
 
@@ -76,6 +76,7 @@ Defines the schedule for automatically generated transactions.
 | amountPaise | INTEGER | Exact amount in paise |
 | categoryId | TEXT | FK → categories.id |
 | paymentMode | TEXT | `cash`, `card`, `upi` |
+| cardType | TEXT | `credit` or `debit` (optional) |
 | frequency | TEXT | `daily`, `weekly`, `monthly`, `yearly` |
 | note | TEXT | Optional description |
 | startDate | INTEGER | When the rule begins (Unix epoch ms) |
@@ -101,6 +102,7 @@ Single-row table. Row with `id = 1` is always present.
 | transactionHintsSeen | BOOLEAN | Whether transaction hint tips have been shown |
 | dailyReminderEnabled | BOOLEAN | Whether the daily notification is active |
 | privacyLockEnabled | BOOLEAN | Whether biometric lock is on |
+| preventScreenshotsEnabled | BOOLEAN | Whether screenshot prevention is on (FLAG_SECURE while app is open) |
 | showAmountsEnabled | BOOLEAN | Whether amounts are visible |
 | lastBudgetAlertAt | INTEGER | Last time a budget alert was shown (Unix epoch ms, nullable) |
 | updatedAt | INTEGER | Last update timestamp |
@@ -270,6 +272,17 @@ Individual contributions made towards a goal.
 | note | TEXT | Optional note |
 | createdAt | INTEGER | Row creation timestamp |
 | isDeleted | BOOLEAN | Soft delete flag |
+
+---
+
+### appFlags
+
+Simple key-value store for one-off app flags (e.g. whether a hint has been shown).
+
+| Column | Type | Notes |
+|---|---|---|
+| key | TEXT | Primary key (e.g. `swipe_hint_seen`) |
+| value | TEXT | Nullable string value (`'1'` = true) |
 
 ---
 

@@ -78,6 +78,28 @@ The setting is also persisted in the `settings` table (`showAmountsEnabled`) so 
 
 ---
 
+## Prevent Screenshots
+
+A toggle in Settings marks the app window as secure, so Android (FLAG_SECURE) blocks screenshots and app-switcher previews while Spendly is open.
+
+### How It Works
+
+On app launch (and on every toggle change), `PrivacyGuard.setWindowSecure()` sends a platform-channel message named `spendly/privacy`:
+
+```text
+Settings toggle is on (preventScreenshotsEnabled)
+        ↓
+PrivacyGuard.setWindowSecure(true) via MethodChannel
+        ↓
+OS flags the window as secure
+        ↓
+Screenshots and screen recordings of the app are blocked
+```
+
+The call is best-effort — platforms that don't implement the channel simply ignore it. The preference persists in the `settings` table (`preventScreenshotsEnabled`).
+
+---
+
 ## Cloud Backup (Optional)
 
 Cloud sync is entirely opt-in. If you never connect a Google account, no data leaves the device.
