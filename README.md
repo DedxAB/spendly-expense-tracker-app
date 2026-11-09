@@ -41,14 +41,6 @@ Track expenses, manage budgets, analyze spending habits, and stay in control of 
 - Subscription tracking
 - Automated recurring entries
 
-### Expense Contributions
-
-- Split expenses with others
-- Track who has paid / hasn't paid
-- Settlement history
-- Contribution invoice PDF export
-- Automatic effective spend calculation
-
 ### Lend & Borrow
 
 - Money lent tracking
@@ -60,6 +52,7 @@ Track expenses, manage budgets, analyze spending habits, and stay in control of 
 - Biometric authentication
 - Device authentication
 - Privacy lock
+- Prevent screenshots
 - Hidden amounts
 
 ### Notifications
@@ -144,23 +137,28 @@ lib/
 │   └── app setup
 │
 ├── core/
+│   ├── constants
 │   ├── database
+│   ├── error
+│   ├── lock
+│   ├── logger
 │   ├── theme
 │   ├── notifications
 │   ├── utils
-│   └── services
+│   └── widgets
 │
 ├── features/
+│   ├── activity
+│   ├── categories
+│   ├── cloud_sync
+│   ├── goals
 │   ├── home
-│   ├── history
-│   ├── budget
-│   ├── analytics
+│   ├── insights
+│   ├── lend
 │   ├── recurring
-│   ├── notifications
 │   ├── settings
-│   └── onboarding
-│
-└── shared/
+│   ├── transactions
+│   └── user
 ```
 
 The project follows a feature-first architecture to keep business logic isolated and maintainable.
@@ -218,7 +216,6 @@ flutter run
 - CSV import/export
 - Multi-currency support
 - Advanced recurring rules
-- Financial goals
 - Savings recommendations
 
 ---

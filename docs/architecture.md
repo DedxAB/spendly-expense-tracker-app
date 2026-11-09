@@ -19,6 +19,7 @@ Spendly is an offline-first personal finance app built with Flutter. Every featu
 | Notifications | flutter_local_notifications 17.2.3 |
 | Biometric Auth | local_auth 3.0.1 |
 | Cloud Backup | Google Sign-In 6.2.2 + Google Drive |
+| Screenshot Guard | PrivacyGuard (platform MethodChannel for FLAG_SECURE) |
 
 ---
 
@@ -33,6 +34,7 @@ lib/
 ├── core/
 │   ├── constants/      ← App-wide constants
 │   ├── database/       ← Drift DB, all tables, DAO mixins
+│   ├── lock/           ← Privacy lock gate & app lock state
 │   ├── error/          ← Failure types
 │   ├── logger/         ← Centralized logging
 │   ├── notifications/  ← Budget alerts & daily reminders
@@ -185,6 +187,7 @@ HomePage balance card, InsightsPage charts update automatically
 
 Dashboard screen. Shows:
 
+- Time-aware greeting (Good morning / afternoon / evening / night)
 - Current balance (income − expense for the month)
 - Today's spend vs yesterday
 - Remaining monthly budget
@@ -286,6 +289,7 @@ Add person → Add lend/borrow entry → Apply settlements over time
 - Per-category budget (tracked separately in `CategoryBudgets` table)
 - Daily reminder toggle (schedules/cancels local notification)
 - Privacy lock toggle (enables biometric on app resume)
+- Prevent screenshots toggle
 - Amount visibility toggle (hides all financial figures)
 - JSON export / import (used for cloud backup)
 - Clear all data
