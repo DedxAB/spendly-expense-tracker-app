@@ -7533,6 +7533,16 @@ class $GoalContributionsTable extends GoalContributions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -7566,6 +7576,7 @@ class $GoalContributionsTable extends GoalContributions
     amount,
     amountPaise,
     note,
+    source,
     createdAt,
     isDeleted,
   ];
@@ -7617,6 +7628,12 @@ class $GoalContributionsTable extends GoalContributions
         note.isAcceptableOrUnknown(data['note']!, _noteMeta),
       );
     }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -7660,6 +7677,10 @@ class $GoalContributionsTable extends GoalContributions
         DriftSqlType.string,
         data['${effectivePrefix}note'],
       ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -7684,6 +7705,7 @@ class GoalContribution extends DataClass
   final double amount;
   final int amountPaise;
   final String? note;
+  final String source;
   final int createdAt;
   final bool isDeleted;
   const GoalContribution({
@@ -7692,6 +7714,7 @@ class GoalContribution extends DataClass
     required this.amount,
     required this.amountPaise,
     this.note,
+    required this.source,
     required this.createdAt,
     required this.isDeleted,
   });
@@ -7705,6 +7728,7 @@ class GoalContribution extends DataClass
     if (!nullToAbsent || note != null) {
       map['note'] = Variable<String>(note);
     }
+    map['source'] = Variable<String>(source);
     map['created_at'] = Variable<int>(createdAt);
     map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
@@ -7717,6 +7741,7 @@ class GoalContribution extends DataClass
       amount: Value(amount),
       amountPaise: Value(amountPaise),
       note: note == null && nullToAbsent ? const Value.absent() : Value(note),
+      source: Value(source),
       createdAt: Value(createdAt),
       isDeleted: Value(isDeleted),
     );
@@ -7733,6 +7758,7 @@ class GoalContribution extends DataClass
       amount: serializer.fromJson<double>(json['amount']),
       amountPaise: serializer.fromJson<int>(json['amountPaise']),
       note: serializer.fromJson<String?>(json['note']),
+      source: serializer.fromJson<String>(json['source']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
@@ -7746,6 +7772,7 @@ class GoalContribution extends DataClass
       'amount': serializer.toJson<double>(amount),
       'amountPaise': serializer.toJson<int>(amountPaise),
       'note': serializer.toJson<String?>(note),
+      'source': serializer.toJson<String>(source),
       'createdAt': serializer.toJson<int>(createdAt),
       'isDeleted': serializer.toJson<bool>(isDeleted),
     };
@@ -7757,6 +7784,7 @@ class GoalContribution extends DataClass
     double? amount,
     int? amountPaise,
     Value<String?> note = const Value.absent(),
+    String? source,
     int? createdAt,
     bool? isDeleted,
   }) => GoalContribution(
@@ -7765,6 +7793,7 @@ class GoalContribution extends DataClass
     amount: amount ?? this.amount,
     amountPaise: amountPaise ?? this.amountPaise,
     note: note.present ? note.value : this.note,
+    source: source ?? this.source,
     createdAt: createdAt ?? this.createdAt,
     isDeleted: isDeleted ?? this.isDeleted,
   );
@@ -7777,6 +7806,7 @@ class GoalContribution extends DataClass
           ? data.amountPaise.value
           : this.amountPaise,
       note: data.note.present ? data.note.value : this.note,
+      source: data.source.present ? data.source.value : this.source,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
@@ -7790,6 +7820,7 @@ class GoalContribution extends DataClass
           ..write('amount: $amount, ')
           ..write('amountPaise: $amountPaise, ')
           ..write('note: $note, ')
+          ..write('source: $source, ')
           ..write('createdAt: $createdAt, ')
           ..write('isDeleted: $isDeleted')
           ..write(')'))
@@ -7797,8 +7828,16 @@ class GoalContribution extends DataClass
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, goalId, amount, amountPaise, note, createdAt, isDeleted);
+  int get hashCode => Object.hash(
+    id,
+    goalId,
+    amount,
+    amountPaise,
+    note,
+    source,
+    createdAt,
+    isDeleted,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7808,6 +7847,7 @@ class GoalContribution extends DataClass
           other.amount == this.amount &&
           other.amountPaise == this.amountPaise &&
           other.note == this.note &&
+          other.source == this.source &&
           other.createdAt == this.createdAt &&
           other.isDeleted == this.isDeleted);
 }
@@ -7818,6 +7858,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
   final Value<double> amount;
   final Value<int> amountPaise;
   final Value<String?> note;
+  final Value<String> source;
   final Value<int> createdAt;
   final Value<bool> isDeleted;
   final Value<int> rowid;
@@ -7827,6 +7868,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
     this.amount = const Value.absent(),
     this.amountPaise = const Value.absent(),
     this.note = const Value.absent(),
+    this.source = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -7837,6 +7879,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
     required double amount,
     this.amountPaise = const Value.absent(),
     this.note = const Value.absent(),
+    this.source = const Value.absent(),
     required int createdAt,
     this.isDeleted = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -7850,6 +7893,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
     Expression<double>? amount,
     Expression<int>? amountPaise,
     Expression<String>? note,
+    Expression<String>? source,
     Expression<int>? createdAt,
     Expression<bool>? isDeleted,
     Expression<int>? rowid,
@@ -7860,6 +7904,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
       if (amount != null) 'amount': amount,
       if (amountPaise != null) 'amount_paise': amountPaise,
       if (note != null) 'note': note,
+      if (source != null) 'source': source,
       if (createdAt != null) 'created_at': createdAt,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (rowid != null) 'rowid': rowid,
@@ -7872,6 +7917,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
     Value<double>? amount,
     Value<int>? amountPaise,
     Value<String?>? note,
+    Value<String>? source,
     Value<int>? createdAt,
     Value<bool>? isDeleted,
     Value<int>? rowid,
@@ -7882,6 +7928,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
       amount: amount ?? this.amount,
       amountPaise: amountPaise ?? this.amountPaise,
       note: note ?? this.note,
+      source: source ?? this.source,
       createdAt: createdAt ?? this.createdAt,
       isDeleted: isDeleted ?? this.isDeleted,
       rowid: rowid ?? this.rowid,
@@ -7906,6 +7953,9 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
     if (note.present) {
       map['note'] = Variable<String>(note.value);
     }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -7926,6 +7976,7 @@ class GoalContributionsCompanion extends UpdateCompanion<GoalContribution> {
           ..write('amount: $amount, ')
           ..write('amountPaise: $amountPaise, ')
           ..write('note: $note, ')
+          ..write('source: $source, ')
           ..write('createdAt: $createdAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('rowid: $rowid')
@@ -11913,6 +11964,7 @@ typedef $$GoalContributionsTableCreateCompanionBuilder =
       required double amount,
       Value<int> amountPaise,
       Value<String?> note,
+      Value<String> source,
       required int createdAt,
       Value<bool> isDeleted,
       Value<int> rowid,
@@ -11924,6 +11976,7 @@ typedef $$GoalContributionsTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<int> amountPaise,
       Value<String?> note,
+      Value<String> source,
       Value<int> createdAt,
       Value<bool> isDeleted,
       Value<int> rowid,
@@ -11960,6 +12013,11 @@ class $$GoalContributionsTableFilterComposer
 
   ColumnFilters<String> get note => $composableBuilder(
     column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12008,6 +12066,11 @@ class $$GoalContributionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -12044,6 +12107,9 @@ class $$GoalContributionsTableAnnotationComposer
 
   GeneratedColumn<String> get note =>
       $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -12097,6 +12163,7 @@ class $$GoalContributionsTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<int> amountPaise = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<String> source = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -12106,6 +12173,7 @@ class $$GoalContributionsTableTableManager
                 amount: amount,
                 amountPaise: amountPaise,
                 note: note,
+                source: source,
                 createdAt: createdAt,
                 isDeleted: isDeleted,
                 rowid: rowid,
@@ -12117,6 +12185,7 @@ class $$GoalContributionsTableTableManager
                 required double amount,
                 Value<int> amountPaise = const Value.absent(),
                 Value<String?> note = const Value.absent(),
+                Value<String> source = const Value.absent(),
                 required int createdAt,
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -12126,6 +12195,7 @@ class $$GoalContributionsTableTableManager
                 amount: amount,
                 amountPaise: amountPaise,
                 note: note,
+                source: source,
                 createdAt: createdAt,
                 isDeleted: isDeleted,
                 rowid: rowid,

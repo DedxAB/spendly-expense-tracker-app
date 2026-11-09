@@ -70,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 29;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -235,6 +235,9 @@ class AppDatabase extends _$AppDatabase {
           'UPDATE recurring_rules SET amount_paise = CAST(ROUND(amount * 100.0) AS INTEGER) '
           'WHERE amount > 0 AND amount_paise <= amount;',
         );
+      }
+      if (from < 29) {
+        await m.addColumn(goalContributions, goalContributions.source);
       }
     },
     beforeOpen: (details) async {
@@ -868,6 +871,10 @@ class AppDatabase extends _$AppDatabase {
     return query.watch();
   }
 
+  /// Sums only manual contributions for the allocation metric.
+  ///
+  /// Interest and other machine-generated money inside a goal never comes from
+  /// the wallet, so it must not reduce "available to spend".
   Stream<double> watchMonthlyGoalAllocation(DateTime month) {
     final start = DateTime(month.year, month.month, 1).millisecondsSinceEpoch;
     final end = DateTime(
@@ -877,6 +884,7 @@ class AppDatabase extends _$AppDatabase {
     ).millisecondsSinceEpoch;
     final query = select(goalContributions)
       ..where((tbl) => tbl.isDeleted.equals(false))
+      ..where((tbl) => tbl.source.equals(GoalContributionSource.manual.value))
       ..where((tbl) => tbl.createdAt.isBiggerOrEqualValue(start))
       ..where((tbl) => tbl.createdAt.isSmallerThanValue(end));
     return query.watch().map((rows) {
@@ -926,6 +934,7 @@ class AppDatabase extends _$AppDatabase {
     required String goalId,
     required double amount,
     String? note,
+    GoalContributionSource source = GoalContributionSource.manual,
   }) async {
     if (amount == 0) return false;
     final normalized = Money.normalize(amount);
@@ -946,6 +955,7 @@ class AppDatabase extends _$AppDatabase {
           amount: normalized,
           amountPaise: Value(Money.toPaise(normalized)),
           note: Value(note),
+          source: Value(source.value),
           createdAt: nowMs,
           isDeleted: const Value(false),
         ),
