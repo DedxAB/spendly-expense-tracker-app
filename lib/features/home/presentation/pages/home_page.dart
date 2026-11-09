@@ -209,20 +209,17 @@ class HomePage extends ConsumerWidget {
                   child: EmptyTransactionIllustration(message: 'Your recent transactions will appear here'),
                 );
               }
-              return HomeSurfaceCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    for (var i = 0; i < items.length; i++)
-                      TransactionRow.fromEntity(
-                        tx: items[i],
-                        categoryById: categoryById,
-                        dateLabel: _dateLabel(items[i]),
-                        isLast: i == items.length - 1,
-                        compact: true,
-                      ),
-                  ],
-                ),
+              return Column(
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    TransactionRow.fromEntity(
+                      tx: items[i],
+                      categoryById: categoryById,
+                      dateLabel: _dateLabel(items[i]),
+                      isLast: i == items.length - 1,
+                      compact: true,
+                    ),
+                ],
               );
             },
             loading: () => const Padding(
