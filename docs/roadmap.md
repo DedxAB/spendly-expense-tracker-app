@@ -44,8 +44,9 @@ Everything listed here is fully implemented in the codebase.
 ### Goals
 
 - Financial goals with target amount and monthly contribution
+- Goals carry a contribution source — manual deposits vs bank-credited interest — so growth never counts as money spent from the wallet
 - Emergency fund (dedicated goal type)
-- Contribution history per goal
+- Contribution history per goal (with interest entries badged and an interest-earned total)
 - Progress tracking (% complete, months to reach target)
 
 ### Lending

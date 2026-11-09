@@ -254,6 +254,9 @@ class GoalContributions extends Table {
   IntColumn get amountPaise =>
       integer().named('amount_paise').withDefault(const Constant(0))();
   TextColumn get note => text().nullable()();
+  TextColumn get source => text().named('source').withDefault(
+    const Constant('manual'),
+  )();
   IntColumn get createdAt => integer().named('created_at')();
   BoolColumn get isDeleted =>
       boolean().named('is_deleted').withDefault(const Constant(false))();

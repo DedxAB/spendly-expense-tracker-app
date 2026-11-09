@@ -241,7 +241,8 @@ On every app launch, `recurringBootstrapProvider` calls `processDueRules()` whic
 Tracks savings goals and an emergency fund.
 
 - Each goal has a target amount, saved amount, and optional monthly contribution
-- Contributions are logged as individual events
+- Contributions are logged as individual events, each tagged with a source (`manual` = money you put in, `interest` = credited by the bank)
+- Monthly goal allocation (used on the home dashboard) counts only manual contributions — interest grows the goal without reducing available-to-spend
 - Calculated fields: `progress` (%), `remaining`, `monthsCovered`
 - Emergency fund is a special goal flagged with `isEmergency = true`
 
@@ -325,4 +326,5 @@ Single user profile (id = 1). Stores name, email, phone, and `onboardingComplete
 | Streams for all DB reads | UI always reflects current state without manual refresh |
 | Recurring rules vs instances | Rules define the schedule; instances are real transactions |
 | Single user, single settings row | Keeps schema simple; no multi-user complexity |
+| Goal contributions carry a `source` | Interest grows goals without being miscounted as wallet spend in the allocation metric |
 | JSON export for backup | Human-readable; easy to restore without a server |

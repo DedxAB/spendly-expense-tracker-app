@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.7.0] - 2026-11-09
+
+### Added
+
+- **Goal contributions now track their source**: Every goal / emergency fund contribution is recorded as `manual` (money you put in) or `interest` (money the bank paid into the goal). A new **Add Interest** action lives in the goals page "more" sheet alongside Withdraw and History, with interest entries badged in the history sheet and an "Interest earned" total per goal.
+- **Interest never touches your spendable balance**: The home screen "allocated to goals this month" amount and the derived *available to spend* now count manual contributions only — interest grows the goal without double-counting against your wallet.
+
+### Database
+
+- Schema version 28 → 29: `goalContributions` gained a `source` column (`manual` | `interest`, default `manual`). Existing data migrates in place; nothing is lost.
+- Backup JSON export/import include the contribution source. Old backups import cleanly (missing sources default to `manual`), and new backups stay importable by older app versions.
+
 ## [1.6.0] - 2026-09-18
 
 ### Removed

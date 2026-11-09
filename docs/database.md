@@ -17,7 +17,7 @@ Spendly uses Drift ORM on top of SQLite. Every read and write goes through Drift
 
 ## Schema
 
-The database has 15 tables (schema version 28). All monetary amounts are stored in paise (1 ₹ = 100 paise) to avoid floating-point precision errors. All mutable entities support soft deletes via an `isDeleted` flag. Timestamps are stored as Unix epoch milliseconds (integers).
+The database has 15 tables (schema version 29). All monetary amounts are stored in paise (1 ₹ = 100 paise) to avoid floating-point precision errors. All mutable entities support soft deletes via an `isDeleted` flag. Timestamps are stored as Unix epoch milliseconds (integers).
 
 ---
 
@@ -270,8 +270,11 @@ Individual contributions made towards a goal.
 | amount | REAL | Contribution amount (display) |
 | amountPaise | INTEGER | Exact contribution in paise |
 | note | TEXT | Optional note |
+| source | TEXT | `manual` (money you put in) or `interest` (credited by the bank). Default `manual` |
 | createdAt | INTEGER | Row creation timestamp |
 | isDeleted | BOOLEAN | Soft delete flag |
+
+Monthly goal allocation (home "allocated to goals this month") sums only `source = manual` rows — interest lives inside the goal and never comes from the wallet, so it must not reduce available-to-spend.
 
 ---
 

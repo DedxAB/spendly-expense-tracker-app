@@ -139,6 +139,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   ) {
     final normalized = Map<String, dynamic>.from(json);
     _normalizeDateField(normalized, 'createdAt');
+    // Older exports have no `source`; fall back so legacy rows stay manual.
+    final rawSource = (normalized['source'] as String?)?.toLowerCase();
+    normalized['source'] =
+        rawSource == GoalContributionSource.interest.value
+        ? GoalContributionSource.interest.value
+        : GoalContributionSource.manual.value;
     return normalized;
   }
 
@@ -248,6 +254,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
                 'goalId': e.goalId,
                 'amount': e.amount,
                 'note': e.note,
+                'source': e.source,
                 'createdAt': e.createdAt,
               },
             )
@@ -458,6 +465,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
             amount: amount,
             amountPaise: Value(Money.toPaise(amount)),
             note: Value(normalized['note'] as String?),
+            source: Value(
+              normalized['source'] as String? ??
+                  GoalContributionSource.manual.value,
+            ),
             createdAt:
                 (DateTime.tryParse(
                           (normalized['createdAt'] ?? '').toString(),

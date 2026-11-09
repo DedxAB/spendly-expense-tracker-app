@@ -10,6 +10,38 @@ enum RecurringFrequency { daily, weekly, monthly, yearly }
 
 enum LendEntryType { lent, borrowed }
 
+enum GoalContributionSource { manual, interest }
+
+extension GoalContributionSourceX on GoalContributionSource {
+  String get value {
+    switch (this) {
+      case GoalContributionSource.manual:
+        return 'manual';
+      case GoalContributionSource.interest:
+        return 'interest';
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case GoalContributionSource.manual:
+        return 'Contribution';
+      case GoalContributionSource.interest:
+        return 'Interest';
+    }
+  }
+
+  static GoalContributionSource fromValue(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'interest':
+        return GoalContributionSource.interest;
+      case 'manual':
+      default:
+        return GoalContributionSource.manual;
+    }
+  }
+}
+
 extension TransactionTypeX on TransactionType {
   String get value {
     switch (this) {

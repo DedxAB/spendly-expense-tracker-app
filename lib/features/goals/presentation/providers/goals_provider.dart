@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/database/app_database.dart';
 import 'package:spendly/core/database/database_providers.dart';
 import 'package:spendly/core/utils/money.dart';
@@ -65,6 +66,7 @@ class GoalContributionItem {
     required this.goalId,
     required this.amount,
     required this.note,
+    required this.source,
     required this.createdAt,
   });
 
@@ -72,6 +74,7 @@ class GoalContributionItem {
   final String goalId;
   final double amount;
   final String? note;
+  final GoalContributionSource source;
   final DateTime createdAt;
 }
 
@@ -129,6 +132,7 @@ extension on GoalContribution {
       goalId: goalId,
       amount: amount,
       note: note,
+      source: GoalContributionSourceX.fromValue(source),
       createdAt: DateTime.fromMillisecondsSinceEpoch(createdAt),
     );
   }
@@ -301,6 +305,7 @@ class GoalsActions {
     double amount, {
     String fundId = 'emergency',
     String? note,
+    GoalContributionSource source = GoalContributionSource.manual,
   }) async {
     final normalized = Money.normalize(amount);
     if (normalized <= 0) return 0;
@@ -313,7 +318,12 @@ class GoalsActions {
 
     await _ref
         .read(appDatabaseProvider)
-        .addGoalContribution(goalId: fundId, amount: clamped, note: note);
+        .addGoalContribution(
+          goalId: fundId,
+          amount: clamped,
+          note: note,
+          source: source,
+        );
     return clamped;
   }
 
@@ -329,7 +339,7 @@ class GoalsActions {
         .addGoalContribution(
           goalId: fundId,
           amount: -normalized,
-          note: note ?? 'Withdrawn',
+          note: note,
         );
     return ok;
   }
@@ -429,6 +439,7 @@ class GoalsActions {
     String goalId,
     double amount, {
     String? note,
+    GoalContributionSource source = GoalContributionSource.manual,
   }) async {
     final normalized = Money.normalize(amount);
     if (normalized <= 0) return 0;
@@ -441,7 +452,12 @@ class GoalsActions {
 
     await _ref
         .read(appDatabaseProvider)
-        .addGoalContribution(goalId: goalId, amount: clamped, note: note);
+        .addGoalContribution(
+          goalId: goalId,
+          amount: clamped,
+          note: note,
+          source: source,
+        );
     return clamped;
   }
 
@@ -457,7 +473,7 @@ class GoalsActions {
         .addGoalContribution(
           goalId: goalId,
           amount: -normalized,
-          note: note ?? 'Withdrawn',
+          note: note,
         );
     return ok;
   }

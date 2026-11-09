@@ -1,9 +1,10 @@
-﻿import 'dart:math' as math;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:spendly/core/constants/app_enums.dart';
 import 'package:spendly/core/theme/app_design_tokens.dart';
 import 'package:spendly/core/theme/app_icons.dart';
 import 'package:spendly/core/theme/app_typography.dart';
@@ -19,7 +20,7 @@ import 'package:spendly/features/goals/presentation/providers/goals_provider.dar
 
 enum _GoalStatus { onTrack, behind, atRisk }
 
-enum _MoreAction { withdraw, history }
+enum _MoreAction { addInterest, withdraw, history }
 
 const _kGoalGreen = Color(0xFF38D97A);
 const _kGoalAmber = Color(0xFFF5B83D);
@@ -513,6 +514,70 @@ added > 0
     HapticFeedback.selectionClick();
   }
 
+  Future<void> _addInterestToGoal(
+    BuildContext context,
+    GoalsActions actions,
+    GoalItem goal,
+  ) async {
+    final result = await _askAmountWithNote(
+      context,
+      title: 'Add interest to ${goal.title}',
+      confirmText: 'Add Interest',
+      hint: "Interest comes from the bank, not your wallet — it won't "
+          'reduce your available to spend.',
+    );
+    if (result == null) return;
+    if (!context.mounted) return;
+    final added = await actions.addToGoal(
+      goal.id,
+      result.amount,
+      note: result.note,
+      source: GoalContributionSource.interest,
+    );
+    if (!context.mounted) return;
+    if (added < result.amount) {
+      showAppToast(
+        context,
+        added > 0
+            ? "Target nearly reached! Added \u20B9${added.toInt()} only."
+            : 'Goal target already reached.',
+      );
+    }
+    HapticFeedback.selectionClick();
+  }
+
+  Future<void> _addInterestToFund(
+    BuildContext context,
+    GoalsActions actions,
+    EmergencyFund fund,
+  ) async {
+    final result = await _askAmountWithNote(
+      context,
+      title: 'Add interest to emergency fund',
+      confirmText: 'Add Interest',
+      hint: "Interest comes from the bank, not your wallet — it won't "
+          'reduce your available to spend.',
+    );
+    if (result == null) return;
+    if (!context.mounted) return;
+    final added = await actions.addToEmergencyFund(
+      result.amount,
+      fundId: fund.id,
+      note: result.note,
+      source: GoalContributionSource.interest,
+    );
+    if (!context.mounted) return;
+    if (added < result.amount) {
+      showAppToast(
+        context,
+        added > 0
+            ? "Target nearly reached! Added \u20B9${added.toInt()} only."
+            : 'Emergency fund target already reached.',
+      );
+    }
+    HapticFeedback.selectionClick();
+  }
+
   Future<void> _withdrawFromGoal(
     BuildContext context,
     GoalsActions actions,
@@ -583,6 +648,8 @@ added > 0
     if (action == null) return;
     if (!context.mounted) return;
     switch (action) {
+      case _MoreAction.addInterest:
+        await _addInterestToGoal(context, actions, goal);
       case _MoreAction.withdraw:
         await _withdrawFromGoal(context, actions, goal);
       case _MoreAction.history:
@@ -610,6 +677,8 @@ added > 0
     if (action == null) return;
     if (!context.mounted) return;
     switch (action) {
+      case _MoreAction.addInterest:
+        await _addInterestToFund(context, actions, fund);
       case _MoreAction.withdraw:
         await _withdrawFromEmergency(context, actions, fund);
       case _MoreAction.history:
@@ -733,6 +802,7 @@ added > 0
     BuildContext context, {
     required String title,
     String confirmText = 'Add',
+    String? hint,
   }) async {
     return showDialog<({double amount, String? note})>(
       context: context,
@@ -740,6 +810,7 @@ added > 0
       builder: (dialogContext) => _AmountWithNoteDialog(
         title: title,
         confirmText: confirmText,
+        hint: hint,
       ),
     );
   }
@@ -784,55 +855,178 @@ added > 0
                             child: Text('No contributions yet'),
                           );
                         }
-                        return ListView.separated(
-                          itemCount: items.length,
-                          separatorBuilder: (_, __) =>
-                              Divider(color: context.border),
-                          itemBuilder: (_, index) {
-                            final item = items[index];
-                            return Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${Formatters.currency(item.amount)} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
-                                        style: TextStyle(color: context.textPrimary),
+                        final interestEarned = items
+                            .where(
+                              (item) =>
+                                  item.source ==
+                                  GoalContributionSource.interest,
+                            )
+                            .where((item) => item.amount > 0)
+                            .fold<double>(
+                              0,
+                              (sum, item) => sum + item.amount,
+                            );
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (interestEarned != 0) ...[
+                              Text.rich(
+                                TextSpan(
+                                  text: 'Interest earned: ',
+                                  style: TextStyle(
+                                    color: context.textSecondary,
+                                    fontSize: AppFontSizes.small,
+                                  ),
+                                  children: [
+                                    TextSpan(
+                                      text: Formatters.currency(
+                                        interestEarned,
                                       ),
-                                      if (item.note != null && item.note!.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 2),
-                                          child: Text(
-                                            item.note!,
-                                            style: TextStyle(
-                                              color: context.textSecondary,
-                                              fontSize: AppFontSizes.small,
+                                      style: TextStyle(
+                                        color: _green(context),
+                                        fontSize: AppFontSizes.small,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            Expanded(
+                              child: ListView.separated(
+                                itemCount: items.length,
+                                separatorBuilder: (_, __) =>
+                                    Divider(color: context.border),
+                                itemBuilder: (_, index) {
+                                  final item = items[index];
+                                  final isInterest = item.source ==
+                                      GoalContributionSource.interest;
+                                  final isWithdrawal = item.amount < 0;
+                                  return Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${Formatters.currency(item.amount.abs())} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
+                                              style: TextStyle(
+                                                color: context.textPrimary,
+                                              ),
                                             ),
+                                            if (item.note != null &&
+                                                item.note!.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 2,
+                                                ),
+                                                child: Text(
+                                                  item.note!,
+                                                  style: TextStyle(
+                                                    color:
+                                                        context.textSecondary,
+                                                    fontSize:
+                                                        AppFontSizes.small,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (isInterest) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _greenTint(context),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                  AppRadii.pill,
+                                                ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                AppIcons.trendingUp,
+                                                size: 12,
+                                                color: _green(context),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Interest',
+                                                style: TextStyle(
+                                                  color: _green(context),
+                                                  fontSize: AppFontSizes.label,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
+                                      ],
+                                      if (isWithdrawal) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _amberTint(context),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                  AppRadii.pill,
+                                                ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                AppIcons.trendingDown,
+                                                size: 12,
+                                                color: _amber(context),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Withdrawn',
+                                                style: TextStyle(
+                                                  color: _amber(context),
+                                                  fontSize: AppFontSizes.label,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                      IconButton(
+                                        onPressed: () async {
+                                          final confirmed = await _confirmDelete(
+                                            context,
+                                            title: 'Delete contribution?',
+                                            message:
+                                                'This contribution will be removed from ${goal.title}.',
+                                          );
+                                          if (!confirmed) return;
+                                          await actions.deleteContribution(item.id);
+                                        },
+                                        icon: Icon(
+                                          AppIcons.trash,
+                                          color: _red(context),
+                                        ),
+                                      ),
                                     ],
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () async {
-                                    final confirmed = await _confirmDelete(
-                                      context,
-                                      title: 'Delete contribution?',
-                                      message:
-                                          'This contribution will be removed from ${goal.title}.',
-                                    );
-                                    if (!confirmed) return;
-                                    await actions.deleteContribution(item.id);
-                                  },
-                                  icon: Icon(
-                                    AppIcons.trash,
-                                    color: _red(context),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         );
                       },
                       loading: () =>
@@ -2500,6 +2694,13 @@ class _MoreSheet extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _MoreTile(
+              icon: AppIcons.trendingUp,
+              label: 'Add Interest',
+              color: _green(context),
+              tint: _greenTint(context),
+              onTap: () => onSelect(_MoreAction.addInterest),
+            ),
+            _MoreTile(
               icon: AppIcons.money,
               label: 'Withdraw',
               color: _red(context),
@@ -2639,10 +2840,12 @@ class _AmountWithNoteDialog extends StatefulWidget {
   const _AmountWithNoteDialog({
     required this.title,
     required this.confirmText,
+    this.hint,
   });
 
   final String title;
   final String confirmText;
+  final String? hint;
 
   @override
   State<_AmountWithNoteDialog> createState() => _AmountWithNoteDialogState();
@@ -2683,6 +2886,15 @@ class _AmountWithNoteDialogState extends State<_AmountWithNoteDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (widget.hint != null) ...[
+              Text(
+                widget.hint!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
