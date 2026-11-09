@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Improvements
+
+- **Spend snapshot card compacted (188 → 146px)**: The balance block now hugs the label row instead of floating in dead space, the chart resizes to match, and the "Tap for transactions" hint text is replaced by a plain chevron — the whole card is already the tap target, and "Recent transactions · View all" sits directly below it. The goal-allocation chip now sits on the lower-left edge with the chevron on the right edge of the same row.
+- **Home spend-snapshot "goal allocation" line is now a native pill**: When you have money allocated to goals this month, the black card shows `₹X to goals` as a compact chip — gold dot, bold amount, soft gold tint background. The eye-hide toggle masks the chip amount as before.
+- **Recent Transactions card is fully flat**: The bordered/filled `HomeSurfaceCard` wrapper around the home ledger was removed; transactions now sit directly on the page canvas with hairline dividers, matching the history page ledger look. Zero functionality change.
+- **New design token**: `AppColors.gold` (`#F5B83D`) for the goal-allocation chip accent.
+
 ## [1.7.0] - 2026-11-09
 
 ### Added

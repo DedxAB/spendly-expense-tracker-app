@@ -96,7 +96,7 @@ class HomePage extends ConsumerWidget {
               onTap: () => context.push('/transactions'),
             ),
             loading: () => const SizedBox(
-              height: 190,
+              height: 166,
               child: Center(
                 child: SizedBox(
                   width: 24,
@@ -106,7 +106,7 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             error: (e, _) => SizedBox(
-              height: 190,
+              height: 166,
               child: Center(child: Text('Failed to load: $e')),
             ),
           ),
@@ -209,20 +209,17 @@ class HomePage extends ConsumerWidget {
                   child: EmptyTransactionIllustration(message: 'Your recent transactions will appear here'),
                 );
               }
-              return HomeSurfaceCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    for (var i = 0; i < items.length; i++)
-                      TransactionRow.fromEntity(
-                        tx: items[i],
-                        categoryById: categoryById,
-                        dateLabel: _dateLabel(items[i]),
-                        isLast: i == items.length - 1,
-                        compact: true,
-                      ),
-                  ],
-                ),
+              return Column(
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    TransactionRow.fromEntity(
+                      tx: items[i],
+                      categoryById: categoryById,
+                      dateLabel: _dateLabel(items[i]),
+                      isLast: i == items.length - 1,
+                      compact: true,
+                    ),
+                ],
               );
             },
             loading: () => const Padding(
