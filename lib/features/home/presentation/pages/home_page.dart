@@ -96,7 +96,7 @@ class HomePage extends ConsumerWidget {
               onTap: () => context.push('/transactions'),
             ),
             loading: () => const SizedBox(
-              height: 190,
+              height: 166,
               child: Center(
                 child: SizedBox(
                   width: 24,
@@ -106,7 +106,7 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             error: (e, _) => SizedBox(
-              height: 190,
+              height: 166,
               child: Center(child: Text('Failed to load: $e')),
             ),
           ),

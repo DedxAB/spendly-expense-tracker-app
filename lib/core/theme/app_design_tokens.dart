@@ -13,6 +13,7 @@ class AppColors {
   static const success = Color(0xFF38D97A);
   static const danger = Color(0xFFFF5C6C);
   static const accent = Color(0xFF8B5CF6);
+  static const gold = Color(0xFFF5B83D);
 
   static const income = success;
   static const expense = danger;

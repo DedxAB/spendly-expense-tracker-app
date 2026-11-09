@@ -30,20 +30,20 @@ class SpendlyBlackCard extends StatelessWidget {
     return HomeSurfaceCard(
       onTap: onTap,
       borderRadius: 28,
-      padding: const EdgeInsets.fromLTRB(20, 18, 16, 16),
+      padding: const EdgeInsets.fromLTRB(20, 14, 16, 12),
       child: SizedBox(
-        height: 188,
+        height: 166,
         child: Stack(
           fit: StackFit.expand,
           children: [
             Positioned(
               right: -10,
-              top: 26,
-              bottom: 16,
+              top: 18,
+              bottom: 12,
               child: IgnorePointer(
                 child: _SpendGraphArea(
                   width: 204,
-                  height: 136,
+                  height: 116,
                   values: dailyExpense,
                   todayIndex: math.max(DateTime.now().day - 1, 0),
                   lineColor: context.homeAccentGreen,
@@ -90,13 +90,13 @@ class SpendlyBlackCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Expanded(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 180),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
                               'Available to spend',
@@ -140,15 +140,14 @@ class SpendlyBlackCard extends StatelessWidget {
                   ),
                     Row(
                       children: [
-Text(
-                          'Tap for transactions',
-                          style: TextStyle(
-                            color: context.textPrimary,
-                            fontSize: AppFontSizes.label,
-                            fontWeight: FontWeight.w400,
+                        if (goalAllocation > 0) ...[
+                          _GoalChip(
+                            amount: goalAllocation,
+                            showValue: showValues,
                           ),
-                        ),
-                        const SizedBox(width: 10),
+                          const Spacer(),
+                        ] else
+                          const Spacer(),
                         Icon(
                           AppIcons.chevronRight,
                           size: 19,
@@ -156,20 +155,6 @@ Text(
                         ),
                       ],
                     ),
-                    if (goalAllocation > 0) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        showValues
-                            ? '${Formatters.currency(goalAllocation)} allocated to '
-                                  'goals this month'
-                            : '◆ ◆ ◆ allocated to goals this month',
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: AppFontSizes.label,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -422,5 +407,59 @@ class _SpendGraphPainter extends CustomPainter {
         oldDelegate.lineColor != lineColor ||
         oldDelegate.fillColor != fillColor ||
         oldDelegate.dashedColor != dashedColor;
+  }
+}
+
+class _GoalChip extends StatelessWidget {
+  const _GoalChip({required this.amount, required this.showValue});
+
+  final double amount;
+  final bool showValue;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.gold.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AppColors.gold,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: showValue ? Formatters.currency(amount) : '◆ ◆ ◆ ◆',
+                  style: TextStyle(
+                    color: context.textPrimary,
+                    fontSize: AppFontSizes.label,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                TextSpan(
+                  text: ' to goals',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: AppFontSizes.label,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
