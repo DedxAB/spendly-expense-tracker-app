@@ -867,6 +867,7 @@ added > 0
                               (sum, item) => sum + item.amount,
                             );
                         return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (interestEarned != 0) ...[
                               Text.rich(
