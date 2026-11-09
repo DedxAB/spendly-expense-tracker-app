@@ -861,6 +861,7 @@ added > 0
                                   item.source ==
                                   GoalContributionSource.interest,
                             )
+                            .where((item) => item.amount > 0)
                             .fold<double>(
                               0,
                               (sum, item) => sum + item.amount,
@@ -900,6 +901,7 @@ added > 0
                                   final item = items[index];
                                   final isInterest = item.source ==
                                       GoalContributionSource.interest;
+                                  final isWithdrawal = item.amount < 0;
                                   return Row(
                                     children: [
                                       Expanded(
@@ -908,7 +910,7 @@ added > 0
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              '${Formatters.currency(item.amount)} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
+                                              '${Formatters.currency(item.amount.abs())} - ${DateFormat('d MMM, HH:mm').format(item.createdAt)}',
                                               style: TextStyle(
                                                 color: context.textPrimary,
                                               ),
@@ -959,6 +961,41 @@ added > 0
                                                 'Interest',
                                                 style: TextStyle(
                                                   color: _green(context),
+                                                  fontSize: AppFontSizes.label,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                      if (isWithdrawal) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _amberTint(context),
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                  AppRadii.pill,
+                                                ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                AppIcons.trendingDown,
+                                                size: 12,
+                                                color: _amber(context),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Withdrawn',
+                                                style: TextStyle(
+                                                  color: _amber(context),
                                                   fontSize: AppFontSizes.label,
                                                   fontWeight: FontWeight.w600,
                                                 ),

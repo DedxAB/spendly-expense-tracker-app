@@ -339,7 +339,7 @@ class GoalsActions {
         .addGoalContribution(
           goalId: fundId,
           amount: -normalized,
-          note: note ?? 'Withdrawn',
+          note: note,
         );
     return ok;
   }
@@ -473,7 +473,7 @@ class GoalsActions {
         .addGoalContribution(
           goalId: goalId,
           amount: -normalized,
-          note: note ?? 'Withdrawn',
+          note: note,
         );
     return ok;
   }
