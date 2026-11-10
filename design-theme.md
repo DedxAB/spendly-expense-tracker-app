@@ -1,6 +1,6 @@
 # Spendly Design Theme Audit
 
-Last updated: 2026-05-09
+Last updated: 2026-11-10
 Owner: Product + Engineering
 
 ## Purpose
@@ -38,6 +38,7 @@ Audit status:
 
 ### Color and Surfaces
 - Primary noir palette and border tokens in `AppColors`
+- Goal-allocation accent: `AppColors.gold` (`#F5B83D`)
 - Source: `lib/core/theme/app_design_tokens.dart`
 
 Audit status:
@@ -75,7 +76,10 @@ Audit status:
 
 ### Cards
 - Prefer subtle contrast and spacing over heavy borders
-- Status: Partial
+- Home metric pair is the reference for minimal cards: standard card surface + hairline border at 26px, uppercase 10px label with a fixed 30px label row, 26px Bricolage amount, one 11px support line, single top-right indicator
+- Home Lend & Borrow card follows the flat pair pattern: one surface at the investment card's 14px radius, header label + people count, two amounts split by a hairline divider, color-coded dots instead of tinted boxes
+- Home Recent Transactions list is grouped in one standard bordered card (24px) with hairline row dividers; the section header stays outside
+- Status: Partial (home metric pair and Lend & Borrow card Pass; other cards still use bordered `HomeSurfaceCard`)
 
 ## Screen Audit Tracker
 

@@ -1,13 +1,17 @@
 # Changelog
 
-## [Unreleased]
+## [1.8.0] - 2026-11-10
 
 ### Improvements
 
-- **Spend snapshot card compacted (188 → 146px)**: The balance block now hugs the label row instead of floating in dead space, the chart resizes to match, and the "Tap for transactions" hint text is replaced by a plain chevron — the whole card is already the tap target, and "Recent transactions · View all" sits directly below it. The goal-allocation chip now sits on the lower-left edge with the chevron on the right edge of the same row.
+- **Spend snapshot card compacted (188 → 166px)**: The balance block now hugs the label row instead of floating in dead space. The goal-allocation chip sits on the lower-left edge with `Tap for transactions →` on the right edge of the same row.
+- **Spend chart now sits in its own zone**: The background chart no longer runs under the bottom row or into the "Available to spend" text — it occupies the free right-hand area (below the label row, above the hint row), taller than before, with its left edge anchored at a fixed inset so it stays clear of the text on every screen width. Every bar from day 1 of the month stays fully visible.
 - **Home spend-snapshot "goal allocation" line is now a native pill**: When you have money allocated to goals this month, the black card shows `₹X to goals` as a compact chip — gold dot, bold amount, soft gold tint background. The eye-hide toggle masks the chip amount as before.
-- **Recent Transactions card is fully flat**: The bordered/filled `HomeSurfaceCard` wrapper around the home ledger was removed; transactions now sit directly on the page canvas with hairline dividers, matching the history page ledger look. Zero functionality change.
+- **Recent Transactions grouped in one bordered card**: The home ledger rows are wrapped in a single standard `HomeSurfaceCard` (24px radius, hairline border, no extra padding) with hairline dividers between rows, matching the other home cards. The section header and "View all" stay outside the card; scrolling, row taps, and swipe actions are unchanged.
 - **New design token**: `AppColors.gold` (`#F5B83D`) for the goal-allocation chip accent.
+- **Today's Spend / Remaining cards revamped (170 → 136px)**: Both metric cards are now minimal surfaces — no icon tiles, top accent strip, or watermark ring. They keep the standard card surface fill and hairline border (same as the snapshot and investment cards), and each shows a small uppercase label with a single top-right indicator, a 26px Bricolage amount, and one quiet bottom line. Both label rows are a fixed 30px tall so the labels and amounts sit on the same baseline across the pair. The pair shows the same data and keeps both tap targets (left → Transactions, right → Budget).
+- **Remaining percentage moved into a 30px progress ring**: The percentage now sits inside a small ring beside the `REMAINING` label (lavender stroke on a quiet track) instead of a separate watermark. Over budget shows a full red ring with `!`, a red amount, and `over by ₹X`; no budget hides the ring entirely and shows `—` + `Tap to set monthly budget`.
+- **Lend & Borrow home card simplified**: Replaced the three nested boxes (two tinted mini-cards + an "active people" tile) with one flat card at the investment card's 14px radius: `LEND & BORROW` plus the people count in the header, and two amounts split by a hairline divider — `TO RECEIVE` (green dot) and `YOU OWE` (red dot). Zero sides render muted; the whole card still opens `/lend`, and the amount-masking toggle still hides both values. Removed the now-unused `_MiniMetricCard` widget.
 
 ## [1.7.0] - 2026-11-09
 

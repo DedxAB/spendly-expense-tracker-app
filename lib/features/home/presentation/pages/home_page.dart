@@ -116,8 +116,6 @@ class HomePage extends ConsumerWidget {
               Expanded(
                 child: _MetricCard(
                   title: "TODAY'S SPEND",
-                  icon: AppIcons.analytics,
-                  accent: context.homeAccentGreen,
                   amount: todaySpent,
                   note: todayComparison.label,
                   noteColor: todayComparison.color,
@@ -129,7 +127,6 @@ class HomePage extends ConsumerWidget {
               Expanded(
                 child: _RemainingCard(
                   title: 'REMAINING',
-                  accent: context.homeAccentPurple,
                   amount: summary.valueOrNull?.remainingBudget ?? 0,
                   limit: (summary.valueOrNull?.remainingBudget ?? 0) +
                       (summary.valueOrNull?.monthlyExpense ?? 0),
@@ -209,17 +206,24 @@ class HomePage extends ConsumerWidget {
                   child: EmptyTransactionIllustration(message: 'Your recent transactions will appear here'),
                 );
               }
-              return Column(
-                children: [
-                  for (var i = 0; i < items.length; i++)
-                    TransactionRow.fromEntity(
-                      tx: items[i],
-                      categoryById: categoryById,
-                      dateLabel: _dateLabel(items[i]),
-                      isLast: i == items.length - 1,
-                      compact: true,
-                    ),
-                ],
+              return HomeSurfaceCard(
+                borderRadius: AppRadii.lg,
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < items.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: TransactionRow.fromEntity(
+                          tx: items[i],
+                          categoryById: categoryById,
+                          dateLabel: _dateLabel(items[i]),
+                          isLast: i == items.length - 1,
+                          compact: true,
+                        ),
+                      ),
+                  ],
+                ),
               );
             },
             loading: () => const Padding(
@@ -334,8 +338,6 @@ class _SectionHeader extends StatelessWidget {
 class _MetricCard extends StatelessWidget {
   const _MetricCard({
     required this.title,
-    required this.icon,
-    required this.accent,
     required this.amount,
     required this.note,
     required this.noteColor,
@@ -344,8 +346,6 @@ class _MetricCard extends StatelessWidget {
   });
 
   final String title;
-  final IconData icon;
-  final Color accent;
   final double amount;
   final String note;
   final Color noteColor;
@@ -355,68 +355,62 @@ class _MetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HomeSurfaceCard(
-      borderRadius: AppRadii.card,
-      topAccent: accent,
+      borderRadius: 26,
+      padding: const EdgeInsets.all(16),
       onTap: onTap,
       child: SizedBox(
-        height: 170,
-        child: Stack(
+        // 136px total card height, minus the 16px top/bottom padding.
+        height: 104,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Positioned(
-              right: -15,
-              bottom: -20,
-              child: IgnorePointer(
-                child: Opacity(
-                  opacity: 0.5,
-                  child: Icon(
-                    Icons.wallet_outlined,
-                    size: 100,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF2C2C2E)
-                        : const Color(0xFFE0E0E3),
+            SizedBox(
+              height: 30,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.3,
+                      ),
+                    ),
                   ),
-                ),
+                  Icon(noteIcon, size: 15, color: noteColor),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _TitleChip(icon: icon, title: title, tint: accent),
-                  const Spacer(),
-                  AmountView(
-                    amount,
-                    style: AppTypography.amount(
-                      context,
-                      fontSize: AppFontSizes.largeHeading,
-                      color: context.textPrimary,
-                    ).copyWith(letterSpacing: -0.5),
-                    maskColor: context.textPrimary,
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        noteIcon,
-                        size: 14,
-                        color: noteColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          note,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: noteColor,
-                            fontSize: AppFontSizes.body,
-                            height: 1.2,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+            const SizedBox(height: 15),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: AmountView(
+                amount,
+                style: TextStyle(
+                  color: context.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.6,
+                  height: 1,
+                ),
+                maskColor: context.textPrimary,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              note,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: noteColor,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -429,7 +423,6 @@ class _MetricCard extends StatelessWidget {
 class _RemainingCard extends StatelessWidget {
   const _RemainingCard({
     required this.title,
-    required this.accent,
     required this.amount,
     required this.limit,
     required this.showValues,
@@ -437,7 +430,6 @@ class _RemainingCard extends StatelessWidget {
   });
 
   final String title;
-  final Color accent;
   final double amount;
   final double limit;
   final bool showValues;
@@ -450,109 +442,98 @@ class _RemainingCard extends StatelessWidget {
     final percent = hasBudget
         ? (amount / limit * 100).clamp(0, 100).round()
         : 0;
-    final accentColor =
-        isOver ? context.homeAccentRed : accent;
-    final noteText = Text.rich(
-      TextSpan(
-        style: TextStyle(
-          color: isOver
-              ? context.homeAccentRed
-              : hasBudget
-                  ? context.homeAccentGreen
-                  : context.textSecondary,
-          fontSize: AppFontSizes.body,
-          height: 1.2,
-        ),
-        children: !hasBudget
-            ? const [
-                TextSpan(text: 'Tap to set monthly budget'),
-              ]
-            : isOver
-                ? [
-                    const TextSpan(text: 'over by '),
-                    TextSpan(
-                      text: showValues
-                          ? Formatters.currency(amount.abs())
-                          : '◆ ◆ ◆',
-                    ),
-                  ]
-                : [
-                    const TextSpan(text: 'of '),
-                    TextSpan(
-                      text: showValues
-                          ? Formatters.currency(limit)
-                          : '◆ ◆ ◆',
-                    ),
-                    const TextSpan(text: ' limit'),
-                  ],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ringAccent = isOver
+        ? context.homeAccentRed
+        : isDark
+            ? const Color(0xFFB18CFF)
+            : AppColors.homeAccentPurple;
+
+    final noteText = Text(
+      !hasBudget
+          ? 'Tap to set monthly budget'
+          : isOver
+              ? 'over by ${showValues ? Formatters.currency(amount.abs()) : '◆ ◆ ◆'}'
+              : 'of ${showValues ? Formatters.currency(limit) : '◆ ◆ ◆'} limit',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        color: isOver ? context.homeAccentRed : context.textSecondary,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
       ),
     );
 
     return HomeSurfaceCard(
-      borderRadius: AppRadii.card,
-      topAccent: accent,
+      borderRadius: 26,
+      padding: const EdgeInsets.all(16),
       onTap: onTap,
       child: SizedBox(
-        height: 170,
-        child: Stack(
+        // 136px total card height, minus the 16px top/bottom padding.
+        height: 104,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (hasBudget)
-              Positioned(
-                right: -15,
-                bottom: -20,
-                child: IgnorePointer(
-                  child: Opacity(
-                    opacity: 0.35,
-                    child: SizedBox(
-                      width: 90,
-                      height: 90,
-                      child: _RingIndicator(
-                        value: percent,
-                        accent: accentColor,
+            SizedBox(
+              height: 30,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: context.textSecondary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.3,
                       ),
                     ),
                   ),
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _TitleChip(
-                    icon: AppIcons.budget,
-                    title: 'REMAINING',
-                    tint: AppColors.homeAccentPurple,
-                  ),
-                  const Spacer(),
                   if (hasBudget)
-                    AmountView(
+                    _RingBadge(
+                      value: percent,
+                      accent: ringAccent,
+                      isOver: isOver,
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 15),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: hasBudget
+                  ? AmountView(
                       amount,
-                      style: AppTypography.amount(
-                        context,
-                        fontSize: AppFontSizes.largeHeading,
+                      style: TextStyle(
                         color: isOver
                             ? context.homeAccentRed
                             : context.textPrimary,
-                      ).copyWith(letterSpacing: -0.5),
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.6,
+                        height: 1,
+                      ),
                       maskColor: isOver
                           ? context.homeAccentRed
                           : context.textPrimary,
                     )
-                  else
-                    Text(
+                  : Text(
                       '\u2014',
-                      style: AppTypography.amount(
-                        context,
-                        fontSize: AppFontSizes.largeHeading,
+                      style: TextStyle(
                         color: context.textSecondary,
-                      ).copyWith(letterSpacing: -0.5),
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.6,
+                        height: 1,
+                      ),
                     ),
-                  const SizedBox(height: 6),
-                  noteText,
-                ],
-              ),
             ),
+            const Spacer(),
+            noteText,
           ],
         ),
       ),
@@ -560,74 +541,36 @@ class _RemainingCard extends StatelessWidget {
   }
 }
 
-class _TitleChip extends StatelessWidget {
-  const _TitleChip({
-    required this.icon,
-    required this.title,
-    required this.tint,
+class _RingBadge extends StatelessWidget {
+  const _RingBadge({
+    required this.value,
+    required this.accent,
+    required this.isOver,
   });
-
-  final IconData icon;
-  final String title;
-  final Color tint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: tint.withValues(alpha: 0.16),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Icon(icon, color: tint, size: 18),
-        ),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(
-            title,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: context.textPrimary,
-              fontSize: AppFontSizes.label,
-              fontWeight: FontWeight.w500,
-              letterSpacing: 0.1,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RingIndicator extends StatelessWidget {
-  const _RingIndicator({required this.value, required this.accent});
 
   final int value;
   final Color accent;
+  final bool isOver;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 90,
-      height: 90,
+      width: 30,
+      height: 30,
       child: CustomPaint(
-        painter: _RingPainter(
-          value: value,
+        painter: _RingBadgePainter(
+          progress: isOver ? 1 : value.clamp(0, 100) / 100,
           accent: accent,
-          trackColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color(0xFF2C2C2E)
-              : const Color(0xFFE0E0E3),
+          trackColor: context.border,
         ),
         child: Center(
           child: Text(
-            '$value%',
+            isOver ? '!' : '$value%',
             style: TextStyle(
               color: accent,
-              fontSize: AppFontSizes.bodyLarge,
-              fontWeight: FontWeight.w600,
+              fontSize: isOver ? 9 : 7.6,
+              fontWeight: FontWeight.w700,
+              height: 1,
             ),
           ),
         ),
@@ -636,47 +579,45 @@ class _RingIndicator extends StatelessWidget {
   }
 }
 
-class _RingPainter extends CustomPainter {
-  const _RingPainter({
-    required this.value,
+class _RingBadgePainter extends CustomPainter {
+  const _RingBadgePainter({
+    required this.progress,
     required this.accent,
     required this.trackColor,
   });
 
-  final int value;
+  final double progress;
   final Color accent;
   final Color trackColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.shortestSide - 10) / 2;
+    final radius = size.shortestSide / 2 - 3;
     final basePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
+      ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..color = trackColor;
-
     final valuePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 7
+      ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..color = accent;
 
     canvas.drawCircle(center, radius, basePaint);
-    final sweep = (value.clamp(0, 100) / 100) * 2 * pi;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -pi / 2,
-      sweep,
+      progress.clamp(0, 1) * 2 * pi,
       false,
       valuePaint,
     );
   }
 
   @override
-  bool shouldRepaint(covariant _RingPainter oldDelegate) {
-    return oldDelegate.value != value ||
+  bool shouldRepaint(covariant _RingBadgePainter oldDelegate) {
+    return oldDelegate.progress != progress ||
         oldDelegate.accent != accent ||
         oldDelegate.trackColor != trackColor;
   }
@@ -697,143 +638,71 @@ class _LendBorrowCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final greenBg = isDark
-        ? const Color(0xFF121C14)
-        : AppColors.homeAccentGreen.withValues(alpha: 0.06);
-    final greenBorder = isDark
-        ? const Color(0xFF1B3420)
-        : AppColors.homeAccentGreen.withValues(alpha: 0.15);
-    final greenIconBg = isDark
-        ? const Color(0xFF17311F)
-        : AppColors.homeAccentGreen.withValues(alpha: 0.12);
-
-    final redBg = isDark
-        ? const Color(0xFF1A1314)
-        : AppColors.homeAccentRed.withValues(alpha: 0.06);
-    final redBorder = isDark
-        ? const Color(0xFF352224)
-        : AppColors.homeAccentRed.withValues(alpha: 0.15);
-    final redIconBg = isDark
-        ? const Color(0xFF332122)
-        : AppColors.homeAccentRed.withValues(alpha: 0.12);
-
     return HomeSurfaceCard(
       onTap: onTap,
-      borderRadius: AppRadii.card,
-      padding: const EdgeInsets.all(14),
+      borderRadius: AppRadii.lg,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _SectionIconChip(
-                icon: AppIcons.money,
-                tint: context.homeAccentGreen,
-              ),
-              const SizedBox(width: 10),
-              Flexible(
-                child: Text(
-                  'LEND & BORROW',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: AppFontSizes.subhead,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'View all',
-                style: TextStyle(color: context.textSecondary, fontSize: AppFontSizes.body),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                AppIcons.chevronRight,
-                size: 16,
-                color: context.textSecondary,
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: _MiniMetricCard(
-                  title: 'You Will Receive',
-                  amount: toReceive,
-                  tint: AppColors.homeAccentGreen,
-                  icon: AppIcons.download,
-                  backgroundColor: greenBg,
-                  borderColor: greenBorder,
-                  iconBackgroundColor: greenIconBg,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MiniMetricCard(
-                  title: 'You Owe',
-                  amount: toPay,
-                  tint: AppColors.homeAccentRed,
-                  icon: AppIcons.upload,
-                  backgroundColor: redBg,
-                  borderColor: redBorder,
-                  iconBackgroundColor: redIconBg,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: context.surface,
-              borderRadius: BorderRadius.circular(14),
-            ),
+          SizedBox(
+            height: 18,
             child: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: context.surface,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: context.border.withValues(alpha: 0.6),
+                Expanded(
+                  child: Text(
+                    'LEND & BORROW',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: context.textSecondary,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.3,
                     ),
                   ),
-                  child: Icon(
-                    AppIcons.usersRound,
-                    color: context.homeAccentGreen,
-                    size: 18,
+                ),
+                Text(
+                  '$openPeople ${openPeople == 1 ? 'person' : 'people'}',
+                  style: TextStyle(
+                    color: context.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$openPeople active people',
-          style: TextStyle(
-            color: context.textPrimary,
-            fontSize: AppFontSizes.label,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1,
+                const SizedBox(width: 3),
+                Icon(
+                  AppIcons.chevronRight,
+                  size: 14,
+                  color: context.textSecondary,
+                ),
+              ],
+            ),
           ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        'Tap to open',
-                        style: TextStyle(
-                          color: context.textSecondary,
-                          fontSize: AppFontSizes.label,
-                        ),
-                      ),
-                    ],
+          const SizedBox(height: 14),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: _LendAmount(
+                    label: 'TO RECEIVE',
+                    amount: toReceive,
+                    dotColor: context.homeAccentGreen,
+                    muted: toReceive <= 0,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  margin: const EdgeInsets.only(right: 16),
+                  color: context.border,
+                ),
+                Expanded(
+                  child: _LendAmount(
+                    label: 'YOU OWE',
+                    amount: toPay,
+                    dotColor: context.homeAccentRed,
+                    muted: toPay <= 0,
                   ),
                 ),
               ],
@@ -841,6 +710,75 @@ class _LendBorrowCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _LendAmount extends StatelessWidget {
+  const _LendAmount({
+    required this.label,
+    required this.amount,
+    required this.dotColor,
+    required this.muted,
+  });
+
+  final String label;
+  final double amount;
+  final Color dotColor;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    final amountColor = muted
+        ? context.textSecondary.withValues(alpha: 0.5)
+        : context.textPrimary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: context.textSecondary,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 9),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: AmountView(
+            amount,
+            style: TextStyle(
+              color: amountColor,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
+              height: 1,
+            ),
+            maskColor: amountColor,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -864,81 +802,6 @@ class _SectionIconChip extends StatelessWidget {
     );
   }
 }
-
-class _MiniMetricCard extends StatelessWidget {
-  const _MiniMetricCard({
-    required this.title,
-    required this.amount,
-    required this.tint,
-    required this.icon,
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.iconBackgroundColor,
-  });
-
-  final String title;
-  final double amount;
-  final Color tint;
-  final IconData icon;
-  final Color backgroundColor;
-  final Color borderColor;
-  final Color iconBackgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        children: [
-          Container(
-              width: 36,
-              height: 36,
-            decoration: BoxDecoration(
-              color: iconBackgroundColor,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: tint, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: context.textPrimary,
-                    fontSize: AppFontSizes.small,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                AmountView(
-                  amount,
-                  style: TextStyle(
-                    color: tint,
-                    fontSize: AppFontSizes.title,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.3,
-                  ),
-                  maskColor: tint,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 
 class _RecurringBanner extends StatelessWidget {
   const _RecurringBanner({
