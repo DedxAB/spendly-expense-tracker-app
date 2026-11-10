@@ -37,18 +37,21 @@ class SpendlyBlackCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             Positioned(
-              right: -10,
-              top: 18,
-              bottom: 12,
+              right: -8,
+              top: 34,
+              bottom: 32,
+              left: 168,
               child: IgnorePointer(
-                child: _SpendGraphArea(
-                  width: 204,
-                  height: 116,
-                  values: dailyExpense,
-                  todayIndex: math.max(DateTime.now().day - 1, 0),
-                  lineColor: context.homeAccentGreen,
-                  fillColor: context.homeAccentGreen.withValues(alpha: 0.16),
-                  dashedColor: context.border.withValues(alpha: 0.6),
+                child: LayoutBuilder(
+                  builder: (context, constraints) => _SpendGraphArea(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    values: dailyExpense,
+                    todayIndex: math.max(DateTime.now().day - 1, 0),
+                    lineColor: context.homeAccentGreen,
+                    fillColor: context.homeAccentGreen.withValues(alpha: 0.16),
+                    dashedColor: context.border.withValues(alpha: 0.6),
+                  ),
                 ),
               ),
             ),
@@ -146,8 +149,16 @@ class SpendlyBlackCard extends StatelessWidget {
                             showValue: showValues,
                           ),
                           const Spacer(),
-                        ] else
-                          const Spacer(),
+                        ],
+                        Text(
+                          'Tap for transactions',
+                          style: TextStyle(
+                            color: context.textPrimary,
+                            fontSize: AppFontSizes.label,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                         Icon(
                           AppIcons.chevronRight,
                           size: 19,
